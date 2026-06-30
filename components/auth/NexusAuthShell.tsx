@@ -22,37 +22,35 @@ export function NexusAuthShell({
         <div className="nexus-auth-grid" />
       </div>
 
-      <div className="nexus-auth-layout">
-        <aside className="nexus-auth-aside" aria-hidden="true">
-          <div className="nexus-auth-aside-brand">
-            <NexusIcon className="nexus-brand-mark nexus-auth-mark" />
-            <span>Nexus</span>
-          </div>
-          <p className="nexus-auth-aside-copy">
-            Hosted knowledge workspace for approved operators. Claudia executes governed work through the
-            private Console Connector.
-          </p>
-          <ul className="nexus-auth-aside-list">
-            <li>Approval-controlled access</li>
-            <li>Convex-authoritative roles</li>
-            <li>Private hosted console</li>
-          </ul>
-        </aside>
+      <aside className="nexus-auth-aside" aria-hidden="true">
+        <div className="nexus-auth-aside-brand">
+          <NexusIcon className="nexus-brand-mark nexus-auth-mark" />
+          <span>Nexus</span>
+        </div>
+        <p className="nexus-auth-aside-copy">
+          Hosted knowledge workspace for approved operators. Claudia executes governed work through the
+          private Console Connector.
+        </p>
+        <ul className="nexus-auth-aside-list">
+          <li>Approval-controlled access</li>
+          <li>Convex-authoritative roles</li>
+          <li>Private hosted console</li>
+        </ul>
+      </aside>
 
-        <section className="nexus-auth-main" aria-label="Authentication">
-          <div className="nexus-auth-card nexus-card">
-            <header className="nexus-auth-card-head">
-              <div className="nexus-auth-card-brand">
-                <NexusIcon className="nexus-brand-mark" />
-                <span>{title}</span>
-              </div>
-              {subtitle ? <p className="nexus-auth-card-subtitle">{subtitle}</p> : null}
-            </header>
+      <div className="nexus-auth-stage">
+        <section className="nexus-auth-card nexus-card" aria-label="Authentication">
+          <header className="nexus-auth-card-head">
+            <div className="nexus-auth-card-brand">
+              <NexusIcon className="nexus-brand-mark" />
+              <span>{title}</span>
+            </div>
+            {subtitle ? <p className="nexus-auth-card-subtitle">{subtitle}</p> : null}
+          </header>
 
-            <div className="nexus-auth-clerk-slot">{children}</div>
+          <div className="nexus-auth-clerk-slot">{children}</div>
 
-            {footerNote ? <p className="nexus-auth-footer-note">{footerNote}</p> : null}
-          </div>
+          {footerNote ? <p className="nexus-auth-footer-note">{footerNote}</p> : null}
         </section>
       </div>
     </div>

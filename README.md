@@ -36,9 +36,10 @@ claudia_console/                 # local folder name (future GitHub repo may be 
 | **Post-convex-linkage cleanup** | Complete |
 | **P4-clerk-approved-users-roles** | Complete — Clerk identity + Convex approval/roles |
 | **P4.1-real-clerk-linkage-login** | Complete — linked Clerk app + embedded sign-in design |
+| **P4.2-clerk-convex-auth-repair** | Complete — native session token + centered auth card |
 | **P5+** | Not started — task persistence |
 
-See [`docs/specs/nexus_p4_1_real_clerk_linkage_and_login_integration_v1.md`](docs/specs/nexus_p4_1_real_clerk_linkage_and_login_integration_v1.md) for Clerk linkage details and [`docs/specs/nexus_p4_clerk_approved_users_roles_v1.md`](docs/specs/nexus_p4_clerk_approved_users_roles_v1.md) for identity architecture.
+See [`docs/specs/nexus_p4_2_clerk_convex_auth_repair_and_auth_centering_v1.md`](docs/specs/nexus_p4_2_clerk_convex_auth_repair_and_auth_centering_v1.md) for the Clerk-to-Convex token fix.
 
 ## Run Nexus locally
 

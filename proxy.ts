@@ -8,6 +8,7 @@ const isPublicRoute = createRouteMatcher([
   "/pending-approval",
   "/access-suspended",
   "/configuration-required",
+  "/auth-service-error",
   "/api/webhooks/clerk",
 ]);
 

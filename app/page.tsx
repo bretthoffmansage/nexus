@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { getNexusAccess } from "@/lib/auth/getNexusAccess";
+import { nexusAccessRedirectPath } from "@/lib/auth/nexusAccessRouting";
 import { NexusShell } from "@/components/shell/NexusShell";
 import { isClerkConfigured, isConvexConfigured } from "@/lib/env";
 
@@ -7,6 +8,7 @@ export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
   const access = await getNexusAccess();
+  const redirectPath = nexusAccessRedirectPath(access);
 
   if (access.state === "configuration_required") {
     if (process.env.NODE_ENV === "production") {
@@ -21,16 +23,8 @@ export default async function HomePage() {
     );
   }
 
-  if (access.state === "unauthenticated") {
-    redirect("/sign-in");
-  }
-
-  if (access.state === "pending" || access.state === "approved_without_role") {
-    redirect("/pending-approval");
-  }
-
-  if (access.state === "suspended") {
-    redirect("/access-suspended");
+  if (redirectPath) {
+    redirect(redirectPath);
   }
 
   const label = access.displayName ?? access.primaryEmail ?? access.clerkUserId ?? "Nexus user";

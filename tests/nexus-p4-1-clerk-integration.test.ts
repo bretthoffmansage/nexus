@@ -68,9 +68,9 @@ describe("Nexus P4.1 Clerk integration", () => {
   });
 
   it("preserves Convex-based pending routing", () => {
-    const home = read("app/page.tsx");
+    const routing = read("lib/auth/nexusAccessRouting.ts");
+    expect(routing).toContain("/pending-approval");
     const access = read("lib/auth/getNexusAccess.ts");
-    expect(home).toContain('redirect("/pending-approval")');
     expect(access).toContain("api.users.currentUserAccess");
     expect(access).not.toMatch(/args\.role/);
   });

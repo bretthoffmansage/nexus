@@ -108,13 +108,17 @@ describe("Nexus P4 getNexusAccess", () => {
     };
 
     vi.doMock("@clerk/nextjs/server", () => ({
-      auth: vi.fn(async () => ({
-        userId: "user_1",
-        getToken: vi.fn(async () => "token"),
+      auth: vi.fn(async () => ({ userId: "user_1" })),
+    }));
+    vi.doMock("@/lib/auth/clerkConvexToken", () => ({
+      getClerkConvexSessionToken: vi.fn(async () => ({
+        ok: true,
+        token: "token",
+        usesNativeConvexIntegration: true,
       })),
     }));
     vi.doMock("@/lib/auth/convexServerClient", () => ({
-      createAuthenticatedConvexClient: vi.fn(async () => mockClient),
+      createAuthenticatedConvexClient: vi.fn(() => ({ ok: true, client: mockClient })),
     }));
 
     const { getNexusAccess } = await import("@/lib/auth/getNexusAccess");
@@ -138,13 +142,17 @@ describe("Nexus P4 getNexusAccess", () => {
     };
 
     vi.doMock("@clerk/nextjs/server", () => ({
-      auth: vi.fn(async () => ({
-        userId: "user_2",
-        getToken: vi.fn(async () => "token"),
+      auth: vi.fn(async () => ({ userId: "user_2" })),
+    }));
+    vi.doMock("@/lib/auth/clerkConvexToken", () => ({
+      getClerkConvexSessionToken: vi.fn(async () => ({
+        ok: true,
+        token: "token",
+        usesNativeConvexIntegration: true,
       })),
     }));
     vi.doMock("@/lib/auth/convexServerClient", () => ({
-      createAuthenticatedConvexClient: vi.fn(async () => mockClient),
+      createAuthenticatedConvexClient: vi.fn(() => ({ ok: true, client: mockClient })),
     }));
 
     const { getNexusAccess } = await import("@/lib/auth/getNexusAccess");
@@ -170,13 +178,17 @@ describe("Nexus P4 getNexusAccess", () => {
     };
 
     vi.doMock("@clerk/nextjs/server", () => ({
-      auth: vi.fn(async () => ({
-        userId: "user_3",
-        getToken: vi.fn(async () => "token"),
+      auth: vi.fn(async () => ({ userId: "user_3" })),
+    }));
+    vi.doMock("@/lib/auth/clerkConvexToken", () => ({
+      getClerkConvexSessionToken: vi.fn(async () => ({
+        ok: true,
+        token: "token",
+        usesNativeConvexIntegration: true,
       })),
     }));
     vi.doMock("@/lib/auth/convexServerClient", () => ({
-      createAuthenticatedConvexClient: vi.fn(async () => mockClient),
+      createAuthenticatedConvexClient: vi.fn(() => ({ ok: true, client: mockClient })),
     }));
 
     const { getNexusAccess } = await import("@/lib/auth/getNexusAccess");
@@ -201,13 +213,17 @@ describe("Nexus P4 getNexusAccess", () => {
     };
 
     vi.doMock("@clerk/nextjs/server", () => ({
-      auth: vi.fn(async () => ({
-        userId: "user_4",
-        getToken: vi.fn(async () => "token"),
+      auth: vi.fn(async () => ({ userId: "user_4" })),
+    }));
+    vi.doMock("@/lib/auth/clerkConvexToken", () => ({
+      getClerkConvexSessionToken: vi.fn(async () => ({
+        ok: true,
+        token: "token",
+        usesNativeConvexIntegration: true,
       })),
     }));
     vi.doMock("@/lib/auth/convexServerClient", () => ({
-      createAuthenticatedConvexClient: vi.fn(async () => mockClient),
+      createAuthenticatedConvexClient: vi.fn(() => ({ ok: true, client: mockClient })),
     }));
 
     const { getNexusAccess } = await import("@/lib/auth/getNexusAccess");
@@ -234,11 +250,10 @@ describe("Nexus P4 getNexusAccess", () => {
 });
 
 describe("Nexus P4 routing policy", () => {
-  it("home page redirects unauthenticated users to sign-in", () => {
+  it("home page routes through the shared access resolver", () => {
     const pageSrc = readFileSync(path.join(ROOT, "app/page.tsx"), "utf8");
-    expect(pageSrc).toContain('redirect("/sign-in")');
-    expect(pageSrc).toContain('redirect("/pending-approval")');
-    expect(pageSrc).toContain('redirect("/access-suspended")');
+    expect(pageSrc).toContain("nexusAccessRedirectPath");
+    expect(pageSrc).toContain("getNexusAccess");
   });
 
   it("admin page requires nexus_admin role server-side", () => {

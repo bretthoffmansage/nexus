@@ -8,7 +8,8 @@
  * Server-only:
  *   CLERK_SECRET_KEY
  *   CLERK_WEBHOOK_SECRET (or CLERK_WEBHOOK_SIGNING_SECRET for Clerk verifyWebhook fallback)
- *   CLERK_JWT_ISSUER_DOMAIN (Convex auth.config.ts — set in Convex dashboard too)
+ *   CLERK_FRONTEND_API_URL (canonical Clerk issuer for native Convex integration)
+ *   CLERK_JWT_ISSUER_DOMAIN (compatibility alias for Convex auth.config.ts)
  *   NEXUS_BOOTSTRAP_ADMIN_EMAILS (Convex dashboard + optional local mirror)
  *   NEXUS_INTERNAL_API_SECRET (server webhook → Convex bridge)
  *   CONVEX_DEPLOYMENT
