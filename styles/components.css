@@ -1,0 +1,244 @@
+/* Shared UI components — presence, sources, diagnostics, buttons */
+
+.nexus-btn {
+  border: 1px solid var(--nexus-border);
+  border-radius: var(--nexus-radius-sm);
+  background: color-mix(in srgb, var(--nexus-accent) 22%, var(--nexus-panel));
+  color: var(--nexus-fg);
+  padding: 0.55rem 0.9rem;
+  cursor: pointer;
+}
+
+.nexus-btn:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--nexus-accent) 32%, var(--nexus-panel));
+}
+
+.nexus-btn:focus-visible {
+  outline: 2px solid var(--nexus-accent);
+  outline-offset: 2px;
+}
+
+.nexus-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.nexus-btn-primary {
+  background: color-mix(in srgb, var(--nexus-accent) 35%, var(--nexus-panel));
+}
+
+.nexus-btn-ghost {
+  background: transparent;
+}
+
+.nexus-brand-mark {
+  color: var(--nexus-accent);
+  flex-shrink: 0;
+}
+
+.nexus-presence-card {
+  border: 1px solid var(--nexus-border);
+  border-radius: var(--nexus-radius-sm);
+  padding: 0.75rem;
+  background: var(--nexus-surface-elevated);
+}
+
+.nexus-presence-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.35rem;
+}
+
+.nexus-presence-title {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.nexus-presence-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  color: var(--nexus-muted);
+}
+
+.nexus-presence-dot {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 50%;
+  background: var(--nexus-warning);
+}
+
+.nexus-presence-card[data-presence="not_configured"] .nexus-presence-dot {
+  background: var(--nexus-warning);
+}
+
+.nexus-presence-detail {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--nexus-muted);
+  line-height: 1.45;
+}
+
+.nexus-banner {
+  padding: 0.55rem 0.75rem;
+  border-radius: var(--nexus-radius-sm);
+  font-size: 0.88rem;
+}
+
+.nexus-banner-warning {
+  border: 1px solid color-mix(in srgb, var(--nexus-warning) 50%, var(--nexus-border));
+  background: color-mix(in srgb, var(--nexus-warning) 12%, var(--nexus-panel));
+  color: var(--nexus-fg);
+}
+
+.nexus-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  border: 1px solid var(--nexus-border);
+  font-size: 0.78rem;
+}
+
+.nexus-status-badge-dot {
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 50%;
+  background: var(--nexus-muted);
+}
+
+.nexus-status-badge[data-status="running"] .nexus-status-badge-dot,
+.nexus-status-badge[data-status="claimed"] .nexus-status-badge-dot {
+  background: var(--nexus-fg);
+}
+
+.nexus-status-badge[data-status="complete"] .nexus-status-badge-dot {
+  background: var(--nexus-success);
+}
+
+.nexus-status-badge[data-status="failed"] .nexus-status-badge-dot,
+.nexus-status-badge[data-status="expired"] .nexus-status-badge-dot {
+  background: var(--nexus-accent);
+}
+
+.nexus-source-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.nexus-source-card {
+  border: 1px solid var(--nexus-border);
+  border-radius: var(--nexus-radius-sm);
+  padding: 0.75rem;
+  background: var(--nexus-surface-elevated);
+}
+
+.nexus-source-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.35rem;
+}
+
+.nexus-source-card-title {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.nexus-source-type {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--nexus-muted);
+}
+
+.nexus-source-meta,
+.nexus-source-excerpt {
+  margin: 0.25rem 0;
+  font-size: 0.88rem;
+  color: var(--nexus-muted);
+}
+
+.nexus-source-label {
+  color: var(--nexus-fg);
+  font-size: 0.75rem;
+  margin-right: 0.35rem;
+}
+
+.nexus-source-footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.75rem;
+  margin-top: 0.5rem;
+  font-size: 0.75rem;
+  color: var(--nexus-muted);
+}
+
+.nexus-source-link {
+  color: var(--nexus-accent);
+}
+
+.nexus-diagnostics {
+  margin-top: 0.75rem;
+}
+
+.nexus-diagnostics-details {
+  border: 1px solid var(--nexus-border);
+  border-radius: var(--nexus-radius-sm);
+  background: color-mix(in srgb, var(--nexus-panel) 80%, transparent);
+}
+
+.nexus-diagnostics-summary {
+  cursor: pointer;
+  padding: 0.55rem 0.75rem;
+  font-size: 0.88rem;
+  list-style: none;
+}
+
+.nexus-diagnostics-summary::-webkit-details-marker {
+  display: none;
+}
+
+.nexus-diagnostics-summary:focus-visible {
+  outline: 2px solid var(--nexus-accent);
+  outline-offset: -2px;
+}
+
+.nexus-diagnostics-body {
+  padding: 0 0.75rem 0.75rem;
+}
+
+.nexus-diagnostics-list {
+  margin: 0;
+}
+
+.nexus-diagnostics-row {
+  display: grid;
+  grid-template-columns: 7rem 1fr;
+  gap: 0.5rem;
+  padding: 0.25rem 0;
+  font-size: 0.82rem;
+}
+
+.nexus-diagnostics-row dt {
+  margin: 0;
+  color: var(--nexus-muted);
+}
+
+.nexus-diagnostics-row dd {
+  margin: 0;
+}
+
+.nexus-theme-toggle {
+  width: 100%;
+  text-align: left;
+}

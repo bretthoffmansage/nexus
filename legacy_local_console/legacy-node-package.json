@@ -1,0 +1,14 @@
+{
+  "name": "claudia-console",
+  "description": "Claudia Console UI and Claudia Gateway API",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pewdiepie-archdaemon/odysseus.git"
+  },
+  "devDependencies": {
+    "@antithesishq/bombadil": "^0.3.2"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.98.0"
+  }
+}

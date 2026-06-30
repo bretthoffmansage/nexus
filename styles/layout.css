@@ -1,0 +1,174 @@
+.nexus-page {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+.nexus-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: var(--nexus-header-height);
+  padding: 0 1.25rem;
+  border-bottom: 1px solid var(--nexus-border);
+  background: color-mix(in srgb, var(--nexus-panel) 92%, transparent);
+  backdrop-filter: blur(8px);
+}
+
+.nexus-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.nexus-brand-mark {
+  width: 1.35rem;
+  height: 1.35rem;
+  flex-shrink: 0;
+  color: var(--nexus-accent);
+}
+
+.nexus-main {
+  flex: 1;
+  width: min(100%, var(--nexus-content-max));
+  margin: 0 auto;
+  padding: 1.25rem;
+}
+
+.nexus-card {
+  background: var(--nexus-surface-elevated);
+  border: 1px solid var(--nexus-border);
+  border-radius: var(--nexus-radius);
+  padding: 1rem 1.1rem;
+  box-shadow: var(--nexus-shadow);
+}
+
+.nexus-card + .nexus-card {
+  margin-top: 1rem;
+}
+
+.nexus-card-title {
+  margin: 0 0 0.35rem;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.nexus-card-subtitle {
+  margin: 0;
+  color: var(--nexus-muted);
+  font-size: 0.92rem;
+}
+
+.nexus-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid var(--nexus-border);
+  font-size: 0.82rem;
+  color: var(--nexus-muted);
+}
+
+.nexus-status-pill::before {
+  content: "";
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--nexus-warning);
+}
+
+.nexus-chat-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-height: 280px;
+}
+
+.nexus-chat-messages {
+  flex: 1;
+  min-height: 160px;
+  border: 1px dashed color-mix(in srgb, var(--nexus-border) 80%, transparent);
+  border-radius: var(--nexus-radius-sm);
+  padding: 1rem;
+  color: var(--nexus-muted);
+  font-size: 0.95rem;
+}
+
+.nexus-chat-input-row {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.nexus-chat-input {
+  flex: 1;
+  border: 1px solid var(--nexus-border);
+  border-radius: var(--nexus-radius-sm);
+  background: var(--nexus-input-bg);
+  color: var(--nexus-fg);
+  padding: 0.65rem 0.75rem;
+}
+
+.nexus-chat-input:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.nexus-btn {
+  border: 1px solid var(--nexus-border);
+  border-radius: var(--nexus-radius-sm);
+  background: color-mix(in srgb, var(--nexus-accent) 22%, var(--nexus-panel));
+  color: var(--nexus-fg);
+  padding: 0.55rem 0.9rem;
+  cursor: pointer;
+}
+
+.nexus-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.nexus-config-notice {
+  border-bottom: 1px solid color-mix(in srgb, var(--nexus-warning) 40%, var(--nexus-border));
+  background: color-mix(in srgb, var(--nexus-warning) 12%, var(--nexus-panel));
+  color: var(--nexus-fg);
+  padding: 0.65rem 1.25rem;
+  font-size: 0.9rem;
+}
+
+.nexus-config-notice strong {
+  color: var(--nexus-warning);
+}
+
+.nexus-sign-in-shell {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 1.25rem;
+}
+
+.nexus-sign-in-panel {
+  width: min(100%, 420px);
+}
+
+.nexus-sign-in-copy {
+  margin: 0 0 1rem;
+  color: var(--nexus-muted);
+  font-size: 0.95rem;
+  text-align: center;
+}
+
+.nexus-user-chip {
+  font-size: 0.85rem;
+  color: var(--nexus-muted);
+}
+
+.nexus-convex-badge {
+  margin-top: 0.75rem;
+  font-family: var(--nexus-font-mono);
+  font-size: 0.8rem;
+  color: var(--nexus-muted);
+}

@@ -1,0 +1,8 @@
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+
+[project]
+name = "claudia-console"
+description = "Claudia Console UI and Claudia Gateway API (reformed Odysseus codebase)"
+readme = "README.md"

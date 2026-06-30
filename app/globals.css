@@ -1,0 +1,35 @@
+@import "../styles/tokens.css";
+@import "../styles/layout.css";
+@import "../styles/shell.css";
+@import "../styles/chat.css";
+@import "../styles/components.css";
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  font-family: var(--nexus-font-sans);
+  background-color: var(--nexus-bg);
+  color: var(--nexus-fg);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: var(--nexus-accent);
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+}

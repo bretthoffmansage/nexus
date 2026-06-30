@@ -8,6 +8,7 @@ Security fixes are handled on the default branch until formal releases are cut.
 
 ## Deployment Guidance
 
+- **Claudia Console / Gateway** (dedicated Mac, private PWA): see [private_pwa_deployment_hardening.md](docs/claudia_console_reform/private_pwa_deployment_hardening.md) — loopback/Tailscale only, `CLAUDIA_CONSOLE_MODE=true`, never expose raw ports publicly. Launch from `/Users/bretthoffman/Documents/claudia_console` with `./start-macos.sh` (native macOS default: `http://127.0.0.1:7860`).
 - Keep `AUTH_ENABLED=true` for any network-accessible deployment.
 - Keep `LOCALHOST_BYPASS=false` outside local development.
 - Set `SECURE_COOKIES=true` when Odysseus is served through HTTPS by a trusted reverse proxy or private access gateway.

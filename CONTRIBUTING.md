@@ -1,6 +1,6 @@
-# Contributing to Odysseus
+# Contributing to Claudia Console
 
-Thanks for helping. The project is moving quickly, so the best contributions are focused, easy to review, and easy to test.
+Thanks for helping. This repository is the reformed Odysseus codebase (Claudia Console UI + Claudia Gateway API). The project is moving quickly, so the best contributions are focused, easy to review, and easy to test.
 
 ## Before You Start
 

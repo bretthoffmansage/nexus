@@ -1,0 +1,47 @@
+/**
+ * Nexus design tokens — minimal extract from legacy static/style.css
+ *
+ * P3 port preserves dark default palette from static/js/theme.js and :root vars.
+ * Do not bulk-copy the ~35k-line legacy stylesheet into Nexus.
+ */
+
+:root {
+  /* Core palette — matches legacy dark theme defaults */
+  --nexus-bg: #282c34;
+  --nexus-fg: #9cdef2;
+  --nexus-panel: #111111;
+  --nexus-border: #355a66;
+  --nexus-accent: #e06c75;
+  --nexus-accent-muted: color-mix(in srgb, var(--nexus-accent) 70%, var(--nexus-fg));
+  --nexus-success: #50fa7b;
+  --nexus-warning: #f0ad4e;
+
+  /* Layout */
+  --nexus-radius: 10px;
+  --nexus-radius-sm: 6px;
+  --nexus-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+  --nexus-header-height: 56px;
+  --nexus-content-max: 960px;
+  --nexus-font-sans: var(--font-geist-sans), system-ui, -apple-system, "Segoe UI", sans-serif;
+  --nexus-font-mono: var(--font-geist-mono), "Fira Code", ui-monospace, monospace;
+
+  /* Surfaces */
+  --nexus-surface-elevated: color-mix(in srgb, var(--nexus-panel) 88%, var(--nexus-bg));
+  --nexus-input-bg: color-mix(in srgb, var(--nexus-panel) 70%, black);
+  --nexus-muted: color-mix(in srgb, var(--nexus-fg) 55%, var(--nexus-bg));
+  --nexus-sidebar-bg: #111111;
+  --nexus-user-bubble-bg: #2a313c;
+  --nexus-ai-bubble-bg: #151a20;
+}
+
+@media (max-width: 720px) {
+  :root {
+    --nexus-content-max: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    scroll-behavior: auto;
+  }
+}

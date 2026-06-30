@@ -2,6 +2,10 @@
 
 Odysseus is a **self-hosted AI workspace with privileged local access**. This document states the trust boundary so contributors can reason about security decisions without reading through the full auth and middleware stack.
 
+## Claudia Console / Gateway addendum
+
+When this repo runs as **Claudia Console** (`CLAUDIA_CONSOLE_MODE=true`), treat it as a **private control surface** on a trusted network — not a public multi-tenant service. Claudia Core (separate `claudia_system` repo at `/Users/bretthoffman/Documents/claudia_system`) should own task scheduling, tool execution authority, and connector writes. Console checkout: `/Users/bretthoffman/Documents/claudia_console` — launch with `./start-macos.sh`. Console Mode adds HTTP and startup demotion guards; see reform packages under `docs/claudia_console_reform/` and the operator guide [`private_pwa_deployment_hardening.md`](docs/claudia_console_reform/private_pwa_deployment_hardening.md). Deployment expectations: auth enabled, no public raw ports, Tailscale/private LAN preferred.
+
 ## Trust Boundary
 
 Odysseus is designed for **trusted users on a private network**, not public exposure. The README describes it as "treat it like an admin console" — that framing is accurate. A logged-in admin can execute shell commands, read and write files, send email, and control model serving. This is intentional. The threat model does not try to prevent admins from doing these things. It does try to prevent:
