@@ -266,6 +266,7 @@ describe("Nexus P4 routing policy", () => {
     const proxySrc = readFileSync(path.join(ROOT, "proxy.ts"), "utf8");
     expect(proxySrc).toContain("/pending-approval");
     expect(proxySrc).toContain("/access-suspended");
+    expect(proxySrc).toContain("/identity-setup-required");
     expect(proxySrc).toContain("/api/webhooks/clerk");
   });
 });
@@ -371,6 +372,7 @@ describe("Nexus P4 Clerk webhook route", () => {
     expect(src).toContain("user.deleted");
     expect(src).toContain("deactivateAllRoles");
     expect(src).toContain("dedupeKey");
+    expect(src).not.toContain("@unknown.local");
   });
 });
 

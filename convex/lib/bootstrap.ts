@@ -1,4 +1,5 @@
 import type { MutationCtx, QueryCtx } from "../_generated/server";
+import { normalizeEmail } from "./identity";
 import type { NexusRole } from "./permissions";
 
 export function parseBootstrapAdminEmails(): string[] {
@@ -6,7 +7,7 @@ export function parseBootstrapAdminEmails(): string[] {
   if (!raw?.trim()) return [];
   return raw
     .split(",")
-    .map((email) => email.trim().toLowerCase())
+    .map((email) => normalizeEmail(email))
     .filter(Boolean);
 }
 
@@ -27,7 +28,9 @@ export async function shouldBootstrapAdmin(
   if (await hasActiveAdmin(ctx)) return false;
   const allowlist = parseBootstrapAdminEmails();
   if (!allowlist.length) return false;
-  return allowlist.includes(primaryEmail.trim().toLowerCase());
+  const normalized = normalizeEmail(primaryEmail);
+  if (!normalized) return false;
+  return allowlist.includes(normalized);
 }
 
 export const BOOTSTRAP_ROLES: NexusRole[] = ["nexus_admin", "knowledge_reader"];

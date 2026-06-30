@@ -16,6 +16,7 @@ export type NexusAccessState =
   | "configuration_required"
   | "identity_service_unavailable"
   | "convex_authentication_failed"
+  | "identity_claims_incomplete"
   | "pending"
   | "suspended"
   | "approved_without_role"
@@ -78,11 +79,25 @@ export async function getNexusAccess(): Promise<NexusAccessResult> {
   const client = clientResult.client;
 
   try {
-    await client.mutation(api.users.ensurePendingUser, {});
+    const ensureResult = await client.mutation(api.users.ensurePendingUser, {});
+    if (ensureResult.status === "identity_claims_incomplete") {
+      return {
+        state: "identity_claims_incomplete",
+        clerkUserId: session.userId,
+      };
+    }
+
     const access = await client.query(api.users.currentUserAccess, {});
 
     if (access.state === "unauthenticated") {
       return convexAuthError("convex_identity_missing", session.userId);
+    }
+
+    if (access.state === "identity_claims_incomplete") {
+      return {
+        state: "identity_claims_incomplete",
+        clerkUserId: access.clerkUserId ?? session.userId,
+      };
     }
 
     if (access.state === "pending") {

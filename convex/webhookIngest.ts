@@ -4,6 +4,7 @@ import { mutation } from "./_generated/server";
 import { deactivateAllRoles } from "./admin";
 import { BOOTSTRAP_ROLES, shouldBootstrapAdmin } from "./lib/bootstrap";
 import { getApprovedUser } from "./lib/auth";
+import { normalizeEmail } from "./lib/identity";
 import { recordIdentityAuditEvent } from "./identityAudit";
 import { grantRoleInternal } from "./roles";
 import { NEXUS_ERROR_CODES, nexusError } from "./lib/errors";
@@ -104,7 +105,10 @@ export const processClerkWebhook = mutation({
     const dedupeKey = `clerk:${args.eventId}`;
 
     if (args.eventType === "user.created") {
-      const email = args.primaryEmail ?? `${args.clerkUserId}@unknown.local`;
+      if (!args.primaryEmail?.trim()) {
+        return { duplicate: false as const, skipped: true as const, reason: "missing_email" as const };
+      }
+      const email = normalizeEmail(args.primaryEmail);
       return await upsertPendingFromWebhook(ctx, {
         clerkUserId: args.clerkUserId,
         primaryEmail: email,
@@ -138,11 +142,18 @@ export const processClerkWebhook = mutation({
 
     if (args.eventType === "user.updated") {
       const now = Date.now();
-      await ctx.db.patch(user._id, {
-        primaryEmail: args.primaryEmail ?? user.primaryEmail,
-        displayName: args.displayName ?? user.displayName,
-        updatedAt: now,
-      });
+      const patch: {
+        primaryEmail?: string;
+        displayName?: string;
+        updatedAt: number;
+      } = { updatedAt: now };
+      if (args.primaryEmail?.trim()) {
+        patch.primaryEmail = normalizeEmail(args.primaryEmail);
+      }
+      if (args.displayName !== undefined) {
+        patch.displayName = args.displayName;
+      }
+      await ctx.db.patch(user._id, patch);
       await recordIdentityAuditEvent(ctx, {
         eventType: "clerk_user_updated",
         actorType: "clerk_webhook",

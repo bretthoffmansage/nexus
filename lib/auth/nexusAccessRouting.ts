@@ -9,6 +9,8 @@ export function nexusAccessRedirectPath(access: NexusAccessResult): string | nul
     case "identity_service_unavailable":
     case "convex_authentication_failed":
       return `/auth-service-error?code=${encodeURIComponent(access.errorCode ?? access.state)}`;
+    case "identity_claims_incomplete":
+      return "/identity-setup-required";
     case "pending":
     case "approved_without_role":
       return "/pending-approval";

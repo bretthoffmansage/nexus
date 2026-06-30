@@ -1,6 +1,10 @@
 import type { Doc } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
 import { NEXUS_ERROR_CODES, nexusError } from "./errors";
+import {
+  getClerkUserId,
+  getVerifiedPrimaryEmail,
+} from "./identity";
 import type { NexusRole } from "./permissions";
 
 export type AuthenticatedIdentity = {
@@ -17,8 +21,8 @@ export async function requireAuthenticatedIdentity(
     nexusError(NEXUS_ERROR_CODES.UNAUTHENTICATED, "Authentication required");
   }
   return {
-    clerkUserId: identity.subject,
-    email: identity.email?.toLowerCase(),
+    clerkUserId: getClerkUserId(identity),
+    email: getVerifiedPrimaryEmail(identity),
     name: identity.name ?? undefined,
   };
 }

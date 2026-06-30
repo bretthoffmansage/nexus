@@ -18,6 +18,7 @@ const identityEventType = v.union(
   v.literal("role_revoked"),
   v.literal("clerk_user_updated"),
   v.literal("clerk_user_deleted"),
+  v.literal("identity_email_repaired"),
 );
 
 export default defineSchema({
