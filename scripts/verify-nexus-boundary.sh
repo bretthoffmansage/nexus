@@ -51,7 +51,8 @@ for pattern in "${PATTERNS[@]}"; do
     --glob '!convex/_generated/**' \
     --glob '!scripts/verify-nexus-boundary.sh' \
     --glob '!tests/boundary-static.test.ts' \
-    --glob '!tests/nexus-p4-auth.test.ts' 2>/dev/null; then
+    --glob '!tests/nexus-p4-auth.test.ts' \
+    --glob '!tests/nexus-p4-1-clerk-integration.test.ts' 2>/dev/null; then
     echo "Boundary violation: found '$pattern' in hosted Nexus source"
     FAIL=1
   fi

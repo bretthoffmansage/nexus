@@ -1,0 +1,175 @@
+/* Nexus authentication shell — decorative page wrapper around embedded Clerk panels */
+
+.nexus-auth-page {
+  position: relative;
+  min-height: 100dvh;
+  overflow: hidden;
+  background: var(--nexus-bg);
+  color: var(--nexus-fg);
+}
+
+.nexus-auth-backdrop {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.nexus-auth-grid {
+  position: absolute;
+  inset: 0;
+  opacity: 0.35;
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--nexus-border) 35%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--nexus-border) 35%, transparent) 1px, transparent 1px);
+  background-size: 28px 28px;
+  mask-image: radial-gradient(circle at center, black 35%, transparent 85%);
+}
+
+.nexus-auth-glow {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(72px);
+  opacity: 0.45;
+}
+
+.nexus-auth-glow-a {
+  width: 28rem;
+  height: 28rem;
+  top: -6rem;
+  left: -4rem;
+  background: color-mix(in srgb, var(--nexus-accent) 35%, transparent);
+}
+
+.nexus-auth-glow-b {
+  width: 24rem;
+  height: 24rem;
+  right: -5rem;
+  bottom: -4rem;
+  background: color-mix(in srgb, var(--nexus-fg) 18%, transparent);
+}
+
+.nexus-auth-layout {
+  position: relative;
+  z-index: 1;
+  min-height: 100dvh;
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(320px, 460px);
+  gap: 2rem;
+  align-items: center;
+  padding: clamp(1rem, 3vw, 2.5rem);
+}
+
+.nexus-auth-aside {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+}
+
+.nexus-auth-aside-brand,
+.nexus-auth-card-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.nexus-auth-mark {
+  width: 1.6rem;
+  height: 1.6rem;
+}
+
+.nexus-auth-aside-copy {
+  margin: 0;
+  max-width: 34ch;
+  color: var(--nexus-muted);
+  line-height: 1.55;
+}
+
+.nexus-auth-aside-list {
+  margin: 0;
+  padding-left: 1.1rem;
+  color: color-mix(in srgb, var(--nexus-fg) 80%, var(--nexus-bg));
+  line-height: 1.6;
+}
+
+.nexus-auth-main {
+  display: flex;
+  justify-content: center;
+}
+
+.nexus-auth-card {
+  width: min(100%, 460px);
+  padding: 1.35rem 1.4rem 1.2rem;
+  backdrop-filter: blur(10px);
+}
+
+.nexus-auth-card-head {
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.nexus-auth-card-subtitle {
+  margin: 0.35rem 0 0;
+  color: var(--nexus-muted);
+  font-size: 0.95rem;
+}
+
+.nexus-auth-clerk-slot {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+}
+
+.nexus-auth-footer-note {
+  margin: 1rem 0 0;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: var(--nexus-muted);
+  text-align: center;
+}
+
+.nexus-auth-clerk-slot .cl-rootBox,
+.nexus-auth-clerk-slot .cl-cardBox {
+  width: 100%;
+}
+
+@media (max-width: 900px) {
+  .nexus-auth-layout {
+    grid-template-columns: 1fr;
+    place-items: center;
+  }
+
+  .nexus-auth-aside {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .nexus-auth-glow-a {
+    animation: nexus-auth-drift-a 18s ease-in-out infinite alternate;
+  }
+
+  .nexus-auth-glow-b {
+    animation: nexus-auth-drift-b 22s ease-in-out infinite alternate;
+  }
+}
+
+@keyframes nexus-auth-drift-a {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(2rem, 1.5rem, 0);
+  }
+}
+
+@keyframes nexus-auth-drift-b {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-1.5rem, -1rem, 0);
+  }
+}

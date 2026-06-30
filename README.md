@@ -35,9 +35,10 @@ claudia_console/                 # local folder name (future GitHub repo may be 
 | **P3.5-repository-root-promotion** | Complete — Nexus promoted to repository root |
 | **Post-convex-linkage cleanup** | Complete |
 | **P4-clerk-approved-users-roles** | Complete — Clerk identity + Convex approval/roles |
+| **P4.1-real-clerk-linkage-login** | Complete — linked Clerk app + embedded sign-in design |
 | **P5+** | Not started — task persistence |
 
-See [`docs/specs/nexus_p4_clerk_approved_users_roles_v1.md`](docs/specs/nexus_p4_clerk_approved_users_roles_v1.md) for identity architecture and [`docs/specs/nexus_repository_root_promotion_v1.md`](docs/specs/nexus_repository_root_promotion_v1.md) for migration details.
+See [`docs/specs/nexus_p4_1_real_clerk_linkage_and_login_integration_v1.md`](docs/specs/nexus_p4_1_real_clerk_linkage_and_login_integration_v1.md) for Clerk linkage details and [`docs/specs/nexus_p4_clerk_approved_users_roles_v1.md`](docs/specs/nexus_p4_clerk_approved_users_roles_v1.md) for identity architecture.
 
 ## Run Nexus locally
 
@@ -45,10 +46,10 @@ Copy `.env.example` to `.env.local` and configure Clerk + Convex. For production
 
 Required for signed-in flows:
 
-- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY`
+- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY` (from `clerk init` or Clerk dashboard)
+- `NEXT_PUBLIC_CLERK_SIGN_IN_URL`, `NEXT_PUBLIC_CLERK_SIGN_UP_URL` (default `/sign-in`, `/sign-up`)
 - `NEXT_PUBLIC_CONVEX_URL`
-- `CLERK_JWT_ISSUER_DOMAIN` (Next.js + Convex dashboard)
-- Clerk JWT template named `convex` for authenticated Convex calls
+- `CLERK_JWT_ISSUER_DOMAIN` (Next.js + Convex dashboard; after creating Clerk JWT template `convex`)
 
 Webhook + bootstrap (server / Convex dashboard only):
 

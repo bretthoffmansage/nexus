@@ -1,8 +1,7 @@
-"use client";
-
 import { ClerkProvider } from "@clerk/nextjs";
 import { ConvexClientProvider } from "@/components/providers/ConvexClientProvider";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
+import { nexusClerkAppearance } from "@/lib/auth/clerkAppearance";
 
 type AppProvidersProps = {
   children: React.ReactNode;
@@ -31,8 +30,10 @@ export function AppProviders({
     <ClerkProvider
       publishableKey={clerkPublishableKey}
       signInUrl="/sign-in"
+      signUpUrl="/sign-up"
       signInFallbackRedirectUrl="/"
       signUpFallbackRedirectUrl="/"
+      appearance={nexusClerkAppearance}
     >
       {inner}
     </ClerkProvider>

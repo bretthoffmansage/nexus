@@ -1,11 +1,12 @@
 import { NexusAuthShell } from "@/components/auth/NexusAuthShell";
-import { ClerkSignInPanel } from "@/components/auth/ClerkSignInPanel";
+import { ClerkSignUpPanel } from "@/components/auth/ClerkSignUpPanel";
 import { isClerkConfigured } from "@/lib/env";
 
-export default function SignInPage() {
+export default function SignUpPage() {
   if (!isClerkConfigured()) {
     return (
       <NexusAuthShell
+        title="Nexus"
         subtitle="Configuration required"
         footerNote="Add Clerk keys to .env.local, then restart the development server."
       >
@@ -18,8 +19,12 @@ export default function SignInPage() {
   }
 
   return (
-    <NexusAuthShell subtitle="Sign in to continue">
-      <ClerkSignInPanel />
+    <NexusAuthShell
+      title="Nexus"
+      subtitle="Create your account"
+      footerNote="Creating a Clerk account does not grant Nexus access. New users remain pending until approved."
+    >
+      <ClerkSignUpPanel />
     </NexusAuthShell>
   );
 }
