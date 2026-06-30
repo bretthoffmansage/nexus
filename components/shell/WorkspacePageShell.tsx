@@ -1,21 +1,22 @@
 "use client";
 
 import { AppShell } from "@/components/layout/AppShell";
-import { NexusChatWorkspace } from "@/components/chat/NexusChatWorkspace";
 
-type NexusShellProps = {
-  userLabel?: string;
+type WorkspacePageShellProps = {
+  children: React.ReactNode;
+  userLabel: string;
   convexConnected: boolean;
   clerkEnabled: boolean;
   isAdmin?: boolean;
 };
 
-export function NexusShell({
+export function WorkspacePageShell({
+  children,
   userLabel,
   convexConnected,
   clerkEnabled,
   isAdmin,
-}: NexusShellProps) {
+}: WorkspacePageShellProps) {
   return (
     <AppShell
       clerkEnabled={clerkEnabled}
@@ -23,7 +24,7 @@ export function NexusShell({
       userLabel={userLabel}
       isAdmin={isAdmin}
     >
-      <NexusChatWorkspace />
+      <div className="nexus-tool-page">{children}</div>
     </AppShell>
   );
 }

@@ -34,6 +34,7 @@ export default async function HomePage() {
       convexConnected={isConvexConfigured()}
       clerkEnabled={isClerkConfigured()}
       userLabel={label}
+      isAdmin={access.roles?.includes("nexus_admin")}
     />
   );
 }

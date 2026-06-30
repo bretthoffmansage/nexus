@@ -259,7 +259,8 @@ describe("Nexus P4 routing policy", () => {
   it("admin page requires nexus_admin role server-side", () => {
     const pageSrc = readFileSync(path.join(ROOT, "app/admin/access/page.tsx"), "utf8");
     expect(pageSrc).toContain('"nexus_admin"');
-    expect(pageSrc).toContain('redirect("/")');
+    expect(pageSrc).toContain("ToolPageFrame");
+    expect(pageSrc).toContain("requiredRole");
   });
 
   it("proxy marks pending, suspended, and webhook routes as public", () => {

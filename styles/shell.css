@@ -94,7 +94,9 @@
 }
 
 .nexus-nav-item {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
   padding: 0.55rem 0.65rem;
   border-radius: var(--nexus-radius-sm);
   color: var(--nexus-fg);

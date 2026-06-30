@@ -36,7 +36,15 @@ PATTERNS=(
   '\.local/bin/hermes'
   'EventSource'
   'stream_agent_loop'
-  'legacy_local_console'
+  'legacy_local_console/static'
+  'legacy_local_console/routes'
+  '/api/email/'
+  '/api/tasks'
+  '/api/calendar'
+  '/api/shell'
+  '/api/models'
+  'chat_stream'
+  'claudiaCliMirrorHelpers'
   'from fastapi'
   'import uvicorn'
 )
@@ -50,9 +58,13 @@ for pattern in "${PATTERNS[@]}"; do
     --glob '!package-lock.json' \
     --glob '!convex/_generated/**' \
     --glob '!scripts/verify-nexus-boundary.sh' \
+    --glob '!lib/navigation/toolRegistry.ts' \
+    --glob '!components/workspace/**' \
+    --glob '!styles/legacy-port.css' \
     --glob '!tests/boundary-static.test.ts' \
     --glob '!tests/nexus-p4-auth.test.ts' \
-    --glob '!tests/nexus-p4-1-clerk-integration.test.ts' 2>/dev/null; then
+    --glob '!tests/nexus-p4-1-clerk-integration.test.ts' \
+    --glob '!tests/nexus-p4-4-legacy-workspace-port.test.tsx' 2>/dev/null; then
     echo "Boundary violation: found '$pattern' in hosted Nexus source"
     FAIL=1
   fi

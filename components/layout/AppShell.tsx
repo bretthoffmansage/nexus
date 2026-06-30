@@ -10,6 +10,7 @@ type AppShellProps = {
   clerkEnabled: boolean;
   convexConnected: boolean;
   userLabel?: string;
+  isAdmin?: boolean;
 };
 
 export function AppShell({
@@ -17,6 +18,7 @@ export function AppShell({
   clerkEnabled,
   convexConnected,
   userLabel,
+  isAdmin,
 }: AppShellProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [bannerDismissed, setBannerDismissed] = useState(false);
@@ -38,6 +40,7 @@ export function AppShell({
           onClose={() => setSidebarOpen(false)}
           clerkEnabled={clerkEnabled}
           userLabel={userLabel}
+          isAdmin={isAdmin}
         />
 
         {sidebarOpen ? (

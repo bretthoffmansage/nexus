@@ -1,9 +1,10 @@
 "use client";
 
-import Link from "next/link";
 import { UserButton } from "@clerk/nextjs";
+import { usePathname } from "next/navigation";
 import { ClaudiaPresence } from "@/components/status/ClaudiaPresence";
 import { TaskHistorySection } from "@/components/history/TaskHistorySection";
+import { ToolNavigation } from "@/components/layout/ToolNavigation";
 import { NexusIcon } from "@/components/ui/NexusIcon";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
 
@@ -13,6 +14,7 @@ type SidebarProps = {
   onClose: () => void;
   clerkEnabled: boolean;
   userLabel?: string;
+  isAdmin?: boolean;
 };
 
 const NEW_REQUEST_HELP =
@@ -24,7 +26,11 @@ export function Sidebar({
   onClose,
   clerkEnabled,
   userLabel,
+  isAdmin,
 }: SidebarProps) {
+  const pathname = usePathname();
+  const onChatHome = pathname === "/";
+
   return (
     <aside
       id={id}
@@ -47,25 +53,26 @@ export function Sidebar({
       </div>
 
       <nav className="nexus-sidebar-nav" aria-label="Primary">
-        <Link href="/" className="nexus-nav-item is-active" aria-current="page">
-          Nexus Chat
-        </Link>
+        <ToolNavigation isAdmin={isAdmin} />
       </nav>
 
-      <div className="nexus-sidebar-actions">
-        <button
-          type="button"
-          className="nexus-btn nexus-btn-primary nexus-new-request-btn"
-          disabled
-          aria-disabled="true"
-          title={NEW_REQUEST_HELP}
-        >
-          New request
-        </button>
-        <p className="nexus-sidebar-hint">{NEW_REQUEST_HELP}</p>
-      </div>
-
-      <TaskHistorySection />
+      {onChatHome ? (
+        <>
+          <div className="nexus-sidebar-actions">
+            <button
+              type="button"
+              className="nexus-btn nexus-btn-primary nexus-new-request-btn"
+              disabled
+              aria-disabled="true"
+              title={NEW_REQUEST_HELP}
+            >
+              New request
+            </button>
+            <p className="nexus-sidebar-hint">{NEW_REQUEST_HELP}</p>
+          </div>
+          <TaskHistorySection />
+        </>
+      ) : null}
 
       <div className="nexus-sidebar-presence">
         <ClaudiaPresence />

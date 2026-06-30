@@ -90,9 +90,8 @@ output.txt.txt
 !docs/**/*.gif
 !docs/**/*.webp
 
-# Reports and temp files
-reports/
-tasks/
+# Reports and temp files (repo-root tasks data dir only — not app/tasks route)
+/tasks/
 research_data/
 **/search_analytics.json
 

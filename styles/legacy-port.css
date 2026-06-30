@@ -1,0 +1,643 @@
+/* Ported legacy workspace layouts — derived from legacy_local_console/static/style.css patterns */
+
+.nexus-tool-page {
+  min-height: 100%;
+  overflow: auto;
+}
+
+.nexus-tool-page-inner {
+  padding: 1rem 1.25rem;
+}
+
+.nexus-nav-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  margin-bottom: 0.75rem;
+}
+
+.nexus-nav-group-label {
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.55;
+  padding: 0.35rem 0.5rem 0.15rem;
+}
+
+.nexus-nav-badge {
+  margin-left: auto;
+  font-size: 0.62rem;
+  padding: 0.1rem 0.35rem;
+  border-radius: 999px;
+  border: 1px solid var(--nexus-border);
+  opacity: 0.75;
+}
+
+.nexus-nav-badge--connector_required {
+  color: var(--nexus-accent);
+}
+
+.legacy-port-workspace {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  padding: 0.5rem 0.25rem 1.5rem;
+  max-width: 1200px;
+}
+
+.legacy-port-head h1 {
+  margin: 0;
+  font-size: 1.35rem;
+}
+
+.legacy-port-head--split {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.legacy-port-subhead {
+  margin: 0.25rem 0 0;
+  opacity: 0.7;
+  font-size: 0.9rem;
+}
+
+.legacy-port-banner {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.65rem 0.85rem;
+  border-radius: 8px;
+  border: 1px solid var(--nexus-border);
+  background: color-mix(in srgb, var(--nexus-panel) 85%, transparent);
+  font-size: 0.85rem;
+}
+
+.legacy-port-banner--connector_required {
+  border-color: color-mix(in srgb, var(--nexus-accent) 35%, var(--nexus-border));
+}
+
+.legacy-port-banner--local_only,
+.legacy-port-banner--deferred {
+  border-color: color-mix(in srgb, var(--nexus-fg) 15%, var(--nexus-border));
+}
+
+.legacy-port-empty {
+  padding: 1.25rem;
+  border: 1px dashed var(--nexus-border);
+  border-radius: 8px;
+  opacity: 0.85;
+}
+
+.legacy-port-btn {
+  border: 1px solid var(--nexus-border);
+  background: var(--nexus-panel);
+  color: var(--nexus-fg);
+  border-radius: 6px;
+  padding: 0.4rem 0.75rem;
+  cursor: pointer;
+}
+
+.legacy-port-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.legacy-port-btn-primary {
+  background: var(--nexus-accent);
+  color: var(--nexus-bg);
+  border-color: transparent;
+}
+
+.legacy-port-note {
+  font-size: 0.85rem;
+  opacity: 0.75;
+}
+
+/* Calendar — cal-* from legacy calendar.js */
+.cal-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.cal-toolbar-nav,
+.cal-toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.cal-title {
+  font-weight: 600;
+  min-width: 9rem;
+  text-align: center;
+}
+
+.cal-nav,
+.cal-view-btn,
+.cal-add-btn {
+  border: 1px solid var(--nexus-border);
+  background: var(--nexus-panel);
+  color: var(--nexus-fg);
+  border-radius: 6px;
+  padding: 0.35rem 0.55rem;
+  cursor: pointer;
+}
+
+.cal-view-btn.active {
+  background: var(--nexus-accent);
+  color: var(--nexus-bg);
+  border-color: transparent;
+}
+
+.cal-view-toggle {
+  display: inline-flex;
+  border: 1px solid var(--nexus-border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.cal-view-toggle .cal-view-btn {
+  border: none;
+  border-radius: 0;
+}
+
+.cal-quickadd-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.cal-quickadd-input {
+  flex: 1;
+  min-width: 12rem;
+  padding: 0.45rem 0.6rem;
+  border-radius: 6px;
+  border: 1px solid var(--nexus-border);
+  background: var(--nexus-bg);
+  color: var(--nexus-fg);
+}
+
+.cal-month-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 1px;
+  background: var(--nexus-border);
+  border: 1px solid var(--nexus-border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.cal-dow,
+.cal-day-cell {
+  background: var(--nexus-panel);
+  min-height: 4.5rem;
+  padding: 0.35rem;
+}
+
+.cal-dow {
+  min-height: auto;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.cal-day-cell--pad {
+  opacity: 0.35;
+}
+
+.cal-day-num {
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.cal-empty-state {
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid var(--nexus-border);
+  background: color-mix(in srgb, var(--nexus-panel) 90%, transparent);
+}
+
+.cal-empty-title {
+  font-weight: 600;
+  margin-bottom: 0.35rem;
+}
+
+.cal-empty-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.cal-btn {
+  border: 1px solid var(--nexus-border);
+  background: var(--nexus-panel);
+  color: var(--nexus-fg);
+  border-radius: 6px;
+  padding: 0.4rem 0.75rem;
+  cursor: pointer;
+}
+
+.cal-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.cal-btn-primary {
+  background: var(--nexus-accent);
+  color: var(--nexus-bg);
+  border-color: transparent;
+}
+
+/* Notes */
+.notes-pane {
+  border: 1px solid var(--nexus-border);
+  border-radius: 10px;
+  background: var(--nexus-panel);
+  overflow: hidden;
+}
+
+.notes-pane-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 0.85rem;
+  border-bottom: 1px solid var(--nexus-border);
+}
+
+.notes-pane-title {
+  margin: 0;
+  flex: 1;
+  font-size: 1rem;
+}
+
+.notes-search-bar {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.65rem 0.85rem;
+  border-bottom: 1px solid var(--nexus-border);
+}
+
+.memory-search-input,
+.notes-select-trigger {
+  border: 1px solid var(--nexus-border);
+  border-radius: 6px;
+  background: var(--nexus-bg);
+  color: var(--nexus-fg);
+  padding: 0.4rem 0.55rem;
+}
+
+.notes-pane-body {
+  min-height: 14rem;
+  padding: 0.85rem;
+}
+
+.memory-bulk-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.85rem;
+  border-bottom: 1px solid var(--nexus-border);
+}
+
+/* Documents */
+.doclib-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.doclib-tabs {
+  display: inline-flex;
+  border: 1px solid var(--nexus-border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.doclib-tab {
+  border: none;
+  background: var(--nexus-panel);
+  color: var(--nexus-fg);
+  padding: 0.35rem 0.65rem;
+  cursor: pointer;
+}
+
+.doclib-tab.active {
+  background: var(--nexus-accent);
+  color: var(--nexus-bg);
+}
+
+.doclib-search {
+  flex: 1;
+  min-width: 10rem;
+  padding: 0.4rem 0.55rem;
+  border-radius: 6px;
+  border: 1px solid var(--nexus-border);
+}
+
+.doclib-split {
+  display: grid;
+  grid-template-columns: minmax(220px, 32%) 1fr;
+  gap: 0.75rem;
+  min-height: 24rem;
+}
+
+.doclib-list,
+.doclib-editor-pane {
+  border: 1px solid var(--nexus-border);
+  border-radius: 8px;
+  background: var(--nexus-panel);
+}
+
+.doc-editor-topbar {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--nexus-border);
+}
+
+.doc-editor-title {
+  flex: 1;
+  font-weight: 600;
+}
+
+.doc-editor-body {
+  width: 100%;
+  min-height: 18rem;
+  border: none;
+  background: transparent;
+  color: var(--nexus-fg);
+  padding: 0.75rem;
+  resize: vertical;
+}
+
+/* Email */
+.email-workspace-grid {
+  display: grid;
+  grid-template-columns: minmax(160px, 18%) minmax(220px, 28%) 1fr;
+  gap: 0.75rem;
+  min-height: 28rem;
+}
+
+.email-folder-pane,
+.email-list-pane,
+.email-read-pane {
+  border: 1px solid var(--nexus-border);
+  border-radius: 8px;
+  background: var(--nexus-panel);
+  padding: 0.65rem;
+}
+
+.email-folder-list {
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0;
+}
+
+.email-folder-item {
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: transparent;
+  color: var(--nexus-fg);
+  padding: 0.35rem 0.45rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.email-folder-item.active {
+  background: color-mix(in srgb, var(--nexus-accent) 18%, transparent);
+}
+
+.email-read-header {
+  border-bottom: 1px solid var(--nexus-border);
+  padding-bottom: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.email-read-subject {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.email-read-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+/* Research */
+.research-panel-layout {
+  display: grid;
+  grid-template-columns: minmax(240px, 30%) 1fr;
+  gap: 0.75rem;
+}
+
+.research-settings,
+.research-jobs {
+  border: 1px solid var(--nexus-border);
+  border-radius: 8px;
+  padding: 0.75rem;
+  background: var(--nexus-panel);
+}
+
+.research-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.research-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.85rem;
+}
+
+.research-section-title {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0.65;
+  margin: 0 0 0.5rem;
+}
+
+/* Memory */
+.memory-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.memory-cat-chip {
+  border: 1px solid var(--nexus-border);
+  background: var(--nexus-panel);
+  color: var(--nexus-fg);
+  border-radius: 999px;
+  padding: 0.2rem 0.55rem;
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+
+.memory-cat-chip.active {
+  background: var(--nexus-accent);
+  color: var(--nexus-bg);
+  border-color: transparent;
+}
+
+.memory-grid {
+  min-height: 14rem;
+}
+
+/* Gallery */
+.gallery-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.gallery-tabs {
+  display: inline-flex;
+  border: 1px solid var(--nexus-border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.gallery-tab {
+  border: none;
+  background: var(--nexus-panel);
+  padding: 0.35rem 0.65rem;
+  cursor: pointer;
+}
+
+.gallery-tab.active {
+  background: var(--nexus-accent);
+  color: var(--nexus-bg);
+}
+
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 0.65rem;
+  min-height: 16rem;
+}
+
+/* Tasks */
+.tasks-layout {
+  display: grid;
+  grid-template-columns: 1fr minmax(260px, 36%);
+  gap: 0.75rem;
+}
+
+.tasks-list,
+.tasks-editor {
+  border: 1px solid var(--nexus-border);
+  border-radius: 8px;
+  padding: 0.75rem;
+  background: var(--nexus-panel);
+}
+
+.tasks-editor label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-bottom: 0.65rem;
+  font-size: 0.85rem;
+}
+
+.tasks-day-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-right: 0.5rem;
+  font-size: 0.8rem;
+}
+
+/* Settings */
+.settings-layout {
+  display: grid;
+  grid-template-columns: minmax(180px, 22%) 1fr;
+  gap: 0.75rem;
+  min-height: 20rem;
+}
+
+.settings-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  border: 1px solid var(--nexus-border);
+  border-radius: 8px;
+  padding: 0.5rem;
+  background: var(--nexus-panel);
+}
+
+.settings-nav-item {
+  text-align: left;
+  border: none;
+  background: transparent;
+  color: var(--nexus-fg);
+  padding: 0.45rem 0.55rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.settings-nav-item.active {
+  background: color-mix(in srgb, var(--nexus-accent) 18%, transparent);
+}
+
+.settings-content {
+  border: 1px solid var(--nexus-border);
+  border-radius: 8px;
+  padding: 0.85rem;
+  background: var(--nexus-panel);
+}
+
+/* Skills / knowledge splits */
+.skills-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.skills-list,
+.skills-editor,
+.cookbook-grid {
+  border: 1px solid var(--nexus-border);
+  border-radius: 8px;
+  padding: 0.85rem;
+  min-height: 14rem;
+}
+
+.status-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+@media (max-width: 900px) {
+  .doclib-split,
+  .email-workspace-grid,
+  .research-panel-layout,
+  .tasks-layout,
+  .settings-layout,
+  .skills-split {
+    grid-template-columns: 1fr;
+  }
+
+  .cal-day-cell {
+    min-height: 3rem;
+  }
+}
