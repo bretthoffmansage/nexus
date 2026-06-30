@@ -6,7 +6,7 @@ type ConfigNoticeProps = {
 
 export function ConfigNotice({ status }: ConfigNoticeProps) {
   const missing: string[] = [];
-  if (!status.clerk) missing.push("Clerk (NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY, CLERK_SECRET_KEY)");
+  if (!status.clerk) missing.push("Clerk publishable and server secret keys");
   if (!status.convex) missing.push("Convex (NEXT_PUBLIC_CONVEX_URL)");
 
   if (missing.length === 0) return null;

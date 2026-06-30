@@ -93,7 +93,8 @@ python3 -m py_compile legacy_local_console/app.py  # PASS
 
 | Field | Value |
 |-------|-------|
-| Created | Yes (if hash present below) |
+| Created | Yes |
+| Hash | `20c5b7f680fb4ee1cd994a96894639d7d45b94b4` |
 | Message | `Promote Nexus to repository root` |
 | Pushed | **No** |
 

@@ -39,11 +39,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const env = getEnvStatus();
+  const showConfigNotice =
+    process.env.NODE_ENV !== "production" && (!env.clerk || !env.convex);
 
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
       <body>
-        {!env.clerk || !env.convex ? <ConfigNotice status={env} /> : null}
+        {showConfigNotice ? <ConfigNotice status={env} /> : null}
         <AppProviders clerkPublishableKey={env.clerkPublishableKey} convexUrl={env.convexUrl}>
           {children}
         </AppProviders>

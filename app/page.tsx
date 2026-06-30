@@ -1,36 +1,44 @@
-import { auth, currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
+import { getNexusAccess } from "@/lib/auth/getNexusAccess";
 import { NexusShell } from "@/components/shell/NexusShell";
 import { isClerkConfigured, isConvexConfigured } from "@/lib/env";
 
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const clerkEnabled = isClerkConfigured();
-  const convexConnected = isConvexConfigured();
+  const access = await getNexusAccess();
 
-  if (!clerkEnabled) {
+  if (access.state === "configuration_required") {
+    if (process.env.NODE_ENV === "production") {
+      redirect("/configuration-required");
+    }
     return (
       <NexusShell
-        convexConnected={convexConnected}
-        clerkEnabled={false}
-        userLabel="Clerk not configured"
+        convexConnected={isConvexConfigured()}
+        clerkEnabled={isClerkConfigured()}
+        userLabel="Configuration required"
       />
     );
   }
 
-  const { userId } = await auth();
-  if (!userId) {
+  if (access.state === "unauthenticated") {
     redirect("/sign-in");
   }
 
-  const user = await currentUser();
-  const label = user?.primaryEmailAddress?.emailAddress ?? user?.username ?? userId;
+  if (access.state === "pending" || access.state === "approved_without_role") {
+    redirect("/pending-approval");
+  }
+
+  if (access.state === "suspended") {
+    redirect("/access-suspended");
+  }
+
+  const label = access.displayName ?? access.primaryEmail ?? access.clerkUserId ?? "Nexus user";
 
   return (
     <NexusShell
-      convexConnected={convexConnected}
-      clerkEnabled
+      convexConnected={isConvexConfigured()}
+      clerkEnabled={isClerkConfigured()}
       userLabel={label}
     />
   );

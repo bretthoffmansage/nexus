@@ -17,7 +17,9 @@ export function AppProviders({
 }: AppProvidersProps) {
   const inner = (
     <ThemeProvider>
-      <ConvexClientProvider convexUrl={convexUrl}>{children}</ConvexClientProvider>
+      <ConvexClientProvider convexUrl={convexUrl} clerkEnabled={Boolean(clerkPublishableKey)}>
+        {children}
+      </ConvexClientProvider>
     </ThemeProvider>
   );
 

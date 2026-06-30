@@ -1,15 +1,17 @@
 /**
- * Nexus environment contract (P2 shell).
+ * Nexus environment contract.
  *
  * Browser-visible (NEXT_PUBLIC_*):
- *   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY — Clerk frontend key
- *   NEXT_PUBLIC_CONVEX_URL — Convex deployment URL for the React client
+ *   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+ *   NEXT_PUBLIC_CONVEX_URL
  *
  * Server-only:
- *   CLERK_SECRET_KEY — Clerk backend key (never expose to the client)
- *
- * Convex CLI (local dev / deploy, not required at Next.js runtime for P2):
- *   CONVEX_DEPLOYMENT — deployment slug for `npx convex dev` / deploy
+ *   CLERK_SECRET_KEY
+ *   CLERK_WEBHOOK_SECRET (or CLERK_WEBHOOK_SIGNING_SECRET for Clerk verifyWebhook fallback)
+ *   CLERK_JWT_ISSUER_DOMAIN (Convex auth.config.ts — set in Convex dashboard too)
+ *   NEXUS_BOOTSTRAP_ADMIN_EMAILS (Convex dashboard + optional local mirror)
+ *   NEXUS_INTERNAL_API_SECRET (server webhook → Convex bridge)
+ *   CONVEX_DEPLOYMENT
  */
 
 const PLACEHOLDER_MARKERS = ["your_", "placeholder", "changeme", "example"];
@@ -53,7 +55,15 @@ export function isConvexConfigured(): boolean {
   return getEnvStatus().convex;
 }
 
-/** Keys required for Clerk middleware and provider initialization. */
+export function isNexusFullyConfigured(): boolean {
+  return isClerkConfigured() && isConvexConfigured();
+}
+
+/** Production deployments must not expose the shell without Clerk + Convex. */
+export function isProductionFailClosed(): boolean {
+  return process.env.NODE_ENV === "production" && !isNexusFullyConfigured();
+}
+
 export function getClerkPublishableKey(): string | undefined {
   const key = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
   return isPlaceholder(key) ? undefined : key;
@@ -62,4 +72,15 @@ export function getClerkPublishableKey(): string | undefined {
 export function getConvexUrl(): string | undefined {
   const url = process.env.NEXT_PUBLIC_CONVEX_URL;
   return isPlaceholder(url) ? undefined : url;
+}
+
+export function getClerkWebhookSecret(): string | undefined {
+  const secret =
+    process.env.CLERK_WEBHOOK_SECRET ?? process.env.CLERK_WEBHOOK_SIGNING_SECRET;
+  return isPlaceholder(secret) ? undefined : secret;
+}
+
+export function getInternalApiSecret(): string | undefined {
+  const secret = process.env.NEXUS_INTERNAL_API_SECRET;
+  return isPlaceholder(secret) ? undefined : secret;
 }

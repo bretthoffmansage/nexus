@@ -27,6 +27,10 @@ PATTERNS=(
   'subprocess'
   'sqlite'
   'data/auth\.json'
+  'NEXT_PUBLIC_CLERK_SECRET_KEY'
+  'NEXT_PUBLIC_.*SECRET'
+  'unsigned webhook'
+  'selfApprove'
   'odysseus_session'
   '~/.hermes'
   '\.local/bin/hermes'
@@ -46,7 +50,8 @@ for pattern in "${PATTERNS[@]}"; do
     --glob '!package-lock.json' \
     --glob '!convex/_generated/**' \
     --glob '!scripts/verify-nexus-boundary.sh' \
-    --glob '!tests/boundary-static.test.ts' 2>/dev/null; then
+    --glob '!tests/boundary-static.test.ts' \
+    --glob '!tests/nexus-p4-auth.test.ts' 2>/dev/null; then
     echo "Boundary violation: found '$pattern' in hosted Nexus source"
     FAIL=1
   fi

@@ -33,41 +33,38 @@ claudia_console/                 # local folder name (future GitHub repo may be 
 | **P2-nexus-shell** | Complete |
 | **P3-ui-port-foundation** | Complete |
 | **P3.5-repository-root-promotion** | Complete — Nexus promoted to repository root |
-| **P4+** | Not started — link Convex project first |
+| **Post-convex-linkage cleanup** | Complete |
+| **P4-clerk-approved-users-roles** | Complete — Clerk identity + Convex approval/roles |
+| **P5+** | Not started — task persistence |
 
-See [`docs/specs/nexus_repository_root_promotion_v1.md`](docs/specs/nexus_repository_root_promotion_v1.md) for migration details and [`docs/specs/nexus_legacy_capability_migration_matrix_v1.md`](docs/specs/nexus_legacy_capability_migration_matrix_v1.md) for the capability conversion plan.
+See [`docs/specs/nexus_p4_clerk_approved_users_roles_v1.md`](docs/specs/nexus_p4_clerk_approved_users_roles_v1.md) for identity architecture and [`docs/specs/nexus_repository_root_promotion_v1.md`](docs/specs/nexus_repository_root_promotion_v1.md) for migration details.
 
 ## Run Nexus locally
+
+Copy `.env.example` to `.env.local` and configure Clerk + Convex. For production, missing configuration fails closed (users see `/configuration-required`).
+
+Required for signed-in flows:
+
+- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY`
+- `NEXT_PUBLIC_CONVEX_URL`
+- `CLERK_JWT_ISSUER_DOMAIN` (Next.js + Convex dashboard)
+- Clerk JWT template named `convex` for authenticated Convex calls
+
+Webhook + bootstrap (server / Convex dashboard only):
+
+- `CLERK_WEBHOOK_SECRET`
+- `NEXUS_INTERNAL_API_SECRET`
+- `NEXUS_BOOTSTRAP_ADMIN_EMAILS` (optional; disabled once an active `nexus_admin` exists)
 
 ```bash
 cd /Users/bretthoffman/Documents/claudia_console
 cp .env.example .env.local
-# Optional: add Clerk keys for sign-in testing
+# Add Clerk and Convex keys for sign-in testing
 
 npm install
+npx convex dev       # link Convex; keep running or use deploy
 npm run dev          # http://localhost:3000
 ```
-
-### Next operator step (before P4)
-
-Link the real Convex project:
-
-```bash
-cd /Users/bretthoffman/Documents/claudia_console
-npx convex dev
-```
-
-Then validate:
-
-```bash
-npm run lint
-npm run typecheck
-npm test
-npm run build
-./scripts/verify-nexus-boundary.sh
-```
-
-Begin **P4 Clerk approval/roles** only after Convex is linked.
 
 ## Scripts
 

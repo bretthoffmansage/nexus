@@ -17,6 +17,8 @@ const FORBIDDEN = [
   "odysseus_session",
   "stream_agent_loop",
   "EventSource",
+  "NEXT_PUBLIC_CLERK_SECRET_KEY",
+  "selfApprove",
 ];
 
 function collectSourceFiles(dir: string): string[] {
