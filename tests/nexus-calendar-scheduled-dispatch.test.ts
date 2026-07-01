@@ -1,9 +1,75 @@
 // @vitest-environment edge-runtime
+import { readFileSync } from "node:fs";
+import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { api, internal } from "@/convex/_generated/api";
+import {
+  CALENDAR_SCHEDULE,
+  scheduledEventIdempotencyKey,
+} from "@/convex/lib/calendarScheduleConfig";
 import { localDateTimeToUtcMs } from "@/convex/lib/calendarTimezone";
-import { scheduledEventIdempotencyKey } from "@/convex/lib/calendarScheduleConfig";
+import { NEXUS_TOOL_REGISTRY } from "@/lib/navigation/toolRegistry";
 import { IDENTITY_A, IDENTITY_B, p5Test, seedApprovedReader } from "./helpers/convexP5";
+
+const ROOT = path.resolve(import.meta.dirname, "..");
+
+describe("Nexus Calendar scheduler cadence", () => {
+  it("uses a 5-minute centralized scheduler interval", () => {
+    expect(CALENDAR_SCHEDULE.schedulerIntervalMinutes).toBe(5);
+    expect(CALENDAR_SCHEDULE.schedulerIntervalSeconds).toBe(300);
+    expect(CALENDAR_SCHEDULE.schedulingPrecisionMs).toBe(5 * 60 * 1000);
+
+    const cronsSrc = readFileSync(path.join(ROOT, "convex/crons.ts"), "utf8");
+    expect(cronsSrc).toContain("CALENDAR_SCHEDULE.schedulerIntervalMinutes");
+    expect(cronsSrc).toContain('{ minutes: CALENDAR_SCHEDULE.schedulerIntervalMinutes }');
+    expect(cronsSrc).not.toMatch(
+      /dispatch due scheduled calendar events[\s\S]*?\{ seconds: 60 \}/,
+    );
+  });
+});
+
+describe("Nexus Calendar navigation and badge policy", () => {
+  it("Calendar has no Connector badge (availability is available)", () => {
+    const calendar = NEXUS_TOOL_REGISTRY.find((t) => t.id === "calendar");
+    expect(calendar?.availability).toBe("available");
+    expect(calendar?.href).toBe("/calendar");
+  });
+
+  it("Library still has no Connector badge", () => {
+    const library = NEXUS_TOOL_REGISTRY.find((t) => t.id === "documents");
+    expect(library?.availability).toBe("available");
+  });
+
+  it("unrelated legacy tools retain Connector badges", () => {
+    for (const id of ["email", "memory", "research", "tasks"] as const) {
+      const tool = NEXUS_TOOL_REGISTRY.find((t) => t.id === id);
+      expect(tool?.availability).toBe("connector_required");
+    }
+  });
+
+  it("Calendar workspace is first-class Nexus without Connector banner copy", () => {
+    const workspaceSrc = readFileSync(
+      path.join(ROOT, "components/workspace/port/CalendarWorkspace.tsx"),
+      "utf8",
+    );
+    const adapterSrc = readFileSync(path.join(ROOT, "lib/adapters/calendar/adapter.ts"), "utf8");
+
+    expect(workspaceSrc).not.toContain("ToolAvailabilityBanner");
+    expect(workspaceSrc).not.toContain("Connector required");
+    expect(workspaceSrc).not.toContain("CalDAV");
+    expect(workspaceSrc).toContain("nexusCalendar");
+    expect(workspaceSrc).toContain("Schedule one-time Nexus tasks");
+
+    expect(adapterSrc).toContain('availability: "available"');
+    expect(adapterSrc).not.toContain("connector_required");
+  });
+
+  it("ToolNavigation hides Connector badge for available tools only", () => {
+    const navSrc = readFileSync(path.join(ROOT, "components/layout/ToolNavigation.tsx"), "utf8");
+    expect(navSrc).toContain('tool.availability !== "available"');
+    expect(navSrc).toContain('tool.availability === "connector_required" ? "Connector"');
+  });
+});
 
 describe("Nexus Calendar scheduled task dispatch", () => {
   it("authenticated user can create a private scheduled event", async () => {
@@ -79,7 +145,7 @@ describe("Nexus Calendar scheduled task dispatch", () => {
   it("does not dispatch before scheduled UTC instant", async () => {
     const t = p5Test();
     await seedApprovedReader(t, IDENTITY_A);
-    const futureMs = Date.now() + 10 * 60 * 1000;
+    const futureMs = Date.now() + 5 * 60 * 1000 + 30_000;
     const d = new Date(futureMs);
     const localScheduledDate = d.toISOString().slice(0, 10);
     const { eventId } = await t.withIdentity(IDENTITY_A).mutation(api.scheduledEvents.createMyScheduledEvent, {
@@ -94,7 +160,8 @@ describe("Nexus Calendar scheduled task dispatch", () => {
     await t.mutation(internal.scheduledEventDispatch.runScheduledEventMaintenance, {});
     const event = await t.withIdentity(IDENTITY_A).query(api.scheduledEvents.getMyScheduledEvent, { eventId });
     expect(event.linkedTaskId).toBeNull();
-    expect(["scheduled", "due"]).toContain(event.scheduleStatus);
+    expect(event.scheduleStatus).toBe("scheduled");
+    expect(event.scheduledForUtc).toBeGreaterThan(Date.now());
   });
 
   it("dispatches exactly one task when due and preserves owner", async () => {

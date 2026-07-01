@@ -16,7 +16,7 @@ The Calendar page (`components/workspace/port/CalendarWorkspace.tsx`) was a lega
 
 ## Final Calendar architecture
 
-Nexus owns a **private per-user scheduled-event store** in Convex (`nexusScheduledEvents`). Each event is a one-time future task definition. A **server-side recurring cron** (60s) on Convex:
+Nexus owns a **private per-user scheduled-event store** in Convex (`nexusScheduledEvents`). Each event is a one-time future task definition. A **server-side recurring cron** (every **5 minutes**) on Convex:
 
 1. Marks past-due `scheduled` events as `due`.
 2. Atomically dispatches eligible due events into the existing global `nexusTasks` queue.
@@ -68,7 +68,7 @@ Table: `nexusScheduledEvents`
 
 ## Scheduler model
 
-`convex/crons.ts` — interval **60 seconds** → `scheduledEventDispatch.runScheduledEventMaintenance`:
+`convex/crons.ts` — interval **5 minutes** (`CALENDAR_SCHEDULE.schedulerIntervalMinutes`) → `scheduledEventDispatch.runScheduledEventMaintenance`:
 
 1. `markDueScheduledEvents` — `scheduled` → `due` when `scheduledForUtc <= now`
 2. `dispatchDueScheduledEvents` — bounded batch (`maxDispatchPerRun: 25`)
@@ -78,7 +78,11 @@ Configuration: `convex/lib/calendarScheduleConfig.ts`
 
 ## Scheduling precision
 
-**Minute-level v1.** A 60s cron means dispatch occurs at or after the scheduled UTC instant, typically within one cron interval (e.g. 3:00 PM scheduled → 3:00–3:01 PM dispatch). Not second-precise.
+- **Scheduler interval:** 5 minutes
+- **Normal dispatch precision:** at or within approximately 5 minutes after the scheduled time
+- **Late recovery:** first available scheduler pass after service recovery
+
+A 5-minute cron means dispatch occurs at or after the scheduled UTC instant, typically within one scheduler interval (e.g. 3:00 PM scheduled → 3:00–3:05 PM dispatch). Not second-precise.
 
 ## Due-event detection
 
@@ -190,7 +194,8 @@ Allowlist in `CALENDAR_SCHEDULE.allowedScheduledToolIds`:
 
 `convex/lib/calendarScheduleConfig.ts`:
 
-- `schedulerIntervalSeconds: 60`
+- `schedulerIntervalMinutes: 5`
+- `schedulerIntervalSeconds: 300`
 - `maxDispatchPerRun: 25`
 - `maxReconcilePerRun: 50`
 - `dispatchClaimTimeoutMs: 300000`
@@ -199,7 +204,27 @@ Allowlist in `CALENDAR_SCHEDULE.allowedScheduledToolIds`:
 
 ## Tests
 
-`tests/nexus-calendar-scheduled-dispatch.test.ts` — ownership, persistence, timezone, dispatch timing, exactly-once, delete, edit, tool allowlist.
+`tests/nexus-calendar-scheduled-dispatch.test.ts` — scheduler cadence (5-minute config + cron wiring), navigation/badge policy (Calendar and Library `available`, legacy tools `connector_required`, no Connector banner copy), ownership, persistence, timezone, dispatch timing (never before `scheduledForUtc`), exactly-once, delete, edit, tool allowlist.
+
+## Follow-up revisions
+
+**`nexus_calendar_scheduled_task_dispatch_v1` follow-up (post-`014ad6c`):**
+
+- Scheduler cadence changed from 60 seconds to **5 minutes** (`CALENDAR_SCHEDULE.schedulerIntervalMinutes`).
+- Calendar confirmed as first-class Nexus (`availability: "available"`) with no Connector badge; obsolete Connector/CalDAV page copy removed.
+- Any earlier package closeout or summary that described a once-per-minute / ~60s dispatcher is **superseded** by this spec and the follow-up commit.
+
+Authoritative scheduling statements:
+
+| Topic | Value |
+|-------|--------|
+| Scheduler interval | 5 minutes |
+| Cron cadence | Every 5 minutes via `CALENDAR_SCHEDULE.schedulerIntervalMinutes` |
+| Due rule | `currentTime >= scheduledForUtc` — never dispatch before scheduled instant |
+| Normal dispatch precision | At or within approximately 5 minutes after scheduled time |
+| Late recovery | First available scheduler pass after Nexus service recovery |
+| Connector downtime | Does not prevent Nexus from creating the queued task when the scheduler runs |
+| Browser | Does not need to remain open |
 
 ## Live verification
 
@@ -209,7 +234,7 @@ Not performed in this package commit. Manual checklist in product requirements a
 
 - One-time events only (no recurrence, CalDAV, `.ics`)
 - Month view only (week/agenda disabled)
-- ~60s dispatch granularity
+- ~5 minute dispatch granularity
 - No per-user timezone preference store (timezone per event + browser default)
 
 ## Rollback notes

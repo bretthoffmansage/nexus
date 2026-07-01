@@ -1,5 +1,6 @@
 import { cronJobs } from "convex/server";
 import { internal } from "./_generated/api";
+import { CALENDAR_SCHEDULE } from "./lib/calendarScheduleConfig";
 
 /**
  * P6 — scheduled maintenance for the trusted Connector protocol.
@@ -32,7 +33,7 @@ crons.interval(
 // Nexus Calendar — due-event detection, dispatch, and reconciliation.
 crons.interval(
   "dispatch due scheduled calendar events",
-  { seconds: 60 },
+  { minutes: CALENDAR_SCHEDULE.schedulerIntervalMinutes },
   internal.scheduledEventDispatch.runScheduledEventMaintenance,
   {},
 );
