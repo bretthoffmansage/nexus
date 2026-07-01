@@ -415,11 +415,6 @@
   margin-top: 0.5rem;
 }
 
-  border: 1px solid var(--nexus-border);
-  border-radius: 8px;
-  background: var(--nexus-panel);
-}
-
 .doc-editor-topbar {
   display: flex;
   gap: 0.5rem;
