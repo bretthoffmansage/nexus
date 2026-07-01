@@ -90,6 +90,8 @@ All library queries/mutations derive `ownerClerkUserId` from verified Clerk iden
 
 `DocumentsWorkspace.tsx`: multi-file upload zone, status filters, per-version Process / Queued / Processing / Retry, safe summaries only.
 
+**Create mode (v1.1):** detached **Create** tab opens a freeform Markdown workspace; **Submit to Vault** reuses canonical upload + `processMyDocumentVersion`. See `nexus_library_auth_upload_and_create_to_vault_v1.md`.
+
 ## Tests
 
 `tests/nexus-library-dropzone.test.ts` — upload metadata, process/queue integration, claim attachments, privacy, terminal projection, canonical queue.

@@ -22,6 +22,10 @@ export type LibraryStatusFilter =
   | "unsupported"
   | "archived";
 
+export type LibraryViewMode =
+  | { kind: "list"; filter: LibraryStatusFilter }
+  | { kind: "create" };
+
 export const LIBRARY_STATUS_FILTERS: { key: LibraryStatusFilter; label: string }[] = [
   { key: "all", label: "All" },
   { key: "uploaded", label: "Uploaded" },

@@ -415,6 +415,60 @@
   margin-top: 0.5rem;
 }
 
+.doclib-toolbar-view {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.doclib-create-tab {
+  margin-left: 0.25rem;
+}
+
+.doclib-create-panel {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.doclib-create-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.doclib-create-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.doclib-create-textarea {
+  width: 100%;
+  min-height: 18rem;
+  max-height: 32rem;
+  resize: vertical;
+  padding: 0.75rem;
+  border: 1px solid var(--nexus-border);
+  border-radius: 8px;
+  background: var(--nexus-panel);
+  color: var(--nexus-fg);
+  font-family: inherit;
+  line-height: 1.5;
+}
+
+.doclib-create-status,
+.doclib-create-success {
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.doclib-create-success {
+  color: var(--nexus-accent);
+}
+
 .doc-editor-topbar {
   display: flex;
   gap: 0.5rem;
