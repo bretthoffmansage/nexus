@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { AnswerPanel } from "@/components/chat/AnswerPanel";
 import { ChatComposer } from "@/components/chat/ChatComposer";
+import { ChatHistoryPanel } from "@/components/chat/ChatHistoryPanel";
 import { useChatSession } from "@/components/chat/ChatSessionContext";
 import { ModeToggle } from "@/components/chat/ModeToggle";
 import { DiagnosticsPanel } from "@/components/diagnostics/DiagnosticsPanel";
@@ -42,21 +43,14 @@ const ENABLED_HELP =
   "Requests are saved and queued. Execution waits for the Claudia Connector (not configured yet).";
 
 /**
- * Preserved Nexus Chat workspace (P3/P4), now backed by private Convex
- * persistence (P5). Submitting persists a user message and a queued task; no
- * execution happens yet — queued work honestly waits for the Console Connector.
- *
- * P5.1: every private query/mutation below is gated on `readyForPrivateQueries`
- * (Convex's own confirmed-auth signal), not just `canSubmit` (server-derived
- * authorization). Clerk reporting signed-in and Convex confirming the auth
- * token are different moments; issuing a query in that gap is what produced
- * the `unauthenticated` server error this package repairs.
+ * Nexus Chat workspace with right-side conversation history (P6.1).
  */
 export function NexusChatWorkspace() {
   const session = useChatSession();
   const canSubmit = session?.canSubmit ?? false;
   const ready = session?.readyForPrivateQueries ?? false;
   const activeConversationId = session?.activeConversationId ?? null;
+  const [historyOpen, setHistoryOpen] = useState(false);
 
   const submitRequest = useMutation(nexusChat.submitRequest);
   const [pending, setPending] = useState(false);
@@ -80,8 +74,6 @@ export function NexusChatWorkspace() {
   );
 
   async function handleSubmit(text: string) {
-    // Guards both authorization (canSubmit) and Convex auth readiness — a
-    // mutation must never fire while the auth token is still initializing.
     if (!canSubmit || !ready) return;
     setPending(true);
     setSubmitError(null);
@@ -94,7 +86,7 @@ export function NexusChatWorkspace() {
       session?.selectConversation(res.conversationId);
     } catch (error) {
       setSubmitError(friendlyError(error));
-      throw error; // keep the composer text on failure
+      throw error;
     } finally {
       setPending(false);
     }
@@ -116,6 +108,7 @@ export function NexusChatWorkspace() {
     ? taskExecutionNote(latestTask.status)
     : undefined;
 
+
   return (
     <section className="nexus-chat-workspace" aria-labelledby="nexus-chat-heading">
       <header className="nexus-chat-workspace-head">
@@ -125,59 +118,93 @@ export function NexusChatWorkspace() {
           </h1>
           <p className="nexus-chat-subheading">Private knowledge requests · queued for Claudia</p>
         </div>
-        <ModeToggle />
+        <div className="nexus-chat-head-actions">
+          <button
+            type="button"
+            className="nexus-btn nexus-btn-ghost nexus-chat-history-toggle"
+            aria-expanded={historyOpen}
+            aria-controls="nexus-chat-history-panel"
+            onClick={() => setHistoryOpen((open) => !open)}
+          >
+            History
+          </button>
+          <ModeToggle />
+        </div>
       </header>
 
-      <div className="nexus-chat-scroll" role="region" aria-label="Chat messages">
-        {!activeConversationId ? (
-          <ChatEmptyState />
-        ) : (
-          <>
+      <div className="nexus-chat-layout">
+        <div className="nexus-chat-main">
+          <div className="nexus-chat-scroll" role="region" aria-label="Chat messages">
+            {!activeConversationId ? (
+              <ChatEmptyState />
+            ) : (
+              <>
+                <div className="nexus-result-section">
+                  <h2 className="nexus-section-label">Conversation</h2>
+                  <ul className="nexus-transcript">
+                    {(transcript?.messages ?? []).map((message) => (
+                      <li
+                        key={message.id}
+                        className={`nexus-transcript-item nexus-transcript-${message.author}`}
+                      >
+                        <span className="nexus-transcript-author">{message.author}</span>
+                        <span className="nexus-transcript-body">{message.content}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                {latestTask ? (
+                  <div className="nexus-result-section">
+                    <h2 className="nexus-section-label">Status</h2>
+                    <p className="nexus-task-status-line">
+                      <span className="nexus-tool-chip">{taskStatusLabel(latestTask.status)}</span>
+                      <span className="nexus-empty-copy">
+                        {taskExecutionNote(latestTask.status)}
+                      </span>
+                    </p>
+                  </div>
+                ) : null}
+              </>
+            )}
+
             <div className="nexus-result-section">
-              <h2 className="nexus-section-label">Conversation</h2>
-              <ul className="nexus-transcript">
-                {(transcript?.messages ?? []).map((message) => (
-                  <li
-                    key={message.id}
-                    className={`nexus-transcript-item nexus-transcript-${message.author}`}
-                  >
-                    <span className="nexus-transcript-author">{message.author}</span>
-                    <span className="nexus-transcript-body">{message.content}</span>
-                  </li>
-                ))}
-              </ul>
+              <h2 className="nexus-section-label">Answer</h2>
+              <AnswerPanel answer={answer} emptyLabel={answerEmptyLabel} />
             </div>
+            <div className="nexus-result-section">
+              <h2 className="nexus-section-label">Sources</h2>
+              <SourceList sources={sources} />
+            </div>
+          </div>
 
-            {latestTask ? (
-              <div className="nexus-result-section">
-                <h2 className="nexus-section-label">Status</h2>
-                <p className="nexus-task-status-line">
-                  <span className="nexus-tool-chip">{taskStatusLabel(latestTask.status)}</span>
-                  <span className="nexus-empty-copy">{taskExecutionNote(latestTask.status)}</span>
-                </p>
-              </div>
-            ) : null}
-          </>
-        )}
-
-        <div className="nexus-result-section">
-          <h2 className="nexus-section-label">Answer</h2>
-          <AnswerPanel answer={answer} emptyLabel={answerEmptyLabel} />
+          <div className="nexus-chat-footer">
+            <ChatComposer
+              disabled={!canSubmit || !ready}
+              pending={pending}
+              helpText={!canSubmit ? DISABLED_HELP : !ready ? INITIALIZING_HELP : ENABLED_HELP}
+              onSubmit={handleSubmit}
+              errorText={submitError}
+            />
+            <DiagnosticsPanel />
+          </div>
         </div>
-        <div className="nexus-result-section">
-          <h2 className="nexus-section-label">Sources</h2>
-          <SourceList sources={sources} />
+
+        <div
+          id="nexus-chat-history-panel"
+          className={`nexus-chat-history-shell${historyOpen ? " is-open" : ""}`}
+        >
+          {historyOpen ? (
+            <button
+              type="button"
+              className="nexus-chat-history-backdrop"
+              aria-label="Close conversation history"
+              onClick={() => setHistoryOpen(false)}
+            />
+          ) : null}
+          <ChatHistoryPanel onConversationSelect={() => setHistoryOpen(false)} />
         </div>
       </div>
-
-      <ChatComposer
-        disabled={!canSubmit || !ready}
-        pending={pending}
-        helpText={!canSubmit ? DISABLED_HELP : !ready ? INITIALIZING_HELP : ENABLED_HELP}
-        onSubmit={handleSubmit}
-        errorText={submitError}
-      />
-      <DiagnosticsPanel />
     </section>
   );
 }

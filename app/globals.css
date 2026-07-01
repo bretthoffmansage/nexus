@@ -13,18 +13,27 @@
   box-sizing: border-box;
 }
 
-html,
-body {
+html {
   margin: 0;
-  min-height: 100%;
+  height: 100%;
 }
 
 body {
+  margin: 0;
+  min-height: 100%;
+  height: 100%;
   font-family: var(--nexus-font-sans);
   background-color: var(--nexus-bg);
   color: var(--nexus-fg);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+
+/* Auth/sign-in pages opt back into document scroll. */
+body:has(.nexus-sign-in-shell),
+body:has(.nexus-page:not(.nexus-app)) {
+  overflow: auto;
 }
 
 a {

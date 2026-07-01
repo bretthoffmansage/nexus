@@ -129,11 +129,14 @@ describe("Nexus P4.4 legacy workspace port", () => {
     }
   });
 
-  it("sidebar preserves chat history region on home only", () => {
+  it("sidebar keeps global navigation only (chat history moved to Nexus Chat)", () => {
     const src = readFileSync(path.join(ROOT, "components/layout/Sidebar.tsx"), "utf8");
-    expect(src).toContain("TaskHistorySection");
-    expect(src).toContain('pathname === "/"');
+    expect(src).not.toContain("TaskHistorySection");
+    expect(src).not.toContain("ClaudiaPresenceLive");
+    expect(src).not.toContain("New request");
     expect(src).toContain("ToolNavigation");
+    const chatSrc = readFileSync(path.join(ROOT, "components/chat/NexusChatWorkspace.tsx"), "utf8");
+    expect(chatSrc).toContain("ChatHistoryPanel");
   });
 
   it("admin route remains nexus_admin protected", () => {
