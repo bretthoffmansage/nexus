@@ -1,10 +1,18 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { NexusChatWorkspace } from "@/components/chat/NexusChatWorkspace";
 import { NEXUS_TOOL_REGISTRY } from "@/lib/navigation/toolRegistry";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
+
+// The chat workspace now uses Convex hooks; override just those two so the
+// render test does not require a live ConvexProvider (the real app has one).
+vi.mock("convex/react", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("convex/react")>()),
+  useQuery: () => undefined,
+  useMutation: () => async () => undefined,
+}));
 
 const ROOT = path.resolve(__dirname, "..");
 

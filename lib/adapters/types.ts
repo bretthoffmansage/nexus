@@ -3,6 +3,10 @@ export type ToolAvailability =
   | "partially_available"
   | "setup_required"
   | "connector_required"
+  // P5: hosted persistence works (create/queue/read), but execution of queued
+  // work still waits for the future Console Connector.
+  | "persistence_available"
+  | "execution_connector_required"
   | "local_only"
   | "deferred";
 

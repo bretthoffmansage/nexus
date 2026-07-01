@@ -70,6 +70,41 @@ for pattern in "${PATTERNS[@]}"; do
   fi
 done
 
+# --- P5 ownership/queue boundary -------------------------------------------
+# Ordinary user mutations/queries must derive ownership and queue position from
+# the verified identity — never from client arguments. schema.ts legitimately
+# declares these as table fields, so it is intentionally excluded from this set.
+P5_PUBLIC_MODULES=(
+  "$ROOT/convex/conversations.ts"
+  "$ROOT/convex/messages.ts"
+  "$ROOT/convex/tasks.ts"
+  "$ROOT/convex/taskProgress.ts"
+  "$ROOT/convex/taskResults.ts"
+  "$ROOT/convex/taskSources.ts"
+  "$ROOT/convex/diagnostics.ts"
+)
+P5_INJECTION='(ownerClerkUserId|clerkUserId|ownerId|userId|requestingUserId|queueSequence|priority|role|permission)\s*:\s*v\.'
+if rg -n "$P5_INJECTION" "${P5_PUBLIC_MODULES[@]}" 2>/dev/null; then
+  echo "Boundary violation: client-trusted owner/role/queue argument in a public P5 module"
+  FAIL=1
+fi
+
+# No future-connector execution primitives (claims, leases, HMAC) in P5 code.
+if rg -n 'claimNextTask|leaseToken|renewLease|createHmac|submitResultHmac' "$ROOT/convex" \
+  --glob '!**/*.md' \
+  --glob '!convex/_generated/**' 2>/dev/null; then
+  echo "Boundary violation: P6 connector/claim/lease/HMAC primitive present in P5 Convex code"
+  FAIL=1
+fi
+
+# Ordinary users must not enumerate the global queue: the cross-owner status
+# indexes may only be referenced by the admin-gated diagnostics module.
+if rg -n 'by_status_and_queue_sequence|by_queue_sequence' "$ROOT/convex/tasks.ts" \
+  "$ROOT/convex/conversations.ts" "$ROOT/convex/messages.ts" 2>/dev/null; then
+  echo "Boundary violation: global queue index referenced from a user-facing module"
+  FAIL=1
+fi
+
 if [[ "$FAIL" -ne 0 ]]; then
   exit 1
 fi

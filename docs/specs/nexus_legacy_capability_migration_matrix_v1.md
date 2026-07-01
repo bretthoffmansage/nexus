@@ -1205,8 +1205,8 @@ See **§9** (summary: **D4** on Nexus, **D7** successor).
 |-------|---------|--------------------------------|--------------|
 | **P3.5** ✅ | Repo root promotion + **this matrix** | All (documentation authority) | — |
 | **P3** ✅ | UI port foundation | Theme, layout, stubs | D1/D5 |
-| **P4** | Clerk approval + roles | Auth, roles | D1/D4 |
-| **P5** | Convex tasks + history | Simple chat submit, history, cancellation | D1/D2 |
+| **P4** ✅ | Clerk approval + roles | Auth, roles | D1/D4 |
+| **P5** ✅ | Private Convex conversations/tasks + shared queue | Persisted chat submit/history/reopen, task cancel/retry, global queue ordering — no execution yet | D1/D2 |
 | **P6** | Connector API + claims | Heartbeat, presence, gateway checks | D1/D2 |
 | **P7** | Connector daemon (`claudia_system`) | Transport | D2 |
 | **P8** | Control Center UI | Dashboard, diagnostics split | D7/D1 |

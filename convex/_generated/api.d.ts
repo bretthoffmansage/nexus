@@ -10,14 +10,26 @@
 
 import type * as admin from "../admin.js";
 import type * as appMeta from "../appMeta.js";
+import type * as conversations from "../conversations.js";
+import type * as diagnostics from "../diagnostics.js";
 import type * as identityAudit from "../identityAudit.js";
 import type * as lib_auth from "../lib/auth.js";
 import type * as lib_bootstrap from "../lib/bootstrap.js";
 import type * as lib_errors from "../lib/errors.js";
 import type * as lib_identity from "../lib/identity.js";
+import type * as lib_ownership from "../lib/ownership.js";
+import type * as lib_p5config from "../lib/p5config.js";
+import type * as lib_p5writes from "../lib/p5writes.js";
 import type * as lib_permissions from "../lib/permissions.js";
+import type * as lib_queue from "../lib/queue.js";
+import type * as lib_taskStatus from "../lib/taskStatus.js";
 import type * as lib_userProvisioning from "../lib/userProvisioning.js";
+import type * as messages from "../messages.js";
 import type * as roles from "../roles.js";
+import type * as taskProgress from "../taskProgress.js";
+import type * as taskResults from "../taskResults.js";
+import type * as taskSources from "../taskSources.js";
+import type * as tasks from "../tasks.js";
 import type * as users from "../users.js";
 import type * as webhookIngest from "../webhookIngest.js";
 
@@ -30,14 +42,26 @@ import type {
 declare const fullApi: ApiFromModules<{
   admin: typeof admin;
   appMeta: typeof appMeta;
+  conversations: typeof conversations;
+  diagnostics: typeof diagnostics;
   identityAudit: typeof identityAudit;
   "lib/auth": typeof lib_auth;
   "lib/bootstrap": typeof lib_bootstrap;
   "lib/errors": typeof lib_errors;
   "lib/identity": typeof lib_identity;
+  "lib/ownership": typeof lib_ownership;
+  "lib/p5config": typeof lib_p5config;
+  "lib/p5writes": typeof lib_p5writes;
   "lib/permissions": typeof lib_permissions;
+  "lib/queue": typeof lib_queue;
+  "lib/taskStatus": typeof lib_taskStatus;
   "lib/userProvisioning": typeof lib_userProvisioning;
+  messages: typeof messages;
   roles: typeof roles;
+  taskProgress: typeof taskProgress;
+  taskResults: typeof taskResults;
+  taskSources: typeof taskSources;
+  tasks: typeof tasks;
   users: typeof users;
   webhookIngest: typeof webhookIngest;
 }>;

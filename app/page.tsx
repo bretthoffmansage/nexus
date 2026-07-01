@@ -28,6 +28,8 @@ export default async function HomePage() {
   }
 
   const label = access.displayName ?? access.primaryEmail ?? access.clerkUserId ?? "Nexus user";
+  const canSubmit =
+    access.state === "approved" && (access.roles ?? []).includes("knowledge_reader");
 
   return (
     <NexusShell
@@ -35,6 +37,7 @@ export default async function HomePage() {
       clerkEnabled={isClerkConfigured()}
       userLabel={label}
       isAdmin={access.roles?.includes("nexus_admin")}
+      canSubmit={canSubmit}
     />
   );
 }

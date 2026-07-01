@@ -37,7 +37,10 @@ claudia_console/                 # local folder name (future GitHub repo may be 
 | **P4-clerk-approved-users-roles** | Complete — Clerk identity + Convex approval/roles |
 | **P4.1-real-clerk-linkage-login** | Complete — linked Clerk app + embedded sign-in design |
 | **P4.2-clerk-convex-auth-repair** | Complete — native session token + centered auth card |
-| **P5+** | Not started — task persistence |
+| **P4.3-clerk-email-claim-bootstrap-recovery** | Complete — Clerk email claim + admin bootstrap repair |
+| **P4.4-legacy-workspace-frontend-port** | Complete — broader legacy Nexus workspace restored |
+| **P5-private-conversations-tasks-shared-queue** | Complete — private per-user conversations/tasks + global queue persistence; no execution (Connector is P6+) |
+| **P6+** | Not started — Console Connector, execution |
 
 See [`docs/specs/nexus_p4_2_clerk_convex_auth_repair_and_auth_centering_v1.md`](docs/specs/nexus_p4_2_clerk_convex_auth_repair_and_auth_centering_v1.md) for the Clerk-to-Convex token fix.
 
@@ -113,7 +116,9 @@ The legacy launcher uses paths relative to `legacy_local_console/`. Runtime data
 
 ## What Nexus does not include yet
 
-- Clerk approved-user roles (P4)
-- Convex task persistence and product tables (P5)
-- Console Connector APIs (P6)
-- Task submission, terminal execution, governed shell, Web Search, or direct Claudia/Hermes calls
+- Console Connector APIs, HMAC, task claims/leases/heartbeat, and worker execution (P6)
+- Terminal execution, governed shell, Web Search, or direct Claudia/Hermes calls
+
+Private conversations, persistent tasks, and shared global queue ordering (P5) are implemented —
+see [`docs/specs/nexus_p5_private_conversations_tasks_shared_queue_v1.md`](docs/specs/nexus_p5_private_conversations_tasks_shared_queue_v1.md).
+Submitted requests are saved and queued; no task executes until a future Console Connector exists.

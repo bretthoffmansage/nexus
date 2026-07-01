@@ -1,7 +1,15 @@
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { ChatWorkspace } from "@/components/chat/ChatWorkspace";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
+
+// The chat workspace now uses Convex hooks; override just those two so the
+// render test does not require a live ConvexProvider (the real app has one).
+vi.mock("convex/react", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("convex/react")>()),
+  useQuery: () => undefined,
+  useMutation: () => async () => undefined,
+}));
 
 function renderWithTheme(ui: React.ReactNode) {
   return render(<ThemeProvider>{ui}</ThemeProvider>);

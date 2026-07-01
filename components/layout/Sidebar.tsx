@@ -2,6 +2,7 @@
 
 import { UserButton } from "@clerk/nextjs";
 import { usePathname } from "next/navigation";
+import { useChatSession } from "@/components/chat/ChatSessionContext";
 import { ClaudiaPresence } from "@/components/status/ClaudiaPresence";
 import { TaskHistorySection } from "@/components/history/TaskHistorySection";
 import { ToolNavigation } from "@/components/layout/ToolNavigation";
@@ -30,6 +31,8 @@ export function Sidebar({
 }: SidebarProps) {
   const pathname = usePathname();
   const onChatHome = pathname === "/";
+  const session = useChatSession();
+  const canSubmit = session?.canSubmit ?? false;
 
   return (
     <aside
@@ -62,13 +65,17 @@ export function Sidebar({
             <button
               type="button"
               className="nexus-btn nexus-btn-primary nexus-new-request-btn"
-              disabled
-              aria-disabled="true"
-              title={NEW_REQUEST_HELP}
+              disabled={!canSubmit}
+              aria-disabled={!canSubmit}
+              title={canSubmit ? "Start a new request" : NEW_REQUEST_HELP}
+              onClick={() => {
+                session?.startNewRequest();
+                onClose();
+              }}
             >
               New request
             </button>
-            <p className="nexus-sidebar-hint">{NEW_REQUEST_HELP}</p>
+            {!canSubmit ? <p className="nexus-sidebar-hint">{NEW_REQUEST_HELP}</p> : null}
           </div>
           <TaskHistorySection />
         </>

@@ -1,13 +1,19 @@
 import type { AdapterReadResult, ToolAdapterMeta } from "@/lib/adapters/types";
 
+/**
+ * P5: task PERSISTENCE is live in Convex (create/queue/read/cancel/retry of the
+ * signed-in user's own tasks). EXECUTION of queued work still requires the
+ * future Console Connector — the adapter reports that split honestly.
+ */
 export const tasksAdapterMeta: ToolAdapterMeta = {
   toolId: "tasks",
-  availability: "connector_required",
-  authority: "claudia_connector",
+  availability: "persistence_available",
+  authority: "convex",
   futureConvexCollection: "nexusTasks",
   futureClaudiaTaskKind: "tasks.scheduled",
 };
 
+/** Legacy recurring "scheduled tasks" are a separate, not-yet-built feature. */
 export type ScheduledTask = {
   id: string;
   name: string;
@@ -18,8 +24,9 @@ export type ScheduledTask = {
 export async function listScheduledTasks(): Promise<AdapterReadResult<ScheduledTask[]>> {
   return {
     ok: false,
-    availability: "connector_required",
-    reason: "Scheduled tasks execute on Claudia; P5 will add Nexus task persistence.",
+    availability: "execution_connector_required",
+    reason:
+      "Scheduled recurring prompts execute on Claudia and require the Console Connector. P5 persists one-off knowledge requests; recurring scheduling arrives in a later phase.",
     data: [],
   };
 }
