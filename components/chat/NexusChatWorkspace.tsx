@@ -15,6 +15,7 @@ import {
   taskExecutionNote,
   taskStatusLabel,
 } from "@/lib/nexus/p5Client";
+import type { P5ToolId } from "@/convex/lib/p5config";
 import type { NexusSource } from "@/lib/types/presentation";
 
 export function ChatEmptyState() {
@@ -43,7 +44,7 @@ const ENABLED_HELP =
   "Requests are saved and queued. Execution waits for the Claudia Connector (not configured yet).";
 
 /**
- * Nexus Chat workspace with right-side conversation history (P6.1).
+ * Nexus Chat workspace with compact in-route conversation history (P6.1 / P6.2).
  */
 export function NexusChatWorkspace() {
   const session = useChatSession();
@@ -73,7 +74,7 @@ export function NexusChatWorkspace() {
     latestTask && ready ? { taskId: latestTask.id } : "skip",
   );
 
-  async function handleSubmit(text: string) {
+  async function handleSubmit(text: string, requestedToolId: P5ToolId) {
     if (!canSubmit || !ready) return;
     setPending(true);
     setSubmitError(null);
@@ -82,6 +83,7 @@ export function NexusChatWorkspace() {
         requestText: text,
         conversationId: activeConversationId ?? undefined,
         idempotencyKey: newIdempotencyKey(),
+        requestedToolId,
       });
       session?.selectConversation(res.conversationId);
     } catch (error) {
@@ -111,29 +113,29 @@ export function NexusChatWorkspace() {
 
   return (
     <section className="nexus-chat-workspace" aria-labelledby="nexus-chat-heading">
-      <header className="nexus-chat-workspace-head">
-        <div>
-          <h1 className="nexus-chat-heading" id="nexus-chat-heading">
-            Nexus Chat
-          </h1>
-          <p className="nexus-chat-subheading">Private knowledge requests · queued for Claudia</p>
-        </div>
-        <div className="nexus-chat-head-actions">
-          <button
-            type="button"
-            className="nexus-btn nexus-btn-ghost nexus-chat-history-toggle"
-            aria-expanded={historyOpen}
-            aria-controls="nexus-chat-history-panel"
-            onClick={() => setHistoryOpen((open) => !open)}
-          >
-            History
-          </button>
-          <ModeToggle />
-        </div>
-      </header>
-
-      <div className="nexus-chat-layout">
+      <div className="nexus-chat-stage">
         <div className="nexus-chat-main">
+          <header className="nexus-chat-workspace-head">
+            <div>
+              <h1 className="nexus-chat-heading" id="nexus-chat-heading">
+                Nexus Chat
+              </h1>
+              <p className="nexus-chat-subheading">Private knowledge requests · queued for Claudia</p>
+            </div>
+            <div className="nexus-chat-head-actions">
+              <button
+                type="button"
+                className="nexus-btn nexus-btn-ghost nexus-chat-history-toggle"
+                aria-expanded={historyOpen}
+                aria-controls="nexus-chat-history-panel"
+                onClick={() => setHistoryOpen((open) => !open)}
+              >
+                History
+              </button>
+              <ModeToggle />
+            </div>
+          </header>
+
           <div className="nexus-chat-scroll" role="region" aria-label="Chat messages">
             {!activeConversationId ? (
               <ChatEmptyState />

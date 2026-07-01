@@ -1,6 +1,11 @@
 "use client";
 
 import { useState, type FormEvent, type KeyboardEvent } from "react";
+import type { P5ToolId } from "@/convex/lib/p5config";
+import {
+  NEXUS_REQUEST_TOOL_OPTIONS,
+  P5_DEFAULT_TOOL_ID,
+} from "@/lib/nexus/toolDisplayLabels";
 
 const COMPOSER_HELP =
   "Task submission will be enabled after Nexus backend setup. The composer is not connected yet.";
@@ -12,10 +17,10 @@ type ChatComposerProps = {
   pending?: boolean;
   /** Help/status line under the composer. */
   helpText?: string;
-  /** Called with the trimmed request text when the user submits. */
-  onSubmit?: (text: string) => void | Promise<void>;
-  /** Primary tool the request will route to (shown as the active chip). */
-  toolId?: string;
+  /** Called with trimmed request text and the selected canonical tool ID. */
+  onSubmit?: (text: string, requestedToolId: P5ToolId) => void | Promise<void>;
+  /** Initial selected tool (canonical ID). */
+  toolId?: P5ToolId;
   /** An optional error to surface near the composer. */
   errorText?: string | null;
 };
@@ -25,17 +30,17 @@ export function ChatComposer({
   pending = false,
   helpText = COMPOSER_HELP,
   onSubmit,
-  toolId = "vault.agentic_retrieval",
+  toolId = P5_DEFAULT_TOOL_ID,
   errorText = null,
 }: ChatComposerProps) {
   const [value, setValue] = useState("");
+  const [selectedToolId, setSelectedToolId] = useState<P5ToolId>(toolId);
   const canSend = !disabled && !pending && value.trim().length > 0;
 
   async function submit() {
     if (!canSend || !onSubmit) return;
     const text = value.trim();
-    await onSubmit(text);
-    // Clear only after the mutation resolves so a failed submit keeps the text.
+    await onSubmit(text, selectedToolId);
     setValue("");
   }
 
@@ -53,9 +58,28 @@ export function ChatComposer({
 
   return (
     <form className="nexus-composer" aria-describedby="nexus-composer-help" onSubmit={handleFormSubmit}>
-      <div className="nexus-composer-context" title="Read-only knowledge tools">
-        <span className="nexus-tool-chip">{toolId}</span>
-        <span className="nexus-tool-chip nexus-tool-chip-muted">membership_io.transcript_retrieve</span>
+      <div
+        className="nexus-composer-context"
+        role="group"
+        aria-label="Knowledge tools"
+        title="Read-only knowledge tools"
+      >
+        {NEXUS_REQUEST_TOOL_OPTIONS.map((tool) => {
+          const isActive = tool.id === selectedToolId;
+          return (
+            <button
+              key={tool.id}
+              type="button"
+              className={`nexus-tool-chip nexus-tool-chip-select${isActive ? " is-active" : ""}`}
+              aria-pressed={isActive}
+              title={tool.description}
+              disabled={disabled || pending}
+              onClick={() => setSelectedToolId(tool.id)}
+            >
+              {tool.label}
+            </button>
+          );
+        })}
       </div>
       <div className="nexus-composer-row">
         <label className="nexus-sr-only" htmlFor="nexus-composer-input">

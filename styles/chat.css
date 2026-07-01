@@ -6,9 +6,27 @@
   display: flex;
   flex-direction: column;
   width: 100%;
-  max-width: none;
-  margin: 0;
   padding: 1rem 1.25rem 0;
+  overflow: hidden;
+}
+
+.nexus-chat-stage {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.nexus-chat-main {
+  width: min(100%, var(--nexus-content-max));
+  margin-inline: auto;
+  min-width: 0;
+  min-height: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
 }
 
@@ -31,23 +49,6 @@
   display: none;
 }
 
-.nexus-chat-layout {
-  flex: 1;
-  min-height: 0;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(280px, 320px);
-  gap: 1rem;
-  overflow: hidden;
-}
-
-.nexus-chat-main {
-  min-width: 0;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
 .nexus-chat-footer {
   flex-shrink: 0;
   padding: 0.85rem 0 1rem;
@@ -56,11 +57,8 @@
 }
 
 .nexus-chat-history-shell {
-  min-height: 0;
   min-width: 0;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
+  pointer-events: none;
 }
 
 .nexus-chat-history-backdrop {
@@ -70,13 +68,14 @@
 .nexus-chat-history-panel {
   display: flex;
   flex-direction: column;
-  min-height: 0;
-  height: 100%;
+  width: 100%;
+  height: auto;
   border: 1px solid var(--nexus-border);
   border-radius: var(--nexus-radius);
   background: color-mix(in srgb, var(--nexus-panel) 70%, transparent);
   padding: 0.85rem;
   overflow: hidden;
+  box-shadow: var(--nexus-shadow);
 }
 
 .nexus-chat-history-head {
@@ -108,8 +107,8 @@
 }
 
 .nexus-chat-history-list-wrap {
-  flex: 1;
-  min-height: 0;
+  flex: 0 1 auto;
+  max-height: 12rem;
   overflow-y: auto;
 }
 
@@ -139,11 +138,41 @@
   gap: 0.35rem;
 }
 
-@media (max-width: 900px) {
-  .nexus-chat-layout {
-    grid-template-columns: minmax(0, 1fr);
+/* Wide desktop: centered main column + compact upper-right history card */
+@media (min-width: 1200px) {
+  .nexus-chat-stage {
+    display: grid;
+    grid-template-columns: 1fr min(100%, var(--nexus-content-max)) minmax(0, 300px) 1fr;
+    grid-template-rows: minmax(0, 1fr);
+    align-items: start;
   }
 
+  .nexus-chat-main {
+    grid-column: 2;
+    grid-row: 1;
+    width: 100%;
+    margin-inline: 0;
+    align-self: stretch;
+    min-height: 0;
+  }
+
+  .nexus-chat-history-shell {
+    grid-column: 3;
+    grid-row: 1;
+    align-self: start;
+    justify-self: start;
+    width: min(300px, 100%);
+    padding-left: 1rem;
+    pointer-events: auto;
+  }
+
+  .nexus-chat-history-panel {
+    max-height: min(26rem, 48vh);
+  }
+}
+
+/* Narrow / tablet: centered main column + history drawer */
+@media (max-width: 1199px) {
   .nexus-chat-history-toggle {
     display: inline-flex;
   }
@@ -163,9 +192,10 @@
     position: absolute;
     top: 0;
     right: 0;
-    bottom: 0;
-    width: min(100%, 320px);
-    border-radius: 0;
+    bottom: auto;
+    width: min(100%, 300px);
+    max-height: min(26rem, 80vh);
+    border-radius: 0 0 0 var(--nexus-radius);
     transform: translateX(100%);
     transition: transform 0.2s ease;
   }
@@ -181,12 +211,6 @@
     border: 0;
     background: rgba(0, 0, 0, 0.45);
     cursor: pointer;
-  }
-}
-
-@media (min-width: 901px) {
-  .nexus-chat-history-shell {
-    display: flex;
   }
 }
 
@@ -298,6 +322,21 @@
 }
 
 .nexus-tool-chip-muted {
+  opacity: 0.55;
+}
+
+.nexus-tool-chip-select {
+  cursor: pointer;
+  background: transparent;
+}
+
+.nexus-tool-chip-select.is-active {
+  background: color-mix(in srgb, var(--nexus-accent) 18%, var(--nexus-panel));
+  border-color: color-mix(in srgb, var(--nexus-accent) 40%, var(--nexus-border));
+}
+
+.nexus-tool-chip-select:disabled {
+  cursor: not-allowed;
   opacity: 0.55;
 }
 

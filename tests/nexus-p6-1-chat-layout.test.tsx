@@ -283,11 +283,12 @@ describe("P6.1 — viewport layout structure", () => {
     expect(globalsCss).toMatch(/overflow:\s*hidden/);
   });
 
-  it("28-29. desktop grid and mobile history toggle are defined", () => {
+  it("28-29. centered stage layout and responsive history toggle are defined", () => {
     const chatCss = readFileSync(path.join(ROOT, "styles/chat.css"), "utf8");
-    expect(chatCss).toMatch(/grid-template-columns:\s*minmax\(0,\s*1fr\)\s*minmax\(280px,\s*320px\)/);
+    expect(chatCss).toMatch(/\.nexus-chat-stage/);
+    expect(chatCss).toMatch(/var\(--nexus-content-max\)/);
     expect(chatCss).toMatch(/\.nexus-chat-history-toggle/);
-    expect(chatCss).toMatch(/@media \(max-width: 900px\)/);
+    expect(chatCss).toMatch(/@media \(max-width: 1199px\)/);
   });
 
   it("30. P4.4 tool routes still exist in registry", () => {

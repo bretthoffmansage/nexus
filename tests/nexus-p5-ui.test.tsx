@@ -30,7 +30,7 @@ describe("P5 ChatComposer", () => {
     await user.type(input, "  hello vault  ");
     await user.click(screen.getByRole("button", { name: /Send/i }));
 
-    expect(onSubmit).toHaveBeenCalledWith("hello vault");
+    expect(onSubmit).toHaveBeenCalledWith("hello vault", "vault.agentic_retrieval");
     expect(input).toHaveValue("");
   });
 
