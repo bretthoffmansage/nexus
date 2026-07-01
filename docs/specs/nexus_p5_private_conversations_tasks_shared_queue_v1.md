@@ -7,6 +7,8 @@ suite re-run clean, including a successful `npx convex codegen` against the link
 code changes were required)
 **Related:**
 `docs/specs/nexus_p5_data_privacy_and_queue_contract_v1.md` (canonical privacy/queue contract),
+`docs/specs/nexus_p5_1_convex_auth_readiness_guard_v1.md` (P5.1 — frontend authentication-readiness
+repair for private queries; no schema/backend/product changes),
 `docs/specs/nexus_p4_4_legacy_workspace_frontend_port_v1.md`,
 `docs/specs/nexus_vercel_convex_architecture_correction_v1.md`
 
@@ -229,6 +231,10 @@ The Nexus Chat page is preserved; persistence was added without redesign.
   scheduled-prompt editor is preserved as a separate connector-required section.
 - Components import typed operations from the `lib/nexus/p5Client.ts` boundary,
   not raw Convex references.
+- **P5.1:** every private query/mutation above is additionally gated on Convex's
+  own confirmed-auth state (`lib/nexus/useNexusAuthReadiness.ts`, wrapping
+  `useConvexAuth()`), not just server-derived authorization — see
+  `docs/specs/nexus_p5_1_convex_auth_readiness_guard_v1.md` for the full repair.
 
 ### Connector-absent UX
 

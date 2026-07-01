@@ -3,10 +3,14 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
 // Override just the Convex hooks so these render tests don't need a live client.
+// Convex auth defaults to "ready" here; P5.1 readiness-transition scenarios
+// (loading/unauthenticated/sign-out/account-switch) live in
+// tests/nexus-p5-1-auth-readiness.test.tsx, which mocks useConvexAuth per case.
 vi.mock("convex/react", async (importOriginal) => ({
   ...(await importOriginal<typeof import("convex/react")>()),
   useQuery: () => undefined,
   useMutation: () => async () => undefined,
+  useConvexAuth: () => ({ isLoading: false, isAuthenticated: true, isRefreshing: false }),
 }));
 
 import { ChatComposer } from "@/components/chat/ChatComposer";

@@ -30,20 +30,29 @@ function relativeTime(timestamp: number): string {
 }
 
 function LiveHistory({
+  ready,
   selectConversation,
   activeConversationId,
 }: {
+  /** Convex auth is confirmed — safe to run the private query (P5.1). */
+  ready: boolean;
   selectConversation: (id: Id<"nexusConversations">) => void;
   activeConversationId: string | null;
 }) {
-  const data = useQuery(nexusChat.listMyConversations, { limit: 30 });
+  // P5.1: skip the private query entirely until Convex confirms auth, so the
+  // component never issues an owner-scoped query during the readiness race.
+  const data = useQuery(nexusChat.listMyConversations, ready ? { limit: 30 } : "skip");
 
   return (
     <section className="nexus-sidebar-section" aria-labelledby="nexus-history-title">
       <h2 className="nexus-sidebar-section-title" id="nexus-history-title">
         Requests
       </h2>
-      {data === undefined ? (
+      {!ready ? (
+        // Auth is still initializing — never present this as "no history",
+        // which would falsely look like an empty authenticated account.
+        <p className="nexus-sidebar-empty">Loading history…</p>
+      ) : data === undefined ? (
         <p className="nexus-sidebar-empty">Loading your requests…</p>
       ) : data.conversations.length === 0 ? (
         <p className="nexus-sidebar-empty">No requests yet. Submit a question to get started.</p>
@@ -83,6 +92,7 @@ export function TaskHistorySection() {
   }
   return (
     <LiveHistory
+      ready={session.readyForPrivateQueries}
       selectConversation={session.selectConversation}
       activeConversationId={session.activeConversationId}
     />

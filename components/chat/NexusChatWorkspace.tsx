@@ -36,6 +36,7 @@ export function ChatEmptyState() {
 
 const DISABLED_HELP =
   "Sign in as an approved knowledge reader to submit requests.";
+const INITIALIZING_HELP = "Connecting to Nexus…";
 const ENABLED_HELP =
   "Requests are saved and queued. Execution waits for the Claudia Connector (not configured yet).";
 
@@ -43,10 +44,17 @@ const ENABLED_HELP =
  * Preserved Nexus Chat workspace (P3/P4), now backed by private Convex
  * persistence (P5). Submitting persists a user message and a queued task; no
  * execution happens yet — queued work honestly waits for the Console Connector.
+ *
+ * P5.1: every private query/mutation below is gated on `readyForPrivateQueries`
+ * (Convex's own confirmed-auth signal), not just `canSubmit` (server-derived
+ * authorization). Clerk reporting signed-in and Convex confirming the auth
+ * token are different moments; issuing a query in that gap is what produced
+ * the `unauthenticated` server error this package repairs.
  */
 export function NexusChatWorkspace() {
   const session = useChatSession();
   const canSubmit = session?.canSubmit ?? false;
+  const ready = session?.readyForPrivateQueries ?? false;
   const activeConversationId = session?.activeConversationId ?? null;
 
   const submitRequest = useMutation(nexusChat.submitRequest);
@@ -55,7 +63,7 @@ export function NexusChatWorkspace() {
 
   const transcript = useQuery(
     nexusChat.getConversationTranscript,
-    activeConversationId ? { conversationId: activeConversationId } : "skip",
+    activeConversationId && ready ? { conversationId: activeConversationId } : "skip",
   );
 
   const tasks = transcript?.tasks ?? [];
@@ -63,15 +71,17 @@ export function NexusChatWorkspace() {
 
   const result = useQuery(
     nexusChat.getMyTaskResult,
-    latestTask ? { taskId: latestTask.id } : "skip",
+    latestTask && ready ? { taskId: latestTask.id } : "skip",
   );
   const sourceRows = useQuery(
     nexusChat.listMyTaskSources,
-    latestTask ? { taskId: latestTask.id } : "skip",
+    latestTask && ready ? { taskId: latestTask.id } : "skip",
   );
 
   async function handleSubmit(text: string) {
-    if (!canSubmit) return;
+    // Guards both authorization (canSubmit) and Convex auth readiness — a
+    // mutation must never fire while the auth token is still initializing.
+    if (!canSubmit || !ready) return;
     setPending(true);
     setSubmitError(null);
     try {
@@ -160,9 +170,9 @@ export function NexusChatWorkspace() {
       </div>
 
       <ChatComposer
-        disabled={!canSubmit}
+        disabled={!canSubmit || !ready}
         pending={pending}
-        helpText={canSubmit ? ENABLED_HELP : DISABLED_HELP}
+        helpText={!canSubmit ? DISABLED_HELP : !ready ? INITIALIZING_HELP : ENABLED_HELP}
         onSubmit={handleSubmit}
         errorText={submitError}
       />

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useMutation, useQuery } from "convex/react";
 import type { Id } from "@/convex/_generated/dataModel";
@@ -12,26 +12,31 @@ import {
   taskStatusLabel,
   type TaskView,
 } from "@/lib/nexus/p5Client";
+import { useNexusAuthReadiness } from "@/lib/nexus/useNexusAuthReadiness";
 
 function formatTime(timestamp: number): string {
   return new Date(timestamp).toLocaleString();
 }
 
 function TaskDetail({ taskId }: { taskId: Id<"nexusTasks"> }) {
-  const task = useQuery(nexusChat.getMyTask, { taskId });
-  const progress = useQuery(nexusChat.listMyTaskProgress, { taskId });
-  const result = useQuery(nexusChat.getMyTaskResult, { taskId });
-  const sources = useQuery(nexusChat.listMyTaskSources, { taskId });
+  // P5.1: every query below is skipped until Convex confirms auth, so a
+  // selected task never issues an owner-scoped query during the readiness
+  // race (or after sign-out, before the panel unmounts the selection).
+  const { readyForPrivateQueries: ready } = useNexusAuthReadiness();
+  const task = useQuery(nexusChat.getMyTask, ready ? { taskId } : "skip");
+  const progress = useQuery(nexusChat.listMyTaskProgress, ready ? { taskId } : "skip");
+  const result = useQuery(nexusChat.getMyTaskResult, ready ? { taskId } : "skip");
+  const sources = useQuery(nexusChat.listMyTaskSources, ready ? { taskId } : "skip");
   const cancelTask = useMutation(nexusChat.cancelTask);
   const retryTask = useMutation(nexusChat.retryTask);
   const [busy, setBusy] = useState(false);
 
-  if (task === undefined) {
+  if (!ready || task === undefined) {
     return <p className="legacy-port-empty">Loading task…</p>;
   }
 
-  const canCancel = task.status === "queued";
-  const canRetry = task.status === "failed" || task.status === "cancelled";
+  const canCancel = ready && task.status === "queued";
+  const canRetry = ready && (task.status === "failed" || task.status === "cancelled");
 
   return (
     <div className="nexus-task-detail">
@@ -146,15 +151,35 @@ function TaskDetail({ taskId }: { taskId: Id<"nexusTasks"> }) {
 export function MyTasksPanel() {
   const [view, setView] = useState<TaskView["key"]>("all");
   const [selectedTaskId, setSelectedTaskId] = useState<Id<"nexusTasks"> | null>(null);
+  // P5.1: this route has no ChatSessionContext, so it reads Convex auth
+  // readiness directly. Every query below is skipped until Convex confirms
+  // auth — while skipped, `useQuery` returns `undefined`, so the existing
+  // `loading` state below already covers the readiness gap truthfully (never
+  // "No tasks in this view yet" before we actually know that).
+  const { isAuthenticated, readyForPrivateQueries: ready } = useNexusAuthReadiness();
 
-  const counts = useQuery(nexusChat.myTaskCounts, {});
-  const allData = useQuery(nexusChat.listMyTasks, view === "all" ? { limit: 50 } : "skip");
+  // P5.1: drop the selected task the moment Convex reports sign-out, so a
+  // newly signed-in account can never inherit the previous account's
+  // selection (mirrors the same guard in ChatSessionContext).
+  const wasAuthenticated = useRef(isAuthenticated);
+  useEffect(() => {
+    if (wasAuthenticated.current && !isAuthenticated) {
+      setSelectedTaskId(null);
+    }
+    wasAuthenticated.current = isAuthenticated;
+  }, [isAuthenticated]);
+
+  const counts = useQuery(nexusChat.myTaskCounts, ready ? {} : "skip");
+  const allData = useQuery(
+    nexusChat.listMyTasks,
+    ready && view === "all" ? { limit: 50 } : "skip",
+  );
   const statusData = useQuery(
     nexusChat.listMyTasksByStatus,
-    view === "all" ? "skip" : { status: view, limit: 50 },
+    ready && view !== "all" ? { status: view, limit: 50 } : "skip",
   );
   const tasks = (view === "all" ? allData?.tasks : statusData?.tasks) ?? [];
-  const loading = view === "all" ? allData === undefined : statusData === undefined;
+  const loading = !ready || (view === "all" ? allData === undefined : statusData === undefined);
 
   function countFor(key: TaskView["key"]): number | null {
     if (!counts) return null;
