@@ -5,6 +5,7 @@ import type { MutationCtx } from "./_generated/server";
 import { NEXUS_ERROR_CODES, nexusError } from "./lib/errors";
 import { clampLength, P5_LIMITS } from "./lib/p5config";
 import { appendMessage, appendProgress, recordAudit, touchConversation, writeCanonicalTaskResult, replaceTaskSourceRows } from "./lib/p5writes";
+import { effectiveExecutionRequestText } from "./lib/conversationContext";
 import { performTaskTransition } from "./lib/taskTransitions";
 import { type TaskStatus } from "./lib/taskStatus";
 import { requireActiveConnector } from "./connectorRegistry";
@@ -196,7 +197,7 @@ export const claimNextTask = internalMutation({
         conversationId: target.conversationId,
         requestMessageId: target.requestMessageId,
         requestedToolId: target.requestedToolId,
-        requestText: target.requestText,
+        requestText: effectiveExecutionRequestText(target),
         attemptNumber: target.attemptNumber,
         createdAt: target.createdAt,
         queueSequence: target.queueSequence,

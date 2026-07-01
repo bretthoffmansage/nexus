@@ -22,6 +22,8 @@ import type * as identityAudit from "../identityAudit.js";
 import type * as lib_auth from "../lib/auth.js";
 import type * as lib_bootstrap from "../lib/bootstrap.js";
 import type * as lib_connectorAuth from "../lib/connectorAuth.js";
+import type * as lib_conversationContext from "../lib/conversationContext.js";
+import type * as lib_conversationContextConfig from "../lib/conversationContextConfig.js";
 import type * as lib_errors from "../lib/errors.js";
 import type * as lib_identity from "../lib/identity.js";
 import type * as lib_ownership from "../lib/ownership.js";
@@ -63,6 +65,8 @@ declare const fullApi: ApiFromModules<{
   "lib/auth": typeof lib_auth;
   "lib/bootstrap": typeof lib_bootstrap;
   "lib/connectorAuth": typeof lib_connectorAuth;
+  "lib/conversationContext": typeof lib_conversationContext;
+  "lib/conversationContextConfig": typeof lib_conversationContextConfig;
   "lib/errors": typeof lib_errors;
   "lib/identity": typeof lib_identity;
   "lib/ownership": typeof lib_ownership;

@@ -133,7 +133,10 @@ export default defineSchema({
     conversationId: v.id("nexusConversations"),
     requestMessageId: v.id("nexusMessages"),
     requestedToolId: v.string(),
+    /** Exact user-visible request text (Chat transcript + Tasks UI). */
     requestText: v.string(),
+    /** Immutable contextual payload sent to the Connector; omitted when identical to requestText. */
+    executionRequestText: v.optional(v.string()),
     normalizedRequestHash: v.optional(v.string()),
     status: taskStatusValidator,
     queueSequence: v.number(),

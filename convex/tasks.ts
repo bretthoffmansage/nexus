@@ -19,6 +19,7 @@ import {
   P5_QUEUE,
 } from "./lib/p5config";
 import { allocateQueueSequence, defaultQueuePriority } from "./lib/queue";
+import { buildExecutionRequestForConversation } from "./lib/conversationContext";
 import { appendMessage, appendProgress, recordAudit, touchConversation } from "./lib/p5writes";
 import { performTaskTransition } from "./lib/taskTransitions";
 import {
@@ -191,12 +192,20 @@ export const submitKnowledgeRequest = mutation({
 
     const queueSequence = await allocateQueueSequence(ctx);
 
+    const executionRequestText = await buildExecutionRequestForConversation(ctx, {
+      conversationId,
+      ownerClerkUserId: clerkUserId,
+      currentUserText: requestText,
+    });
+
     const taskId = await ctx.db.insert("nexusTasks", {
       ownerClerkUserId: clerkUserId,
       conversationId,
       requestMessageId,
       requestedToolId,
       requestText: clampLength(requestText, P5_LIMITS.maxRequestLength),
+      executionRequestText:
+        executionRequestText !== requestText ? executionRequestText : undefined,
       normalizedRequestHash: normalizedRequestHash(requestText),
       status: "queued",
       queueSequence,
@@ -469,12 +478,20 @@ export const retryMyTask = mutation({
 
     const queueSequence = await allocateQueueSequence(ctx);
 
+    const executionRequestText = await buildExecutionRequestForConversation(ctx, {
+      conversationId,
+      ownerClerkUserId: clerkUserId,
+      currentUserText: original.requestText,
+    });
+
     const taskId = await ctx.db.insert("nexusTasks", {
       ownerClerkUserId: clerkUserId,
       conversationId,
       requestMessageId,
       requestedToolId: original.requestedToolId,
       requestText: original.requestText,
+      executionRequestText:
+        executionRequestText !== original.requestText ? executionRequestText : undefined,
       normalizedRequestHash: original.normalizedRequestHash,
       status: "queued",
       queueSequence,
