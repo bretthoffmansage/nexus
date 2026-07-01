@@ -29,4 +29,12 @@ crons.interval(
   {},
 );
 
+// Nexus Calendar — due-event detection, dispatch, and reconciliation.
+crons.interval(
+  "dispatch due scheduled calendar events",
+  { seconds: 60 },
+  internal.scheduledEventDispatch.runScheduledEventMaintenance,
+  {},
+);
+
 export default crons;

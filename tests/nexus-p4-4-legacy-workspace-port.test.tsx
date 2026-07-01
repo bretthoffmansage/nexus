@@ -133,7 +133,7 @@ describe("Nexus P4.4 legacy workspace port", () => {
     ];
     for (const file of adapters) {
       const adapterSrc = readFileSync(path.join(ROOT, file), "utf8");
-      if (file.includes("documents/adapter")) {
+      if (file.includes("documents/adapter") || file.includes("calendar/adapter")) {
         expect(adapterSrc).toContain("available");
       } else {
         expect(adapterSrc).toContain("connector_required");

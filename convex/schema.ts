@@ -20,9 +20,10 @@ const libraryDocumentStatusValidator = v.union(
   v.literal("deleted"),
 );
 
-const libraryTaskKindValidator = v.union(
+const taskKindValidator = v.union(
   v.literal("chat"),
   v.literal("library_document_processing"),
+  v.literal("scheduled_task"),
 );
 
 const libraryTaskMetadataValidator = v.object({
@@ -38,6 +39,33 @@ const libraryTaskMetadataValidator = v.object({
     }),
   ),
 });
+
+const scheduledTaskMetadataValidator = v.object({
+  kind: v.literal("scheduled_task"),
+  scheduledEventId: v.id("nexusScheduledEvents"),
+  scheduledForUtc: v.number(),
+  explicitUserAction: v.literal("schedule"),
+  lateDispatch: v.optional(v.boolean()),
+});
+
+const calendarEventStatusValidator = v.union(
+  v.literal("scheduled"),
+  v.literal("due"),
+  v.literal("dispatching"),
+  v.literal("queued"),
+  v.literal("running"),
+  v.literal("completed"),
+  v.literal("failed"),
+  v.literal("cancelled"),
+  v.literal("deleted"),
+);
+
+const calendarDispatchStateValidator = v.union(
+  v.literal("undispatched"),
+  v.literal("dispatching"),
+  v.literal("dispatched"),
+  v.literal("dispatch_failed"),
+);
 
 const userStatus = v.union(
   v.literal("pending"),
@@ -168,10 +196,13 @@ export default defineSchema({
     ownerClerkUserId: v.string(),
     conversationId: v.optional(v.id("nexusConversations")),
     requestMessageId: v.optional(v.id("nexusMessages")),
-    taskKind: v.optional(libraryTaskKindValidator),
+    taskKind: v.optional(taskKindValidator),
     libraryDocumentId: v.optional(v.id("nexusLibraryDocuments")),
     libraryDocumentVersionId: v.optional(v.id("nexusLibraryDocumentVersions")),
-    taskMetadata: v.optional(libraryTaskMetadataValidator),
+    scheduledEventId: v.optional(v.id("nexusScheduledEvents")),
+    taskMetadata: v.optional(
+      v.union(libraryTaskMetadataValidator, scheduledTaskMetadataValidator),
+    ),
     requestedToolId: v.string(),
     /** Exact user-visible request text (Chat transcript + Tasks UI). */
     requestText: v.string(),
@@ -234,7 +265,60 @@ export default defineSchema({
     .index("by_status_and_lease_expires_at", ["status", "leaseExpiresAt"])
     // Retry lineage.
     .index("by_retry_of_task", ["retryOfTaskId"])
-    .index("by_library_document_version", ["libraryDocumentVersionId"]),
+    .index("by_library_document_version", ["libraryDocumentVersionId"])
+    .index("by_scheduled_event", ["scheduledEventId"]),
+
+  // Private per-user scheduled calendar events (one-time tasks in v1).
+  nexusScheduledEvents: defineTable({
+    ownerClerkUserId: v.string(),
+    title: v.string(),
+    description: v.optional(v.string()),
+    taskRequest: v.string(),
+    requestedToolId: v.string(),
+    timezone: v.string(),
+    localScheduledDate: v.string(),
+    localScheduledTime: v.string(),
+    scheduledForUtc: v.number(),
+    oneTime: v.literal(true),
+    scheduleStatus: calendarEventStatusValidator,
+    dispatchState: calendarDispatchStateValidator,
+    dispatchClaimToken: v.optional(v.string()),
+    dispatchStartedAt: v.optional(v.number()),
+    dispatchedAt: v.optional(v.number()),
+    linkedTaskId: v.optional(v.id("nexusTasks")),
+    queueSequence: v.optional(v.number()),
+    lateDispatch: v.optional(v.boolean()),
+    latenessMs: v.optional(v.number()),
+    lastDispatchError: v.optional(v.string()),
+    revision: v.number(),
+    queuedAt: v.optional(v.number()),
+    claimedAt: v.optional(v.number()),
+    startedAt: v.optional(v.number()),
+    completedAt: v.optional(v.number()),
+    failedAt: v.optional(v.number()),
+    cancelledAt: v.optional(v.number()),
+    progressMessage: v.optional(v.string()),
+    terminalResultSummary: v.optional(v.string()),
+    terminalErrorCode: v.optional(v.string()),
+    terminalUserSafeMessage: v.optional(v.string()),
+    deletedAt: v.optional(v.number()),
+    deletedBy: v.optional(v.string()),
+    hiddenFromCalendar: v.optional(v.boolean()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+    createdBy: v.string(),
+  })
+    .index("by_owner_and_local_date", ["ownerClerkUserId", "localScheduledDate"])
+    .index("by_owner_and_scheduled_for_utc", ["ownerClerkUserId", "scheduledForUtc"])
+    .index("by_schedule_status_and_scheduled_for_utc", [
+      "scheduleStatus",
+      "scheduledForUtc",
+    ])
+    .index("by_dispatch_state_and_scheduled_for_utc", [
+      "dispatchState",
+      "scheduledForUtc",
+    ])
+    .index("by_linked_task", ["linkedTaskId"]),
 
   // Immutable hosted Library document versions (Dropzone upload contract).
   nexusLibraryDocuments: defineTable({

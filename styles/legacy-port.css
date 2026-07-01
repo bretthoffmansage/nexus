@@ -266,6 +266,174 @@
   border-color: transparent;
 }
 
+.cal-btn-danger {
+  color: #b42318;
+  border-color: color-mix(in srgb, #b42318 40%, var(--nexus-border));
+}
+
+.cal-day-cell {
+  cursor: pointer;
+}
+
+.cal-day-cell:focus-visible {
+  outline: 2px solid var(--nexus-accent);
+  outline-offset: -2px;
+}
+
+.cal-day-events {
+  list-style: none;
+  margin: 0.25rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.cal-event-chip {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  width: 100%;
+  text-align: left;
+  border: none;
+  border-radius: 4px;
+  padding: 0.1rem 0.25rem;
+  font-size: 0.68rem;
+  background: color-mix(in srgb, var(--nexus-accent) 12%, var(--nexus-panel));
+  color: var(--nexus-fg);
+  cursor: pointer;
+}
+
+.cal-event-chip--completed {
+  background: color-mix(in srgb, #12b76a 18%, var(--nexus-panel));
+}
+
+.cal-event-chip--failed {
+  background: color-mix(in srgb, #f04438 15%, var(--nexus-panel));
+}
+
+.cal-event-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cal-event-more {
+  font-size: 0.65rem;
+  opacity: 0.75;
+}
+
+.cal-quickadd-trigger {
+  text-align: left;
+  cursor: pointer;
+}
+
+.cal-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  padding: 1rem;
+}
+
+.cal-dialog {
+  width: min(32rem, 100%);
+  max-height: 90vh;
+  overflow: auto;
+  background: var(--nexus-panel);
+  border: 1px solid var(--nexus-border);
+  border-radius: 10px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+}
+
+.cal-dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--nexus-border);
+}
+
+.cal-dialog-header h2 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.cal-dialog-close {
+  border: none;
+  background: transparent;
+  font-size: 1.25rem;
+  cursor: pointer;
+  color: var(--nexus-fg);
+}
+
+.cal-dialog-body {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.cal-dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border-top: 1px solid var(--nexus-border);
+}
+
+.cal-dialog-error {
+  margin: 0.5rem 1rem 0;
+  color: #b42318;
+  font-size: 0.85rem;
+}
+
+.cal-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.85rem;
+}
+
+.cal-field input,
+.cal-field textarea,
+.cal-field select {
+  padding: 0.4rem 0.5rem;
+  border-radius: 6px;
+  border: 1px solid var(--nexus-border);
+  background: var(--nexus-bg);
+  color: var(--nexus-fg);
+}
+
+.cal-field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.cal-detail-pre {
+  white-space: pre-wrap;
+  font-size: 0.85rem;
+  background: var(--nexus-bg);
+  border: 1px solid var(--nexus-border);
+  border-radius: 6px;
+  padding: 0.5rem;
+  margin: 0;
+}
+
+.cal-detail-sources {
+  margin: 0.35rem 0 0;
+  padding-left: 1.1rem;
+  font-size: 0.85rem;
+}
+
+.cal-detail-status {
+  font-weight: 600;
+}
+
 /* Notes */
 .notes-pane {
   border: 1px solid var(--nexus-border);

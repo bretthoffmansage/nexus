@@ -18,6 +18,7 @@ import {
   isConnectorProgressStage,
 } from "./lib/p6config";
 import { LIBRARY_ATTACHMENT_DOWNLOAD_PATH } from "./lib/libraryDropzoneConfig";
+import { patchScheduledEventForTaskStatus } from "./lib/calendarProjection";
 import {
   applyDropzoneTerminalResult,
   patchLibraryVersionForTaskStatus,
@@ -217,6 +218,7 @@ export const claimNextTask = internalMutation({
     });
     await touchConversation(ctx, target.conversationId, { now });
     await patchLibraryVersionForTaskStatus(ctx, target, "claimed");
+    await patchScheduledEventForTaskStatus(ctx, target);
     await ctx.db.patch(connector._id, {
       ...connectorPatch,
       currentTaskId: target._id,
@@ -280,6 +282,7 @@ export const startTask = internalMutation({
       progressMessage: "Execution started.",
     });
     await patchLibraryVersionForTaskStatus(ctx, task, "running", "Processing document.");
+    await patchScheduledEventForTaskStatus(ctx, task, "Processing.");
     await recordAudit(ctx, {
       ownerClerkUserId: task.ownerClerkUserId,
       eventType: "task_started",
@@ -372,6 +375,9 @@ export const appendConnectorProgress = internalMutation({
     });
     if (task.libraryDocumentVersionId) {
       await patchLibraryVersionForTaskStatus(ctx, task, task.status, args.message);
+    }
+    if (task.scheduledEventId) {
+      await patchScheduledEventForTaskStatus(ctx, task, args.message);
     }
     return { taskId: task._id, accepted: true as const };
   },
@@ -506,6 +512,14 @@ export const completeTask = internalMutation({
       resultSummary: args.answerText.slice(0, P5_LIMITS.maxResultSummaryLength),
       progressMessage: "Completed by the Claudia Connector.",
     });
+    const completedTask = await ctx.db.get(task._id);
+    if (completedTask?.scheduledEventId) {
+      await patchScheduledEventForTaskStatus(
+        ctx,
+        completedTask,
+        args.answerText.slice(0, P5_LIMITS.maxResultSummaryLength),
+      );
+    }
     await recordAudit(ctx, {
       ownerClerkUserId: task.ownerClerkUserId,
       eventType: "task_completed",
@@ -599,6 +613,10 @@ export const failTask = internalMutation({
           updatedAt: now,
         });
       }
+    }
+    const failedTask = await ctx.db.get(task._id);
+    if (failedTask?.scheduledEventId) {
+      await patchScheduledEventForTaskStatus(ctx, failedTask, args.userSafeMessage);
     }
     await recordAudit(ctx, {
       ownerClerkUserId: task.ownerClerkUserId,

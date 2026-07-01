@@ -1,8 +1,20 @@
 "use client";
 
+import { useQuery } from "convex/react";
 import { useMemo, useState } from "react";
-import { ToolAvailabilityBanner } from "@/components/workspace/ToolAvailabilityBanner";
-import { calendarAdapterMeta, type CalendarView } from "@/lib/adapters/calendar/adapter";
+import type { Id } from "@/convex/_generated/dataModel";
+import {
+  CalendarEventDialog,
+  type CalendarDialogMode,
+} from "@/components/workspace/port/CalendarEventDialog";
+import {
+  calendarStatusIcon,
+  monthDateRange,
+  nexusCalendar,
+  type CalendarEventStatus,
+} from "@/lib/nexus/calendarClient";
+import { formatLocalDateInput } from "@/lib/nexus/calendarTimezone";
+import { useNexusAuthReadiness } from "@/lib/nexus/useNexusAuthReadiness";
 
 const MONTHS = [
   "January",
@@ -21,35 +33,72 @@ const MONTHS = [
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-function buildMonthCells(date: Date): Array<{ day: number | null; key: string }> {
+function buildMonthCells(date: Date): Array<{ day: number | null; key: string; localDate?: string }> {
   const year = date.getFullYear();
   const month = date.getMonth();
   const firstDay = new Date(year, month, 1).getDay();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
-  const cells: Array<{ day: number | null; key: string }> = [];
+  const cells: Array<{ day: number | null; key: string; localDate?: string }> = [];
   for (let i = 0; i < firstDay; i += 1) {
     cells.push({ day: null, key: `pad-${i}` });
   }
   for (let day = 1; day <= daysInMonth; day += 1) {
-    cells.push({ day, key: `day-${day}` });
+    const localDate = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+    cells.push({ day, key: `day-${day}`, localDate });
   }
   return cells;
 }
 
-/** Ported from legacy_local_console/static/js/calendar.js toolbar and grid layout. */
+/** Nexus Calendar — persistent per-user scheduled tasks. */
 export function CalendarWorkspace() {
+  const { isLoading, isAuthenticated, readyForPrivateQueries: ready } = useNexusAuthReadiness();
   const [currentDate, setCurrentDate] = useState(() => new Date());
-  const [view, setView] = useState<CalendarView>("month");
-  const disconnected = calendarAdapterMeta.availability !== "available";
+  const [dialog, setDialog] = useState<CalendarDialogMode>({ kind: "closed" });
+
+  const range = monthDateRange(currentDate.getFullYear(), currentDate.getMonth());
+  const events = useQuery(
+    nexusCalendar.listEventsForRange,
+    ready ? { startDate: range.startDate, endDate: range.endDate } : "skip",
+  );
 
   const cells = useMemo(() => buildMonthCells(currentDate), [currentDate]);
 
+  const eventsByDate = useMemo(() => {
+    const map = new Map<string, NonNullable<typeof events>>();
+    for (const event of events ?? []) {
+      const list = map.get(event.localScheduledDate) ?? [];
+      list.push(event);
+      map.set(event.localScheduledDate, list);
+    }
+    return map;
+  }, [events]);
+
+  const openCreate = (localDate: string) => {
+    if (!ready) return;
+    setDialog({ kind: "create", localDate });
+  };
+
+  const openView = (eventId: Id<"nexusScheduledEvents">) => {
+    setDialog({ kind: "view", eventId });
+  };
+
+  if (isLoading) {
+    return <section className="legacy-port-workspace legacy-port-calendar">Loading…</section>;
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <section className="legacy-port-workspace legacy-port-calendar">
+        <p>Sign in to use your private Nexus calendar.</p>
+      </section>
+    );
+  }
+
   return (
     <section className="legacy-port-workspace legacy-port-calendar" aria-labelledby="cal-heading">
-      <ToolAvailabilityBanner availability={calendarAdapterMeta.availability} />
       <header className="legacy-port-head">
         <h1 id="cal-heading">Calendar</h1>
-        <p className="legacy-port-subhead">Events, reminders, and CalDAV sync</p>
+        <p className="legacy-port-subhead">Schedule one-time Nexus tasks on your private calendar</p>
       </header>
 
       <div className="cal-toolbar">
@@ -57,8 +106,7 @@ export function CalendarWorkspace() {
           <button
             type="button"
             className="cal-nav"
-            disabled={disconnected}
-            aria-label="Previous"
+            aria-label="Previous month"
             onClick={() =>
               setCurrentDate((d) => new Date(d.getFullYear(), d.getMonth() - 1, 1))
             }
@@ -68,21 +116,17 @@ export function CalendarWorkspace() {
           <button
             type="button"
             className="cal-nav cal-today-btn"
-            disabled={disconnected}
             onClick={() => setCurrentDate(new Date())}
           >
             Today
           </button>
           <span className="cal-title">
-            {view === "agenda"
-              ? "Upcoming"
-              : `${MONTHS[currentDate.getMonth()]} ${currentDate.getFullYear()}`}
+            {MONTHS[currentDate.getMonth()]} {currentDate.getFullYear()}
           </span>
           <button
             type="button"
             className="cal-nav"
-            disabled={disconnected}
-            aria-label="Next"
+            aria-label="Next month"
             onClick={() =>
               setCurrentDate((d) => new Date(d.getFullYear(), d.getMonth() + 1, 1))
             }
@@ -92,26 +136,37 @@ export function CalendarWorkspace() {
         </div>
         <div className="cal-toolbar-right">
           <div className="cal-view-toggle" role="tablist" aria-label="Calendar view">
-            {(["month", "week", "agenda"] as CalendarView[]).map((v) => (
-              <button
-                key={v}
-                type="button"
-                role="tab"
-                aria-selected={view === v}
-                className={`cal-view-btn${view === v ? " active" : ""}`}
-                onClick={() => setView(v)}
-              >
-                {v[0].toUpperCase() + v.slice(1)}
-              </button>
-            ))}
+            <button type="button" role="tab" aria-selected className="cal-view-btn active">
+              Month
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={false}
+              className="cal-view-btn"
+              disabled
+              title="Week view is not available in this version"
+            >
+              Week
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={false}
+              className="cal-view-btn"
+              disabled
+              title="Agenda view is not available in this version"
+            >
+              Agenda
+            </button>
           </div>
-          <button type="button" className="cal-nav" disabled title="Calendar settings">
-            ⚙
-          </button>
-          <button type="button" className="cal-nav" disabled title="Refresh from database">
-            ↻
-          </button>
-          <button type="button" className="cal-add-btn cal-add-btn-text" disabled id="cal-add">
+          <button
+            type="button"
+            className="cal-add-btn cal-add-btn-text"
+            id="cal-add"
+            disabled={!ready}
+            onClick={() => openCreate(formatLocalDateInput(new Date()))}
+          >
             <span className="cal-add-plus">+</span>
             <span className="cal-add-label">New</span>
           </button>
@@ -119,65 +174,74 @@ export function CalendarWorkspace() {
       </div>
 
       <div className="cal-quickadd-row" id="cal-quickadd-row">
-        <input
-          id="cal-quickadd"
-          className="cal-quickadd-input"
-          placeholder="Quick add event…"
-          disabled
-          aria-disabled="true"
-        />
-        <span className="cal-quickadd-hint" aria-hidden="true">
-          <span className="qa-hint-accent">Quick add</span> — return home to Ithaca 1pm tmrw
-        </span>
+        <button
+          type="button"
+          className="cal-quickadd-input cal-quickadd-trigger"
+          disabled={!ready}
+          onClick={() => openCreate(formatLocalDateInput(new Date()))}
+        >
+          Schedule a task…
+        </button>
       </div>
 
-      {view === "month" ? (
-        <div className="cal-month-grid" role="grid" aria-label="Month view">
-          {WEEKDAYS.map((label) => (
-            <div key={label} className="cal-dow" role="columnheader">
-              {label}
-            </div>
-          ))}
-          {cells.map((cell) => (
+      <div className="cal-month-grid" role="grid" aria-label="Month view">
+        {WEEKDAYS.map((label) => (
+          <div key={label} className="cal-dow" role="columnheader">
+            {label}
+          </div>
+        ))}
+        {cells.map((cell) => {
+          const dayEvents = cell.localDate ? eventsByDate.get(cell.localDate) ?? [] : [];
+          return (
             <div
               key={cell.key}
               className={`cal-day-cell${cell.day ? "" : " cal-day-cell--pad"}`}
               role="gridcell"
+              onClick={() => cell.localDate && openCreate(cell.localDate)}
+              onKeyDown={(e) => {
+                if (cell.localDate && (e.key === "Enter" || e.key === " ")) {
+                  e.preventDefault();
+                  openCreate(cell.localDate);
+                }
+              }}
+              tabIndex={cell.day ? 0 : -1}
             >
               {cell.day ? <span className="cal-day-num">{cell.day}</span> : null}
+              {dayEvents.length > 0 ? (
+                <ul className="cal-day-events">
+                  {dayEvents.slice(0, 3).map((event) => (
+                    <li key={event.id}>
+                      <button
+                        type="button"
+                        className={`cal-event-chip cal-event-chip--${event.scheduleStatus}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openView(event.id);
+                        }}
+                      >
+                        <span className="cal-event-icon" aria-hidden="true">
+                          {calendarStatusIcon(event.scheduleStatus as CalendarEventStatus)}
+                        </span>
+                        <span className="cal-event-title">{event.title}</span>
+                      </button>
+                    </li>
+                  ))}
+                  {dayEvents.length > 3 ? (
+                    <li className="cal-event-more">+{dayEvents.length - 3} more</li>
+                  ) : null}
+                </ul>
+              ) : null}
             </div>
-          ))}
-        </div>
-      ) : (
-        <div className="cal-empty-state">
-          <div className="cal-empty-title">
-            {view === "week" ? "Week view" : "Agenda"}
-          </div>
-          <div className="cal-empty-msg">
-            Calendar data requires the Console Connector. View switching is preserved; events load
-            from Claudia when connected.
-          </div>
-        </div>
-      )}
-
-      <div className="cal-empty-state" style={{ marginTop: "1rem" }}>
-        <div className="cal-empty-title">No calendars yet</div>
-        <div className="cal-empty-msg">
-          Create a local calendar, import an .ics file, or sync via CalDAV — available on Claudia
-          through the Connector.
-        </div>
-        <div className="cal-empty-actions">
-          <button type="button" className="cal-btn cal-btn-primary" disabled>
-            Open Settings
-          </button>
-          <button type="button" className="cal-btn" disabled>
-            New calendar
-          </button>
-          <button type="button" className="cal-btn" disabled>
-            Import .ics
-          </button>
-        </div>
+          );
+        })}
       </div>
+
+      <CalendarEventDialog
+        mode={dialog}
+        ready={ready}
+        onClose={() => setDialog({ kind: "closed" })}
+        onEdit={(eventId) => setDialog({ kind: "edit", eventId })}
+      />
     </section>
   );
 }

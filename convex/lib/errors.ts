@@ -62,6 +62,11 @@ export const NEXUS_ERROR_CODES = {
   LIBRARY_UNSUPPORTED_FORMAT: "library_unsupported_format",
   LIBRARY_UPLOAD_TOO_LARGE: "library_upload_too_large",
   LIBRARY_UPLOAD_INVALID: "library_upload_invalid",
+  // Nexus Calendar — scheduled task dispatch.
+  SCHEDULED_EVENT_NOT_FOUND: "scheduled_event_not_found",
+  SCHEDULED_EVENT_NOT_EDITABLE: "scheduled_event_not_editable",
+  SCHEDULED_EVENT_NOT_DELETABLE: "scheduled_event_not_deletable",
+  SCHEDULED_EVENT_INVALID_TIME: "scheduled_event_invalid_time",
 } as const;
 
 export type NexusErrorCode =

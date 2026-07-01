@@ -2,10 +2,9 @@ import type { AdapterReadResult, ToolAdapterMeta } from "@/lib/adapters/types";
 
 export const calendarAdapterMeta: ToolAdapterMeta = {
   toolId: "calendar",
-  availability: "connector_required",
-  authority: "claudia_connector",
-  futureConvexCollection: "calendarEvents",
-  futureClaudiaTaskKind: "calendar.sync",
+  availability: "available",
+  authority: "nexus_convex",
+  futureConvexCollection: "nexusScheduledEvents",
 };
 
 export type CalendarView = "month" | "week" | "agenda";
@@ -15,26 +14,16 @@ export type CalendarEvent = {
   title: string;
   start: string;
   end?: string;
-  calendarHref?: string;
 };
 
+/** Legacy adapter stubs — calendar data is served from Convex scheduled events. */
 export async function listCalendars(): Promise<
   AdapterReadResult<{ href: string; name: string; color?: string }[]>
 > {
-  return {
-    ok: false,
-    availability: "connector_required",
-    reason: "Calendar data requires the Console Connector and Claudia local calendar store.",
-    data: [],
-  };
+  return { ok: true, availability: "available", data: [{ href: "nexus", name: "My schedule" }] };
 }
 
 export async function listEvents(view: CalendarView): Promise<AdapterReadResult<CalendarEvent[]>> {
   void view;
-  return {
-    ok: false,
-    availability: "connector_required",
-    reason: "Events are loaded from Claudia through the Console Connector.",
-    data: [],
-  };
+  return { ok: true, availability: "available", data: [] };
 }

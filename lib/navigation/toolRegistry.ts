@@ -56,7 +56,7 @@ export const NEXUS_TOOL_REGISTRY: NexusToolDefinition[] = [
     group: "tools",
     legacyButtonId: "tool-calendar-btn",
     legacyModules: ["static/js/calendar.js", "static/js/calendar/"],
-    availability: "connector_required",
+    availability: "available",
   },
   {
     id: "research",

@@ -115,6 +115,23 @@ export async function requireOwnedLibraryVersion(
   return version;
 }
 
+export async function requireOwnedScheduledEvent(
+  ctx: QueryCtx | MutationCtx,
+  clerkUserId: string,
+  eventId: Id<"nexusScheduledEvents">,
+): Promise<Doc<"nexusScheduledEvents">> {
+  const event = await ctx.db.get(eventId);
+  if (
+    !event ||
+    event.ownerClerkUserId !== clerkUserId ||
+    event.deletedAt ||
+    event.hiddenFromCalendar
+  ) {
+    nexusError(NEXUS_ERROR_CODES.SCHEDULED_EVENT_NOT_FOUND, "Scheduled event not found");
+  }
+  return event;
+}
+
 /**
  * Defense-in-depth: a child record (message/task/source/result) must both be
  * owned by the caller AND belong to the conversation/task it claims to. Guards
