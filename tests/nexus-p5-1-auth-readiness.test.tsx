@@ -157,7 +157,6 @@ describe("P5.1 — NexusChatWorkspace readiness", () => {
     await user.click(screen.getByRole("button", { name: "select conversation" }));
 
     expect(lastCallFor(nexusChat.getConversationTranscript)?.args).toBe("skip");
-    expect(lastCallFor(nexusChat.getMyTaskResult)?.args).toBe("skip");
     expect(lastCallFor(nexusChat.listMyTaskSources)?.args).toBe("skip");
   });
 
@@ -175,7 +174,7 @@ describe("P5.1 — NexusChatWorkspace readiness", () => {
     expect(mutationFn).not.toHaveBeenCalled();
   });
 
-  it("enables the composer once ready, with the truthful queued/Connector-pending copy", () => {
+  it("enables the composer once ready without outdated queue help copy", () => {
     authState.isLoading = false;
     authState.isAuthenticated = true;
     render(
@@ -184,9 +183,8 @@ describe("P5.1 — NexusChatWorkspace readiness", () => {
       </ChatSessionProvider>,
     );
     expect(screen.getByLabelText(/Message Nexus/i)).not.toBeDisabled();
-    expect(
-      screen.getByText(/waiting for the Claudia Connector|Execution waits for the Claudia Connector/i),
-    ).toBeInTheDocument();
+    expect(screen.queryByText(/Requests are saved and queued/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Private knowledge requests/i)).not.toBeInTheDocument();
   });
 
   it("12. renders without throwing during the initial (loading) auth state", () => {

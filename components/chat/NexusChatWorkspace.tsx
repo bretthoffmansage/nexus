@@ -1,13 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
-import { AnswerPanel } from "@/components/chat/AnswerPanel";
+import type { Id } from "@/convex/_generated/dataModel";
+import type { TaskStatus } from "@/convex/lib/taskStatus";
 import { ChatComposer } from "@/components/chat/ChatComposer";
 import { ChatHistoryPanel } from "@/components/chat/ChatHistoryPanel";
+import { TranscriptMessage } from "@/components/chat/TranscriptMessage";
 import { useChatSession } from "@/components/chat/ChatSessionContext";
 import { ModeToggle } from "@/components/chat/ModeToggle";
-import { DiagnosticsPanel } from "@/components/diagnostics/DiagnosticsPanel";
 import { SourceList } from "@/components/sources/SourceList";
 import {
   nexusChat,
@@ -37,14 +38,15 @@ export function ChatEmptyState() {
   );
 }
 
-const DISABLED_HELP =
-  "Sign in as an approved knowledge reader to submit requests.";
+const DISABLED_HELP = "Sign in as an approved knowledge reader to submit requests.";
 const INITIALIZING_HELP = "Connecting to Nexus…";
-const ENABLED_HELP =
-  "Requests are saved and queued. Execution waits for the Claudia Connector (not configured yet).";
+
+function isTerminalStatus(status: TaskStatus): boolean {
+  return status === "completed" || status === "failed" || status === "cancelled";
+}
 
 /**
- * Nexus Chat workspace with compact in-route conversation history (P6.1–P6.3).
+ * Nexus Chat workspace — transcript-owned answers, compact status, in-route history.
  */
 export function NexusChatWorkspace() {
   const session = useChatSession();
@@ -64,15 +66,52 @@ export function NexusChatWorkspace() {
 
   const tasks = transcript?.tasks ?? [];
   const latestTask = tasks.length ? tasks[tasks.length - 1] : null;
+  const latestTerminal = latestTask && isTerminalStatus(latestTask.status);
 
-  const result = useQuery(
-    nexusChat.getMyTaskResult,
-    latestTask && ready ? { taskId: latestTask.id } : "skip",
-  );
   const sourceRows = useQuery(
     nexusChat.listMyTaskSources,
-    latestTask && ready ? { taskId: latestTask.id } : "skip",
+    latestTask && ready && latestTask.status === "completed"
+      ? { taskId: latestTask.id }
+      : "skip",
   );
+
+  const baselineIdsRef = useRef<Set<string>>(new Set());
+  const baselineConversationRef = useRef<string | null>(null);
+  const baselineSeededRef = useRef(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const userPinnedRef = useRef(false);
+
+  if (activeConversationId !== baselineConversationRef.current) {
+    baselineConversationRef.current = activeConversationId;
+    baselineIdsRef.current = new Set();
+    baselineSeededRef.current = false;
+    userPinnedRef.current = false;
+  }
+
+  if (activeConversationId && transcript?.messages && !baselineSeededRef.current) {
+    baselineIdsRef.current = new Set(transcript.messages.map((m) => String(m.id)));
+    baselineSeededRef.current = true;
+  }
+
+  const followGrowth = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el || userPinnedRef.current) return;
+    const distance = el.scrollHeight - el.scrollTop - el.clientHeight;
+    if (distance < 120) {
+      el.scrollTop = el.scrollHeight;
+    }
+  }, []);
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const onScroll = () => {
+      const distance = el.scrollHeight - el.scrollTop - el.clientHeight;
+      userPinnedRef.current = distance > 160;
+    };
+    el.addEventListener("scroll", onScroll, { passive: true });
+    return () => el.removeEventListener("scroll", onScroll);
+  }, [activeConversationId]);
 
   async function handleSubmit(text: string, requestedToolId: P5ToolId) {
     if (!canSubmit || !ready) return;
@@ -103,13 +142,14 @@ export function NexusChatWorkspace() {
     provenanceLabel: source.provenanceLabel ?? undefined,
   }));
 
-  const answer = result?.answerText
-    ? { text: result.answerText, partial: false }
-    : null;
-  const answerEmptyLabel = latestTask
-    ? taskExecutionNote(latestTask.status)
-    : undefined;
+  const showSources =
+    latestTask?.status === "completed" && sources.length > 0;
 
+  const showStatus =
+    latestTask &&
+    !isTerminalStatus(latestTask.status);
+
+  const showFailedStatus = latestTask?.status === "failed";
 
   return (
     <section className="nexus-chat-workspace" aria-labelledby="nexus-chat-heading">
@@ -120,7 +160,6 @@ export function NexusChatWorkspace() {
               <h1 className="nexus-chat-heading" id="nexus-chat-heading">
                 Nexus Chat
               </h1>
-              <p className="nexus-chat-subheading">Private knowledge requests · queued for Claudia</p>
             </div>
             <div className="nexus-chat-head-actions">
               <button
@@ -136,29 +175,29 @@ export function NexusChatWorkspace() {
             </div>
           </header>
 
-          <div className="nexus-chat-scroll" role="region" aria-label="Chat messages">
+          <div
+            ref={scrollRef}
+            className="nexus-chat-scroll"
+            role="region"
+            aria-label="Chat messages"
+          >
             {!activeConversationId ? (
               <ChatEmptyState />
             ) : (
               <>
-                <div className="nexus-result-section">
-                  <h2 className="nexus-section-label">Conversation</h2>
-                  <ul className="nexus-transcript">
-                    {(transcript?.messages ?? []).map((message) => (
-                      <li
-                        key={message.id}
-                        className={`nexus-transcript-item nexus-transcript-${message.author}`}
-                      >
-                        <span className="nexus-transcript-author">{message.author}</span>
-                        <span className="nexus-transcript-body">{message.content}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+                <ul className="nexus-transcript">
+                  {(transcript?.messages ?? []).map((message) => (
+                    <TranscriptMessage
+                      key={message.id}
+                      message={message}
+                      animate={!baselineIdsRef.current.has(String(message.id))}
+                      onGrowth={followGrowth}
+                    />
+                  ))}
+                </ul>
 
-                {latestTask ? (
-                  <div className="nexus-result-section">
-                    <h2 className="nexus-section-label">Status</h2>
+                {showStatus ? (
+                  <div className="nexus-result-section nexus-task-status-compact">
                     <p className="nexus-task-status-line">
                       <span className="nexus-tool-chip">{taskStatusLabel(latestTask.status)}</span>
                       <span className="nexus-empty-copy">
@@ -167,28 +206,38 @@ export function NexusChatWorkspace() {
                     </p>
                   </div>
                 ) : null}
+
+                {showFailedStatus ? (
+                  <div className="nexus-result-section nexus-task-status-compact">
+                    <p className="nexus-task-status-line">
+                      <span className="nexus-tool-chip">{taskStatusLabel("failed")}</span>
+                      <span className="nexus-empty-copy">
+                        {latestTask.errorCode
+                          ? `Request failed (${latestTask.errorCode}).`
+                          : taskExecutionNote("failed")}
+                      </span>
+                    </p>
+                  </div>
+                ) : null}
+
+                {showSources ? (
+                  <div className="nexus-result-section">
+                    <h2 className="nexus-section-label">Sources</h2>
+                    <SourceList sources={sources} emptyLabel="" />
+                  </div>
+                ) : null}
               </>
             )}
-
-            <div className="nexus-result-section">
-              <h2 className="nexus-section-label">Answer</h2>
-              <AnswerPanel answer={answer} emptyLabel={answerEmptyLabel} />
-            </div>
-            <div className="nexus-result-section">
-              <h2 className="nexus-section-label">Sources</h2>
-              <SourceList sources={sources} />
-            </div>
           </div>
 
           <div className="nexus-chat-footer">
             <ChatComposer
               disabled={!canSubmit || !ready}
               pending={pending}
-              helpText={!canSubmit ? DISABLED_HELP : !ready ? INITIALIZING_HELP : ENABLED_HELP}
+              helpText={!canSubmit ? DISABLED_HELP : !ready ? INITIALIZING_HELP : undefined}
               onSubmit={handleSubmit}
               errorText={submitError}
             />
-            <DiagnosticsPanel />
           </div>
         </div>
 

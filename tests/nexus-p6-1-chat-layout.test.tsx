@@ -189,7 +189,7 @@ describe("P6.1 — chat history placement", () => {
     expect(mutationFn).not.toHaveBeenCalled();
   });
 
-  it("13-14. reopening a completed conversation restores transcript, answer, and sources", async () => {
+  it("13-14. reopening a completed conversation restores transcript and sources", async () => {
     const user = userEvent.setup();
     const taskId = "task_done" as Id<"nexusTasks">;
     const convoId = "convo_done" as Id<"nexusConversations">;
@@ -203,7 +203,10 @@ describe("P6.1 — chat history placement", () => {
       tasks: [{ id: taskId, conversationId: convoId, status: "completed" }],
     });
     queryResults.set(nexusChat.getConversationTranscript, {
-      messages: [{ id: "m1", author: "user", content: "What is Nexus?" }],
+      messages: [
+        { id: "m1", author: "user", content: "What is Nexus?" },
+        { id: "m2", author: "assistant", content: "Nexus is the hosted console." },
+      ],
       tasks: [
         {
           id: taskId,
@@ -213,7 +216,6 @@ describe("P6.1 — chat history placement", () => {
         },
       ],
     });
-    queryResults.set(nexusChat.getMyTaskResult, { answerText: "Nexus is the hosted console." });
     queryResults.set(nexusChat.listMyTaskSources, [
       { id: "s1", title: "KB doc", sourceType: "knowledge_base", locator: "kb/1" },
     ]);
@@ -224,10 +226,13 @@ describe("P6.1 — chat history placement", () => {
       </ChatSessionProvider>,
     );
 
+    await user.click(screen.getByRole("button", { name: /History/i }));
+    await user.click(screen.getByRole("button", { name: "History" }));
     await user.click(screen.getByRole("button", { name: /Done chat/i }));
     expect(screen.getByText("What is Nexus?")).toBeInTheDocument();
     expect(screen.getByText("Nexus is the hosted console.")).toBeInTheDocument();
     expect(screen.getByText("KB doc")).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Answer" })).not.toBeInTheDocument();
   });
 
   it("15. skips private history queries when unauthenticated", () => {
@@ -255,16 +260,17 @@ describe("P6.1 — duplicate status removal", () => {
 
     render(<StatusWorkspace />);
     expect(screen.getByRole("heading", { name: "Status" })).toBeInTheDocument();
-    expect(screen.getByText(/Execution begins when the Claudia Connector is online/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Execution begins when the Claudia Connector is online and claims queued work/i),
+    ).toBeInTheDocument();
 
     render(
       <ChatSessionProvider canSubmit>
         <NexusChatWorkspace />
       </ChatSessionProvider>,
     );
-    expect(
-      screen.getByText(/waiting for the Claudia Connector|Execution waits for the Claudia Connector/i),
-    ).toBeInTheDocument();
+    expect(screen.queryByText(/Private knowledge requests/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Requests are saved and queued/i)).not.toBeInTheDocument();
   });
 });
 

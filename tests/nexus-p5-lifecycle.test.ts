@@ -363,3 +363,53 @@ describe("P5 aggregate counts (own only)", () => {
     void t;
   });
 });
+
+describe("P5 conversation deletion", () => {
+  it("deletes conversation and messages but retains tasks, results, and sources", async () => {
+    const { t, asA } = await readerCtx();
+    const submit = await asA.mutation(api.tasks.submitKnowledgeRequest, {
+      requestText: "delete retention check",
+      idempotencyKey: key("del-retain"),
+    });
+
+    await t.mutation(internal.tasks.transitionTaskInternal, { taskId: submit.taskId, toStatus: "claimed" });
+    await t.mutation(internal.tasks.transitionTaskInternal, { taskId: submit.taskId, toStatus: "running" });
+    await t.mutation(internal.taskResults.writeTaskResultInternal, {
+      taskId: submit.taskId,
+      answerText: "Retained answer",
+    });
+    await t.mutation(internal.taskSources.replaceTaskSourcesInternal, {
+      taskId: submit.taskId,
+      sources: [{ sourceType: "vault_note", title: "Retained source" }],
+    });
+    await t.mutation(internal.tasks.transitionTaskInternal, { taskId: submit.taskId, toStatus: "completed" });
+
+    const beforeMessages = await asA.query(api.messages.listMyConversationMessages, {
+      conversationId: submit.conversationId,
+    });
+    expect(beforeMessages.messages.length).toBeGreaterThan(0);
+
+    await asA.mutation(api.conversations.deleteMyConversation, {
+      conversationId: submit.conversationId,
+    });
+
+    await rejectsWithCode(
+      asA.query(api.conversations.getMyConversation, { conversationId: submit.conversationId }),
+      "conversation_not_found",
+    );
+    await rejectsWithCode(
+      asA.query(api.conversations.getConversationTranscript, { conversationId: submit.conversationId }),
+      "conversation_not_found",
+    );
+
+    const tasks = await asA.query(api.tasks.listMyTasks, {});
+    expect(tasks.tasks.some((task) => task.id === submit.taskId)).toBe(true);
+
+    const result = await asA.query(api.taskResults.getMyTaskResult, { taskId: submit.taskId });
+    expect(result?.answerText).toBe("Retained answer");
+
+    const sources = await asA.query(api.taskSources.listMyTaskSources, { taskId: submit.taskId });
+    expect(sources).toHaveLength(1);
+    expect(sources[0].title).toBe("Retained source");
+  });
+});

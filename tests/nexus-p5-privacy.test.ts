@@ -86,6 +86,16 @@ describe("P5 multi-user privacy (Part R)", () => {
     );
   });
 
+  it("6b. User B cannot delete User A's conversation", async () => {
+    const { asB, submit } = await setupAWithTask();
+    await rejectsWithCode(
+      asB.mutation(api.conversations.deleteMyConversation, {
+        conversationId: submit.conversationId,
+      }),
+      "conversation_not_found",
+    );
+  });
+
   it("7. User B cannot read User A's messages", async () => {
     const { asB, submit } = await setupAWithTask();
     await rejectsWithCode(

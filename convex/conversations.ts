@@ -204,6 +204,41 @@ export const reopenMyConversation = mutation({
 });
 
 /**
+ * Permanently delete a conversation and its messages. Tasks, results, and
+ * sources are retained for the Tasks workspace (conversationId remains on task
+ * rows as historical metadata).
+ */
+export const deleteMyConversation = mutation({
+  args: { conversationId: v.id("nexusConversations") },
+  handler: async (ctx, args) => {
+    const { clerkUserId } = await requireKnowledgeReader(ctx);
+    await requireOwnedConversation(ctx, clerkUserId, args.conversationId);
+    const now = Date.now();
+
+    const messages = await ctx.db
+      .query("nexusMessages")
+      .withIndex("by_conversation_and_sequence", (q) =>
+        q.eq("conversationId", args.conversationId),
+      )
+      .collect();
+    for (const message of messages) {
+      await ctx.db.delete(message._id);
+    }
+
+    await recordAudit(ctx, {
+      ownerClerkUserId: clerkUserId,
+      eventType: "conversation_deleted",
+      conversationId: args.conversationId,
+      now,
+      metadata: { messageCount: messages.length },
+    });
+
+    await ctx.db.delete(args.conversationId);
+    return { deleted: true as const, conversationId: args.conversationId };
+  },
+});
+
+/**
  * Full reopen payload: the conversation, its ordered messages, and lightweight
  * task summaries. Result bodies and sources are fetched on demand per task.
  */

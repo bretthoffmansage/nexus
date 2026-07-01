@@ -264,6 +264,7 @@ export default defineSchema({
       v.literal("conversation_created"),
       v.literal("conversation_archived"),
       v.literal("conversation_reopened"),
+      v.literal("conversation_deleted"),
       // P6 — trusted Connector lifecycle (never browser-originated).
       v.literal("task_claimed"),
       v.literal("task_started"),

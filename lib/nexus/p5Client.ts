@@ -17,6 +17,7 @@ export const nexusChat = {
   renameMyConversation: api.conversations.renameMyConversation,
   archiveMyConversation: api.conversations.archiveMyConversation,
   reopenMyConversation: api.conversations.reopenMyConversation,
+  deleteMyConversation: api.conversations.deleteMyConversation,
   // Tasks
   submitRequest: api.tasks.submitKnowledgeRequest,
   listMyTasks: api.tasks.listMyTasks,

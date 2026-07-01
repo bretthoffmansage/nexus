@@ -48,7 +48,7 @@ describe("P5 ChatComposer", () => {
 });
 
 describe("P5 Nexus Chat workspace (approved reader)", () => {
-  it("enables the composer and shows connector-absent messaging", () => {
+  it("enables the composer without outdated queue help copy", () => {
     render(
       <ChatSessionProvider canSubmit>
         <NexusChatWorkspace />
@@ -56,7 +56,8 @@ describe("P5 Nexus Chat workspace (approved reader)", () => {
     );
     expect(screen.getByRole("heading", { name: "Nexus Chat" })).toBeInTheDocument();
     expect(screen.getByLabelText(/Message Nexus/i)).not.toBeDisabled();
-    expect(screen.getByText(/waiting for the Claudia Connector|Execution waits for the Claudia Connector/i)).toBeInTheDocument();
+    expect(screen.queryByText(/Requests are saved and queued/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Private knowledge requests/i)).not.toBeInTheDocument();
   });
 
   it("keeps the composer disabled for users who cannot submit", () => {

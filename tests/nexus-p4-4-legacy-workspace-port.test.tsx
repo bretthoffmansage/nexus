@@ -24,7 +24,7 @@ describe("Nexus P4.4 legacy workspace port", () => {
     expect(shellSrc).toContain("NexusChatWorkspace");
   });
 
-  it("renders Nexus Chat heading, welcome, answer, sources, composer, diagnostics", () => {
+  it("renders Nexus Chat heading, welcome, composer; no duplicate answer panel", () => {
     render(
       <ThemeProvider>
         <NexusChatWorkspace />
@@ -32,10 +32,9 @@ describe("Nexus P4.4 legacy workspace port", () => {
     );
     expect(screen.getByRole("heading", { name: "Nexus Chat" })).toBeInTheDocument();
     expect(screen.getByText("Welcome")).toBeInTheDocument();
-    expect(screen.getByText("Answer")).toBeInTheDocument();
-    expect(screen.getByText("Sources")).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Answer" })).not.toBeInTheDocument();
+    expect(screen.queryByText(/Diagnostics/i)).not.toBeInTheDocument();
     expect(screen.getByLabelText(/Message Nexus/i)).toBeDisabled();
-    expect(screen.getByText(/Diagnostics/i)).toBeInTheDocument();
   });
 
   it("centralizes navigation in tool registry", () => {

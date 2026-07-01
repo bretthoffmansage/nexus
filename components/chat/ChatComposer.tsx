@@ -7,9 +7,6 @@ import {
   P5_DEFAULT_TOOL_ID,
 } from "@/lib/nexus/toolDisplayLabels";
 
-const COMPOSER_HELP =
-  "Task submission will be enabled after Nexus backend setup. The composer is not connected yet.";
-
 type ChatComposerProps = {
   /** Defaults to true so the standalone placeholder render stays disabled. */
   disabled?: boolean;
@@ -28,7 +25,7 @@ type ChatComposerProps = {
 export function ChatComposer({
   disabled = true,
   pending = false,
-  helpText = COMPOSER_HELP,
+  helpText,
   onSubmit,
   toolId = P5_DEFAULT_TOOL_ID,
   errorText = null,
@@ -57,7 +54,11 @@ export function ChatComposer({
   }
 
   return (
-    <form className="nexus-composer" aria-describedby="nexus-composer-help" onSubmit={handleFormSubmit}>
+    <form
+      className="nexus-composer"
+      aria-describedby={helpText ? "nexus-composer-help" : undefined}
+      onSubmit={handleFormSubmit}
+    >
       <div
         className="nexus-composer-context"
         role="group"
@@ -111,9 +112,11 @@ export function ChatComposer({
           {errorText}
         </p>
       ) : null}
-      <p id="nexus-composer-help" className="nexus-composer-help">
-        {helpText}
-      </p>
+      {helpText ? (
+        <p id="nexus-composer-help" className="nexus-composer-help">
+          {helpText}
+        </p>
+      ) : null}
     </form>
   );
 }

@@ -60,6 +60,37 @@
   gap: 0.25rem;
 }
 
+.nexus-history-row {
+  display: flex;
+  align-items: stretch;
+  gap: 0.25rem;
+}
+
+.nexus-history-list.is-edit-mode .nexus-history-item {
+  flex: 1;
+  min-width: 0;
+}
+
+.nexus-history-delete-btn {
+  flex-shrink: 0;
+  align-self: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border: 1px solid var(--nexus-border);
+  border-radius: var(--nexus-radius-sm);
+  background: transparent;
+  color: var(--nexus-muted);
+  cursor: pointer;
+  font-size: 0.85rem;
+  line-height: 1;
+  padding: 0;
+}
+
+.nexus-history-delete-btn:hover {
+  color: var(--nexus-danger, #c0392b);
+  border-color: color-mix(in srgb, var(--nexus-danger, #c0392b) 45%, var(--nexus-border));
+}
+
 .nexus-history-item {
   display: flex;
   flex-direction: column;
