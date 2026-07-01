@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type FormEvent, type KeyboardEvent } from "react";
+import { useState, useEffect, type FormEvent, type KeyboardEvent } from "react";
 import type { P5ToolId } from "@/convex/lib/p5config";
 import {
   NEXUS_REQUEST_TOOL_OPTIONS,
@@ -18,6 +18,8 @@ type ChatComposerProps = {
   onSubmit?: (text: string, requestedToolId: P5ToolId) => void | Promise<void>;
   /** Initial selected tool (canonical ID). */
   toolId?: P5ToolId;
+  /** Called when the user changes the selected knowledge tool. */
+  onToolIdChange?: (toolId: P5ToolId) => void;
   /** An optional error to surface near the composer. */
   errorText?: string | null;
 };
@@ -28,11 +30,21 @@ export function ChatComposer({
   helpText,
   onSubmit,
   toolId = P5_DEFAULT_TOOL_ID,
+  onToolIdChange,
   errorText = null,
 }: ChatComposerProps) {
   const [value, setValue] = useState("");
   const [selectedToolId, setSelectedToolId] = useState<P5ToolId>(toolId);
   const canSend = !disabled && !pending && value.trim().length > 0;
+
+  useEffect(() => {
+    setSelectedToolId(toolId);
+  }, [toolId]);
+
+  function chooseToolId(nextToolId: P5ToolId) {
+    setSelectedToolId(nextToolId);
+    onToolIdChange?.(nextToolId);
+  }
 
   async function submit() {
     if (!canSend || !onSubmit) return;
@@ -75,7 +87,7 @@ export function ChatComposer({
               aria-pressed={isActive}
               title={tool.description}
               disabled={disabled || pending}
-              onClick={() => setSelectedToolId(tool.id)}
+              onClick={() => chooseToolId(tool.id)}
             >
               {tool.label}
             </button>

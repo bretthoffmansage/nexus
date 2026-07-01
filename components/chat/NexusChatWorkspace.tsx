@@ -52,6 +52,7 @@ export function NexusChatWorkspace() {
   const session = useChatSession();
   const canSubmit = session?.canSubmit ?? false;
   const ready = session?.readyForPrivateQueries ?? false;
+  const chatSessionReady = session?.chatSessionReady ?? true;
   const activeConversationId = session?.activeConversationId ?? null;
   const [historyOpen, setHistoryOpen] = useState(false);
 
@@ -181,7 +182,11 @@ export function NexusChatWorkspace() {
             role="region"
             aria-label="Chat messages"
           >
-            {!activeConversationId ? (
+            {!chatSessionReady ? (
+              <p className="nexus-chat-history-empty" aria-live="polite">
+                Loading conversation…
+              </p>
+            ) : !activeConversationId ? (
               <ChatEmptyState />
             ) : (
               <>
@@ -232,9 +237,11 @@ export function NexusChatWorkspace() {
 
           <div className="nexus-chat-footer">
             <ChatComposer
-              disabled={!canSubmit || !ready}
+              disabled={!canSubmit || !ready || !chatSessionReady}
               pending={pending}
               helpText={!canSubmit ? DISABLED_HELP : !ready ? INITIALIZING_HELP : undefined}
+              toolId={session?.selectedToolId}
+              onToolIdChange={session?.setSelectedToolId}
               onSubmit={handleSubmit}
               errorText={submitError}
             />
