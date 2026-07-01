@@ -17,6 +17,8 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  container-type: inline-size;
+  container-name: nexus-chat-stage;
 }
 
 .nexus-chat-main {
@@ -45,24 +47,11 @@
   gap: 0.5rem;
 }
 
-.nexus-chat-history-toggle {
-  display: none;
-}
-
 .nexus-chat-footer {
   flex-shrink: 0;
   padding: 0.85rem 0 1rem;
   border-top: 1px solid var(--nexus-border);
   background: color-mix(in srgb, var(--nexus-bg) 92%, transparent);
-}
-
-.nexus-chat-history-shell {
-  min-width: 0;
-  pointer-events: none;
-}
-
-.nexus-chat-history-backdrop {
-  display: none;
 }
 
 .nexus-chat-history-panel {
@@ -138,79 +127,109 @@
   gap: 0.35rem;
 }
 
-/* Wide desktop: centered main column + compact upper-right history card */
-@media (min-width: 1200px) {
-  .nexus-chat-stage {
-    display: grid;
-    grid-template-columns: 1fr min(100%, var(--nexus-content-max)) minmax(0, 300px) 1fr;
-    grid-template-rows: minmax(0, 1fr);
-    align-items: start;
-  }
-
-  .nexus-chat-main {
-    grid-column: 2;
-    grid-row: 1;
-    width: 100%;
-    margin-inline: 0;
-    align-self: stretch;
-    min-height: 0;
-  }
-
-  .nexus-chat-history-shell {
-    grid-column: 3;
-    grid-row: 1;
-    align-self: start;
-    justify-self: start;
-    width: min(300px, 100%);
-    padding-left: 1rem;
-    pointer-events: auto;
-  }
-
-  .nexus-chat-history-panel {
-    max-height: min(26rem, 48vh);
-  }
+/* Default: centered Chat only; history via responsive drawer */
+.nexus-chat-history-toggle {
+  display: inline-flex;
 }
 
-/* Narrow / tablet: centered main column + history drawer */
-@media (max-width: 1199px) {
+.nexus-chat-history-shell {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  pointer-events: none;
+}
+
+.nexus-chat-history-shell.is-open {
+  pointer-events: auto;
+}
+
+.nexus-chat-history-shell .nexus-chat-history-panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: auto;
+  width: min(100%, var(--nexus-chat-history-width));
+  max-height: min(26rem, 80vh);
+  border-radius: 0 0 0 var(--nexus-radius);
+  transform: translateX(100%);
+  transition: transform 0.2s ease;
+}
+
+.nexus-chat-history-shell.is-open .nexus-chat-history-panel {
+  transform: translateX(0);
+}
+
+.nexus-chat-history-backdrop {
+  display: block;
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgba(0, 0, 0, 0.45);
+  cursor: pointer;
+}
+
+/* Wide stage: detach history to the page-right edge; Chat stays centered in flow */
+@container nexus-chat-stage (min-width: 1592px) {
   .nexus-chat-history-toggle {
-    display: inline-flex;
+    display: none;
   }
 
   .nexus-chat-history-shell {
-    position: fixed;
-    inset: 0;
-    z-index: 50;
-    pointer-events: none;
-  }
-
-  .nexus-chat-history-shell.is-open {
+    position: absolute;
+    inset: auto;
+    top: 0;
+    right: 0;
+    width: var(--nexus-chat-history-width);
+    height: auto;
+    z-index: 2;
     pointer-events: auto;
   }
 
   .nexus-chat-history-shell .nexus-chat-history-panel {
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: auto;
-    width: min(100%, 300px);
-    max-height: min(26rem, 80vh);
-    border-radius: 0 0 0 var(--nexus-radius);
-    transform: translateX(100%);
-    transition: transform 0.2s ease;
-  }
-
-  .nexus-chat-history-shell.is-open .nexus-chat-history-panel {
-    transform: translateX(0);
+    position: relative;
+    top: auto;
+    right: auto;
+    transform: none;
+    width: 100%;
+    max-height: min(26rem, 48vh);
+    border-radius: var(--nexus-radius);
+    transition: none;
   }
 
   .nexus-chat-history-backdrop {
-    display: block;
-    position: absolute;
-    inset: 0;
-    border: 0;
-    background: rgba(0, 0, 0, 0.45);
-    cursor: pointer;
+    display: none;
+  }
+}
+
+/* Fallback when container queries are unavailable (≈ sidebar + min-stage) */
+@supports not (container-type: inline-size) {
+  @media (min-width: 1880px) {
+    .nexus-chat-history-toggle {
+      display: none;
+    }
+
+    .nexus-chat-history-shell {
+      position: absolute;
+      inset: auto;
+      top: 0;
+      right: 0;
+      width: var(--nexus-chat-history-width);
+      height: auto;
+      z-index: 2;
+      pointer-events: auto;
+    }
+
+    .nexus-chat-history-shell .nexus-chat-history-panel {
+      position: relative;
+      transform: none;
+      width: 100%;
+      max-height: min(26rem, 48vh);
+      border-radius: var(--nexus-radius);
+    }
+
+    .nexus-chat-history-backdrop {
+      display: none;
+    }
   }
 }
 

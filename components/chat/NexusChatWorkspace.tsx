@@ -44,7 +44,7 @@ const ENABLED_HELP =
   "Requests are saved and queued. Execution waits for the Claudia Connector (not configured yet).";
 
 /**
- * Nexus Chat workspace with compact in-route conversation history (P6.1 / P6.2).
+ * Nexus Chat workspace with compact in-route conversation history (P6.1–P6.3).
  */
 export function NexusChatWorkspace() {
   const session = useChatSession();

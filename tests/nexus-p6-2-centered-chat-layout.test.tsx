@@ -41,7 +41,6 @@ describe("P6.2 — centered chat and compact history", () => {
     expect(chatCss).not.toMatch(/\.nexus-chat-history-panel[\s\S]*height:\s*100%/);
     expect(chatCss).toMatch(/\.nexus-chat-history-list-wrap[\s\S]*max-height:/);
     expect(chatCss).toMatch(/\.nexus-chat-history-list-wrap[\s\S]*overflow-y:\s*auto/);
-    expect(chatCss).toMatch(/align-self:\s*start/);
   });
 
   it("9-12. history controls remain in the chat workspace", () => {
@@ -56,20 +55,17 @@ describe("P6.2 — centered chat and compact history", () => {
     expect(screen.getByRole("button", { name: "History" })).toBeInTheDocument();
   });
 
-  it("11. desktop stage preserves centered column with side-anchored history", () => {
+  it("11. desktop stage detaches history from centered column", () => {
     const chatCss = readFileSync(path.join(ROOT, "styles/chat.css"), "utf8");
-    expect(chatCss).toMatch(/@media \(min-width: 1200px\)/);
-    expect(chatCss).toMatch(
-      /grid-template-columns:\s*1fr min\(100%,\s*var\(--nexus-content-max\)\) minmax\(0,\s*300px\) 1fr/,
-    );
-    expect(chatCss).toMatch(/\.nexus-chat-main[\s\S]*grid-column:\s*2/);
-    expect(chatCss).toMatch(/\.nexus-chat-history-shell[\s\S]*grid-column:\s*3/);
+    expect(chatCss).toMatch(/@container nexus-chat-stage/);
+    expect(chatCss).toMatch(/position:\s*absolute[\s\S]*right:\s*0/);
+    expect(chatCss).not.toMatch(/grid-template-columns:\s*1fr min\(100%,\s*var\(--nexus-content-max\)\)/);
   });
 
   it("13-14. responsive drawer fallback and viewport-fit classes remain", () => {
     const chatCss = readFileSync(path.join(ROOT, "styles/chat.css"), "utf8");
     const shellCss = readFileSync(path.join(ROOT, "styles/shell.css"), "utf8");
-    expect(chatCss).toMatch(/@media \(max-width: 1199px\)/);
+    expect(chatCss).toMatch(/translateX\(100%\)/);
     expect(chatCss).toMatch(/\.nexus-chat-history-toggle/);
     expect(chatCss).toMatch(/\.nexus-chat-scroll[\s\S]*overflow-y:\s*auto/);
     expect(shellCss).toMatch(/\.nexus-workspace[\s\S]*min-height:\s*0/);

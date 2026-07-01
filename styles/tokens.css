@@ -22,6 +22,16 @@
   --nexus-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
   --nexus-header-height: 56px;
   --nexus-content-max: 960px;
+  --nexus-chat-history-width: 300px;
+  --nexus-chat-history-gap: 1rem;
+  /**
+   * Minimum active Chat stage width before the detached history panel can sit
+   * at the page right without overlapping the centered column:
+   * content-max + 2 × (panel width + gutter).
+   */
+  --nexus-chat-history-min-stage: calc(
+    var(--nexus-content-max) + 2 * (var(--nexus-chat-history-width) + var(--nexus-chat-history-gap))
+  );
   --nexus-font-sans: var(--font-geist-sans), system-ui, -apple-system, "Segoe UI", sans-serif;
   --nexus-font-mono: var(--font-geist-mono), "Fira Code", ui-monospace, monospace;
 
