@@ -7,6 +7,7 @@ import { requireKnowledgeReader } from "./lib/ownership";
 import { boundedMetadataValidator } from "./lib/p5config";
 import {
   CONNECTOR_OPERATING_STATES,
+  DEFAULT_CONNECTOR_TOOL_IDS,
   P6_LEASE,
   P6_LIMITS,
   P6_PROTOCOL_VERSION,
@@ -100,6 +101,55 @@ export const setConnectorStatus = internalMutation({
     if (args.status === "revoked") patch.revokedAt = now;
     await ctx.db.patch(connector._id, patch);
     return { connectorId: args.connectorId, status: args.status };
+  },
+});
+
+/**
+ * Operator-only capability update for an EXISTING Connector. CLI-only, like
+ * `bootstrapConnector` (which intentionally refuses to touch an existing row —
+ * this is the canonical path for changing a live Connector's tool allowlist).
+ *
+ * Replaces `allowedToolIds` with the given explicit list. Every id must be a
+ * member of the known tool universe (`DEFAULT_CONNECTOR_TOOL_IDS`) — no
+ * wildcards, no unknown ids, no empty list. Identity, status, and secret
+ * configuration are untouched; the mutation is idempotent for a repeated
+ * identical call.
+ */
+export const setConnectorAllowedTools = internalMutation({
+  args: {
+    connectorId: v.string(),
+    allowedToolIds: v.array(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const connector = await ctx.db
+      .query("nexusConnectors")
+      .withIndex("by_connector_id", (q) => q.eq("connectorId", args.connectorId))
+      .unique();
+    if (!connector) throw new Error(`Connector "${args.connectorId}" not found`);
+    if (connector.status === "revoked") {
+      throw new Error(`Connector "${args.connectorId}" is revoked and may not be updated`);
+    }
+    if (args.allowedToolIds.length === 0) {
+      throw new Error("allowedToolIds must not be empty — pass the full explicit tool list");
+    }
+    const known = new Set<string>(DEFAULT_CONNECTOR_TOOL_IDS);
+    const deduped: string[] = [];
+    for (const toolId of args.allowedToolIds) {
+      if (!known.has(toolId)) {
+        throw new Error(
+          `Unknown tool id "${toolId}". Allowed tool ids: ${[...known].join(", ")}`,
+        );
+      }
+      if (!deduped.includes(toolId)) deduped.push(toolId);
+    }
+    const changed =
+      connector.allowedToolIds === undefined ||
+      connector.allowedToolIds.length !== deduped.length ||
+      connector.allowedToolIds.some((id, i) => id !== deduped[i]);
+    if (changed) {
+      await ctx.db.patch(connector._id, { allowedToolIds: deduped, updatedAt: Date.now() });
+    }
+    return { connectorId: args.connectorId, allowedToolIds: deduped, changed };
   },
 });
 
