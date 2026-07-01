@@ -1,7 +1,7 @@
 import { v } from "convex/values";
 import { internalMutation, query } from "./_generated/server";
 import { requireKnowledgeReader, requireOwnedTask } from "./lib/ownership";
-import { clampLength, P5_LIMITS } from "./lib/p5config";
+import { writeCanonicalTaskResult } from "./lib/p5writes";
 
 /** Read the caller's own task result (revalidates ownership). */
 export const getMyTaskResult = query({
@@ -47,29 +47,16 @@ export const writeTaskResultInternal = internalMutation({
   handler: async (ctx, args) => {
     const task = await ctx.db.get(args.taskId);
     if (!task) throw new Error("task_not_found");
-
-    const answerText = clampLength(args.answerText, P5_LIMITS.maxResultLength);
-    const existing = await ctx.db
-      .query("nexusTaskResults")
-      .withIndex("by_task", (q) => q.eq("taskId", args.taskId))
-      .unique();
-
-    const fields = {
+    return writeCanonicalTaskResult(ctx, {
       taskId: args.taskId,
       ownerClerkUserId: task.ownerClerkUserId,
-      answerText,
-      format: args.format ?? ("markdown" as const),
-      createdAt: Date.now(),
+      answerText: args.answerText,
+      format: args.format,
       completedBy: args.completedBy,
       model: args.model,
       toolId: args.toolId,
       durationMs: args.durationMs,
-    };
-
-    if (existing) {
-      await ctx.db.patch(existing._id, fields);
-      return existing._id;
-    }
-    return await ctx.db.insert("nexusTaskResults", fields);
+      now: Date.now(),
+    });
   },
 });

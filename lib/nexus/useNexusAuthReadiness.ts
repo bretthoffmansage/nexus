@@ -26,15 +26,33 @@ export type NexusAuthReadiness = {
   isLoading: boolean;
   /** Convex has confirmed the current token belongs to a signed-in user. */
   isAuthenticated: boolean;
-  /** Safe to issue a P5 private query/mutation right now. */
+  /** Safe to issue a P5/P6 private query/mutation right now. */
   readyForPrivateQueries: boolean;
 };
 
+const NOT_READY: NexusAuthReadiness = {
+  isLoading: false,
+  isAuthenticated: false,
+  readyForPrivateQueries: false,
+};
+
 export function useNexusAuthReadiness(): NexusAuthReadiness {
-  const { isLoading, isAuthenticated } = useConvexAuth();
-  return {
-    isLoading,
-    isAuthenticated,
-    readyForPrivateQueries: !isLoading && isAuthenticated,
-  };
+  // `useConvexAuth()` throws when no `ConvexProviderWithClerk`-family provider
+  // is mounted above it — a reachable state for shell components (rendered on
+  // every route) in the dev-only "configuration required" render, or when
+  // Clerk is unconfigured so only a plain `ConvexProvider` exists. Treat that
+  // as "not ready" rather than crashing the whole shell. The hook is still
+  // invoked unconditionally (first statement in the try), so hook order is
+  // stable across renders.
+  try {
+    // eslint-disable-next-line react-hooks/rules-of-hooks -- always invoked; the catch only degrades a provider-less render to "not ready".
+    const { isLoading, isAuthenticated } = useConvexAuth();
+    return {
+      isLoading,
+      isAuthenticated,
+      readyForPrivateQueries: !isLoading && isAuthenticated,
+    };
+  } catch {
+    return NOT_READY;
+  }
 }

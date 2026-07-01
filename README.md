@@ -40,7 +40,9 @@ claudia_console/                 # local folder name (future GitHub repo may be 
 | **P4.3-clerk-email-claim-bootstrap-recovery** | Complete — Clerk email claim + admin bootstrap repair |
 | **P4.4-legacy-workspace-frontend-port** | Complete — broader legacy Nexus workspace restored |
 | **P5-private-conversations-tasks-shared-queue** | Complete — private per-user conversations/tasks + global queue persistence; no execution (Connector is P6+) |
-| **P6+** | Not started — Console Connector, execution |
+| **P5.1-convex-auth-readiness-guard** | Complete — private queries gate on Convex auth readiness |
+| **P6-trusted-connector-queue-protocol** | Complete (Nexus/Convex side) — signed Connector protocol (claim/lease/heartbeat/complete) over the canonical queue; execution still requires the P7 local poller |
+| **P7+** | Not started — local outbound Connector poller inside `claudia_system` (execution) |
 
 See [`docs/specs/nexus_p4_2_clerk_convex_auth_repair_and_auth_centering_v1.md`](docs/specs/nexus_p4_2_clerk_convex_auth_repair_and_auth_centering_v1.md) for the Clerk-to-Convex token fix.
 
@@ -116,9 +118,17 @@ The legacy launcher uses paths relative to `legacy_local_console/`. Runtime data
 
 ## What Nexus does not include yet
 
-- Console Connector APIs, HMAC, task claims/leases/heartbeat, and worker execution (P6)
-- Terminal execution, governed shell, Web Search, or direct Claudia/Hermes calls
+- The **local outbound Connector poller** inside `claudia_system` (P7) — the piece that actually
+  executes queued work through Claudia. Nexus does not call Claudia; there is no inbound Claudia
+  endpoint.
+- Terminal execution, governed shell, Web Search, or direct Claudia/Hermes calls.
 
-Private conversations, persistent tasks, and shared global queue ordering (P5) are implemented —
-see [`docs/specs/nexus_p5_private_conversations_tasks_shared_queue_v1.md`](docs/specs/nexus_p5_private_conversations_tasks_shared_queue_v1.md).
-Submitted requests are saved and queued; no task executes until a future Console Connector exists.
+Private conversations, persistent tasks, and shared global queue ordering (P5/P5.1) are implemented,
+and the **trusted Connector queue protocol (P6)** — a signed HTTPS surface for a single machine
+worker to claim/lease/heartbeat/complete tasks over the canonical `nexusTasks` queue — now exists on
+the Nexus/Convex side. See
+[`docs/specs/nexus_p6_trusted_connector_queue_protocol_v1.md`](docs/specs/nexus_p6_trusted_connector_queue_protocol_v1.md)
+and the binding
+[`docs/specs/nexus_p6_p7_connector_handoff_contract_v1.md`](docs/specs/nexus_p6_p7_connector_handoff_contract_v1.md).
+Submitted requests are saved and queued; **execution begins only when the P7 Connector poller is
+built and online.** P5 ownership/privacy remain authoritative for all Connector work.

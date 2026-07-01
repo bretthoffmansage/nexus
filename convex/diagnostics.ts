@@ -1,14 +1,16 @@
 import { query } from "./_generated/server";
 import { requireApprovedRole } from "./lib/ownership";
 import { TASK_STATUSES, type TaskStatus } from "./lib/taskStatus";
+import { getConnectorAdminProjection } from "./connectorRegistry";
 
 /**
  * Privacy-safe aggregate queue/system health for `nexus_admin` only.
  *
- * Returns COUNTS and a single oldest-queued timestamp — never message text,
- * request text, result content, source excerpts, conversation titles, or any
- * per-user history. Being an administrator grants identity administration and
- * queue health visibility, NOT access to anyone's private content.
+ * Returns COUNTS, a single oldest-queued timestamp, and content-free Connector
+ * operational status — never message text, request text, result content,
+ * source excerpts, conversation titles, or any per-user history. Being an
+ * administrator grants identity administration and queue health visibility,
+ * NOT access to anyone's private content.
  *
  * Counts use the global status indexes (content-free). These are the only
  * functions permitted to read across owners, and they expose no row contents.
@@ -18,6 +20,7 @@ export const adminQueueDiagnostics = query({
   handler: async (ctx) => {
     await requireApprovedRole(ctx, "nexus_admin");
 
+    const now = Date.now();
     const counts: Record<TaskStatus, number> = {
       queued: 0,
       cancel_requested: 0,
@@ -45,13 +48,19 @@ export const adminQueueDiagnostics = query({
 
     const total = Object.values(counts).reduce((sum, n) => sum + n, 0);
 
+    // P6 — content-free Connector operational projection (presence, operating
+    // state, heartbeat timestamps, protocol/software version). Never task
+    // content, never identity.
+    const connector = await getConnectorAdminProjection(ctx, now);
+
     return {
       counts,
       total,
       oldestQueuedAt: oldestQueued?.queuedAt ?? null,
-      // P5 has no worker; surfaced so the admin UI can say so truthfully.
-      connectorState: "not_configured" as const,
-      generatedAt: Date.now(),
+      connector,
+      // Superseded by `connector.presence`; kept for backward compatibility.
+      connectorState: connector.configured ? connector.presence : ("not_configured" as const),
+      generatedAt: now,
     };
   },
 });

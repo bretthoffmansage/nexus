@@ -21,14 +21,15 @@ export function ChatEmptyState() {
     <div className="nexus-chat-empty">
       <h2 className="nexus-chat-empty-title">Welcome</h2>
       <p className="nexus-chat-empty-copy">
-        Read-only knowledge access through Claudia will be available after task connectivity is
-        configured. Ask questions, receive source-backed answers, and review provenance — without
-        exposing Claudia Core to the public internet.
+        Ask a knowledge question and Nexus saves it privately and queues it. Execution begins when
+        the Claudia Connector is online and claims the request through the trusted Connector
+        protocol — Claudia Core is never exposed to the public internet. Answers and their sources
+        appear here once the Connector completes the work.
       </p>
       <ul className="nexus-chat-empty-list">
-        <li>Sage Knowledge Base retrieval (planned)</li>
-        <li>Membership.io transcript retrieval (planned)</li>
-        <li>Summaries and synthesis with sources (planned)</li>
+        <li>Sage Knowledge Base retrieval</li>
+        <li>Membership.io transcript retrieval</li>
+        <li>Summaries and synthesis with sources</li>
       </ul>
     </div>
   );
@@ -122,7 +123,7 @@ export function NexusChatWorkspace() {
           <h1 className="nexus-chat-heading" id="nexus-chat-heading">
             Nexus Chat
           </h1>
-          <p className="nexus-chat-subheading">Read-only knowledge workspace</p>
+          <p className="nexus-chat-subheading">Private knowledge requests · queued for Claudia</p>
         </div>
         <ModeToggle />
       </header>

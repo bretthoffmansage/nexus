@@ -39,3 +39,30 @@ for name in \
   NEXUS_BOOTSTRAP_ADMIN_EMAILS; do
   check_var "$name"
 done
+
+# --- P6 trusted Connector protocol (presence-only) -------------------------
+# These belong in the CONVEX deployment environment (`npx convex env set ...`),
+# not necessarily .env.local — Convex functions read them via process.env. They
+# are optional until a Connector is provisioned, so "missing" is not a failure;
+# this only reports presence. Secret values are never printed.
+echo "# P6 connector (set in Convex deployment env; optional until a Connector exists):"
+check_var "NEXUS_CONNECTOR_ID"
+
+# The shared secret: presence + minimum-strength only (never its value).
+check_connector_secret() {
+  local name="NEXUS_CONNECTOR_SHARED_SECRET"
+  if [[ ! -f "$ENV_FILE" ]] || ! grep -q "^${name}=" "$ENV_FILE"; then
+    echo "$name=missing (.env.local; may instead be set in Convex deployment env)"
+    return
+  fi
+  local value
+  value="$(grep "^${name}=" "$ENV_FILE" | head -1 | cut -d= -f2-)"
+  if [[ -z "${value// }" ]]; then
+    echo "$name=empty"
+  elif [[ "${#value}" -lt 32 ]]; then
+    echo "$name=present (weak: use >= 32 random chars)"
+  else
+    echo "$name=present"
+  fi
+}
+check_connector_secret

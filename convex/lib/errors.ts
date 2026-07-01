@@ -23,6 +23,28 @@ export const NEXUS_ERROR_CODES = {
   CANCELLATION_NOT_ALLOWED: "cancellation_not_allowed",
   QUEUE_UNAVAILABLE: "queue_unavailable",
   RESULT_NOT_AVAILABLE: "result_not_available",
+  // P6 — trusted Connector queue protocol.
+  CONNECTOR_UNAUTHORIZED: "connector_unauthorized",
+  CONNECTOR_DISABLED: "connector_disabled",
+  CONNECTOR_REVOKED: "connector_revoked",
+  INVALID_SIGNATURE: "invalid_signature",
+  STALE_TIMESTAMP: "stale_timestamp",
+  REPLAY_DETECTED: "replay_detected",
+  INVALID_REQUEST: "invalid_request",
+  BODY_TOO_LARGE: "body_too_large",
+  NO_TASK_AVAILABLE: "no_task_available",
+  CONNECTOR_BUSY: "connector_busy",
+  TASK_NOT_CLAIMED: "task_not_claimed",
+  WRONG_CONNECTOR: "wrong_connector",
+  WRONG_LEASE: "wrong_lease",
+  LEASE_EXPIRED: "lease_expired",
+  CANCELLATION_REQUESTED: "cancellation_requested",
+  COMPLETION_CONFLICT: "completion_conflict",
+  RESULT_TOO_LARGE: "result_too_large",
+  TOO_MANY_SOURCES: "too_many_sources",
+  PROGRESS_TOO_LARGE: "progress_too_large",
+  PROTOCOL_VERSION_UNSUPPORTED: "protocol_version_unsupported",
+  INTERNAL_ERROR: "internal_error",
 } as const;
 
 export type NexusErrorCode =

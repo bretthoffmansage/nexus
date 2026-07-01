@@ -153,6 +153,17 @@ export default defineSchema({
     resultSummary: v.optional(v.string()),
     errorCode: v.optional(v.string()),
     errorMessage: v.optional(v.string()),
+    // P6 — trusted Connector lease. Set only while status is
+    // claimed/running/cancel_requested; cleared on every terminal transition.
+    // Ownership of the task itself never changes; this is scheduling state only.
+    claimedByConnectorId: v.optional(v.string()),
+    leaseId: v.optional(v.string()),
+    leaseExpiresAt: v.optional(v.number()),
+    lastLeaseHeartbeatAt: v.optional(v.number()),
+    claimAttempt: v.optional(v.number()),
+    /** Times a stale/abandoned lease on this task has been recovered. Bounds
+     * requeue loops (see `convex/lib/p6config.ts` `maxLeaseRecoveries`). */
+    recoveryCount: v.optional(v.number()),
   })
     // User-private indexes.
     .index("by_owner_and_created_at", ["ownerClerkUserId", "createdAt"])
@@ -175,6 +186,9 @@ export default defineSchema({
     ])
     .index("by_status_and_queue_sequence", ["status", "queueSequence"])
     .index("by_queue_sequence", ["queueSequence"])
+    // P6 — stale lease recovery scan (claimed/running/cancel_requested tasks
+    // whose lease has expired). NEVER exposed through public user queries.
+    .index("by_status_and_lease_expires_at", ["status", "leaseExpiresAt"])
     // Retry lineage.
     .index("by_retry_of_task", ["retryOfTaskId"]),
 
@@ -250,9 +264,17 @@ export default defineSchema({
       v.literal("conversation_created"),
       v.literal("conversation_archived"),
       v.literal("conversation_reopened"),
+      // P6 — trusted Connector lifecycle (never browser-originated).
+      v.literal("task_claimed"),
+      v.literal("task_started"),
+      v.literal("task_completed"),
+      v.literal("task_failed"),
+      v.literal("task_lease_recovered"),
     ),
     conversationId: v.optional(v.id("nexusConversations")),
     taskId: v.optional(v.id("nexusTasks")),
+    /** P6 — which Connector performed a worker-originated event, if any. */
+    connectorId: v.optional(v.string()),
     at: v.number(),
     metadata: v.optional(boundedMetadataValidator),
   })
@@ -264,4 +286,66 @@ export default defineSchema({
     key: v.string(),
     value: v.number(),
   }).index("by_key", ["key"]),
+
+  // ---------------------------------------------------------------------------
+  // P6 — trusted Connector queue protocol. `nexusTasks` remains the ONE
+  // canonical queue; these tables add machine identity and replay protection
+  // for the future Console Connector. No plaintext secret is ever stored here
+  // — the shared secret lives only in Convex deployment environment config and
+  // is verified via HMAC (see `convex/lib/connectorAuth.ts`).
+  // ---------------------------------------------------------------------------
+
+  // A trusted machine identity, provisioned only via an operator-run bootstrap
+  // (`npx convex run connectorRegistry:bootstrapConnector ...`) — never via a
+  // public/self-registration endpoint. Ordinary users never read this table
+  // directly; only privacy-safe projections are exposed (see
+  // `connectorRegistry.ts` / `diagnostics.ts`).
+  nexusConnectors: defineTable({
+    connectorId: v.string(),
+    displayName: v.string(),
+    status: v.union(v.literal("active"), v.literal("disabled"), v.literal("revoked")),
+    enabled: v.boolean(),
+    /** Reserved for future fine-grained scoping; P6 grants the full protocol set. */
+    allowedCapabilities: v.array(v.string()),
+    /** Tool IDs this Connector may claim. Defaults to all P5-supported tools when unset. */
+    allowedToolIds: v.optional(v.array(v.string())),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+    lastSeenAt: v.optional(v.number()),
+    lastHeartbeatAt: v.optional(v.number()),
+    operatingState: v.optional(
+      v.union(
+        v.literal("idle"),
+        v.literal("claiming"),
+        v.literal("running"),
+        v.literal("degraded"),
+      ),
+    ),
+    currentTaskId: v.optional(v.id("nexusTasks")),
+    currentLeaseId: v.optional(v.string()),
+    softwareVersion: v.optional(v.string()),
+    hostLabel: v.optional(v.string()),
+    environment: v.optional(v.string()),
+    lastErrorCode: v.optional(v.string()),
+    lastErrorAt: v.optional(v.number()),
+    disabledAt: v.optional(v.number()),
+    revokedAt: v.optional(v.number()),
+    metadata: v.optional(boundedMetadataValidator),
+  })
+    .index("by_connector_id", ["connectorId"])
+    .index("by_status", ["status"])
+    .index("by_last_seen_at", ["lastSeenAt"])
+    .index("by_current_task_id", ["currentTaskId"]),
+
+  // Replay protection for signed Connector requests. A (connectorId, nonce)
+  // pair may be consumed at most once. Bounded retention — pruned by a cron.
+  nexusConnectorNonces: defineTable({
+    connectorId: v.string(),
+    nonce: v.string(),
+    requestTimestamp: v.number(),
+    createdAt: v.number(),
+    expiresAt: v.number(),
+  })
+    .index("by_connector_and_nonce", ["connectorId", "nonce"])
+    .index("by_expires_at", ["expiresAt"]),
 });

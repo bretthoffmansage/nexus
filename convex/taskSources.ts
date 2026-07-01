@@ -1,7 +1,8 @@
 import { v } from "convex/values";
 import { internalMutation, query } from "./_generated/server";
 import { requireKnowledgeReader, requireOwnedTask } from "./lib/ownership";
-import { clampLength, P5_LIMITS } from "./lib/p5config";
+import { P5_LIMITS } from "./lib/p5config";
+import { replaceTaskSourceRows } from "./lib/p5writes";
 
 const sourceTypeValidator = v.union(
   v.literal("vault_note"),
@@ -56,39 +57,11 @@ export const replaceTaskSourcesInternal = internalMutation({
   handler: async (ctx, args) => {
     const task = await ctx.db.get(args.taskId);
     if (!task) throw new Error("task_not_found");
-
-    // Clear any existing sources for this task.
-    const existing = await ctx.db
-      .query("nexusTaskSources")
-      .withIndex("by_task_and_ordinal", (q) => q.eq("taskId", args.taskId))
-      .collect();
-    for (const row of existing) {
-      await ctx.db.delete(row._id);
-    }
-
-    const now = Date.now();
-    const bounded = args.sources.slice(0, P5_LIMITS.maxSourcesPerTask);
-    let ordinal = 0;
-    for (const source of bounded) {
-      await ctx.db.insert("nexusTaskSources", {
-        taskId: args.taskId,
-        ownerClerkUserId: task.ownerClerkUserId,
-        sourceType: source.sourceType,
-        title: clampLength(source.title, P5_LIMITS.maxSourceTitleLength),
-        locator: source.locator
-          ? clampLength(source.locator, P5_LIMITS.maxSourceLocatorLength)
-          : undefined,
-        excerpt: source.excerpt
-          ? clampLength(source.excerpt, P5_LIMITS.maxSourceExcerptLength)
-          : undefined,
-        provenanceLabel: source.provenanceLabel
-          ? clampLength(source.provenanceLabel, P5_LIMITS.maxSourceTitleLength)
-          : undefined,
-        ordinal,
-        createdAt: now,
-      });
-      ordinal += 1;
-    }
-    return { taskId: args.taskId, count: bounded.length };
+    return replaceTaskSourceRows(ctx, {
+      taskId: args.taskId,
+      ownerClerkUserId: task.ownerClerkUserId,
+      sources: args.sources,
+      now: Date.now(),
+    });
   },
 });

@@ -5,11 +5,11 @@ import { NEXUS_ERROR_CODES, nexusError } from "./errors";
  * Centralized task status lifecycle. Status strings must never be scattered
  * through UI and Convex code — import from here.
  *
- * P5 user-reachable states are only `queued` and the terminal user actions
- * (`cancelled`). The worker states (`claimed`, `running`, `completed`,
- * `failed`, `cancel_requested`) are reserved for the future Console Connector
- * (P6+) and are defined now so the transition validator already understands
- * them. The browser may never drive a reserved worker transition.
+ * P5 user-reachable states were only `queued` and `cancelled`. P6 activates
+ * the worker states (`claimed`, `running`, `completed`, `failed`,
+ * `cancel_requested`) for the trusted Connector protocol — the browser still
+ * may never drive one of these transitions directly (see
+ * `convex/lib/connectorAuth.ts` and `convex/connectorTasks.ts`).
  */
 export const TASK_STATUSES = [
   "queued",
@@ -36,15 +36,26 @@ export const taskStatusValidator = v.union(
 /**
  * Allowed forward transitions. Terminal states have no outgoing edges.
  *
- * P5 cancellation policy: a `queued` task may go directly to `cancelled`
- * (no worker holds it). A future claimed/running task will instead move to
- * `cancel_requested` and the worker finalizes it to `cancelled`.
+ * Cancellation policy: a `queued` task may go directly to `cancelled` (no
+ * worker holds it). A claimed/running task instead moves to
+ * `cancel_requested`, and only the Connector holding the lease (or P6's
+ * stale-lease recovery policy) finalizes it to `cancelled`.
+ *
+ * `claimed -> failed` (P6): a Connector may fail a task before ever calling
+ * `start` (e.g. the tool becomes unavailable immediately after claim), so
+ * failure must be reachable without fabricating a `running` transition that
+ * never actually happened.
+ *
+ * `claimed|running -> queued` (P6, system-only): stale-lease recovery
+ * requeues a task abandoned by a Connector that stopped heartbeating. Never
+ * client- or Connector-triggered — only `convex/connectorTasks.ts`'s
+ * recovery path drives this edge.
  */
 const ALLOWED_TRANSITIONS: Record<TaskStatus, readonly TaskStatus[]> = {
   queued: ["claimed", "cancel_requested", "cancelled"],
   cancel_requested: ["cancelled"],
-  claimed: ["running", "cancel_requested"],
-  running: ["completed", "failed", "cancel_requested"],
+  claimed: ["running", "cancel_requested", "failed", "queued"],
+  running: ["completed", "failed", "cancel_requested", "queued"],
   cancelled: [],
   completed: [],
   failed: [],
@@ -63,8 +74,14 @@ export function assertTransition(from: TaskStatus, to: TaskStatus): void {
   }
 }
 
-/** Statuses a user may cancel directly in P5 (no worker holds the task). */
+/** Statuses a user may cancel directly, immediately, to `cancelled` (no
+ * Connector holds the task yet). */
 export const USER_CANCELLABLE_STATUSES: readonly TaskStatus[] = ["queued"];
+
+/** Statuses a user may request cancellation of (P6): a Connector already
+ * holds the lease, so the task moves to `cancel_requested` and the Connector
+ * (or stale-lease recovery) finalizes it. */
+export const USER_CANCEL_REQUESTABLE_STATUSES: readonly TaskStatus[] = ["claimed", "running"];
 
 /** Statuses that count as "already cancelling/cancelled" for idempotency. */
 export const CANCELLATION_TERMINAL_OR_PENDING: readonly TaskStatus[] = [
@@ -91,4 +108,8 @@ export function isRetryable(status: TaskStatus): boolean {
 
 export function isUserCancellable(status: TaskStatus): boolean {
   return USER_CANCELLABLE_STATUSES.includes(status);
+}
+
+export function isUserCancelRequestable(status: TaskStatus): boolean {
+  return USER_CANCEL_REQUESTABLE_STATUSES.includes(status);
 }

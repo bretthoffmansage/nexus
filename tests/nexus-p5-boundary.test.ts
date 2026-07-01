@@ -92,17 +92,14 @@ describe("P5 boundary — worker writes are internal-only", () => {
   });
 });
 
-describe("P5 boundary — no P6 connector/claim/lease/HMAC work", () => {
-  it("P5 Convex code contains no connector-execution primitives", () => {
-    const forbidden = [
-      "claimNextTask",
-      "leaseToken",
-      "renewLease",
-      "releaseTask",
-      "createHmac",
-      "HMAC",
-      "heartbeat",
-    ];
+describe("P5 boundary — no inline connector-execution primitives in P5 modules", () => {
+  // P6 legitimately implements claim/lease/heartbeat/HMAC — in its own
+  // dedicated modules (connectorAuth.ts, connectorRegistry.ts,
+  // connectorTasks.ts, http.ts; see tests/nexus-p6-boundary.test.ts). This
+  // test now checks a narrower, still-real invariant: the original P5
+  // user-facing modules never duplicate that protocol logic inline.
+  it("P5 Convex code contains no inline connector-execution primitives", () => {
+    const forbidden = ["claimNextTask", "leaseToken", "renewLease", "releaseTask", "createHmac"];
     const modules = [...PUBLIC_MODULES, "convex/lib/queue.ts", "convex/lib/taskStatus.ts"];
     const violations: string[] = [];
     for (const mod of modules) {

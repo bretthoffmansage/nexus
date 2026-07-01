@@ -98,6 +98,8 @@ export async function recordAudit(
     eventType: Doc<"nexusTaskAuditEvents">["eventType"];
     conversationId?: Id<"nexusConversations">;
     taskId?: Id<"nexusTasks">;
+    /** P6 — which Connector performed a worker-originated event, if any. */
+    connectorId?: string;
     metadata?: BoundedMetadata;
     now: number;
   },
@@ -107,9 +109,111 @@ export async function recordAudit(
     eventType: args.eventType,
     conversationId: args.conversationId,
     taskId: args.taskId,
+    connectorId: args.connectorId,
     at: args.now,
     metadata: args.metadata,
   });
+}
+
+/**
+ * Write the one canonical task result (insert, or replace in place if one
+ * already exists). Extracted so `taskResults.writeTaskResultInternal` (the
+ * preserved P5 worker-mutation surface) and the P6 Connector `completeTask`
+ * mutation share identical logic within their own transaction.
+ */
+export async function writeCanonicalTaskResult(
+  ctx: MutationCtx,
+  args: {
+    taskId: Id<"nexusTasks">;
+    ownerClerkUserId: string;
+    answerText: string;
+    format?: Doc<"nexusTaskResults">["format"];
+    completedBy?: string;
+    model?: string;
+    toolId?: string;
+    durationMs?: number;
+    now: number;
+  },
+): Promise<Id<"nexusTaskResults">> {
+  const answerText = clampLength(args.answerText, P5_LIMITS.maxResultLength);
+  const existing = await ctx.db
+    .query("nexusTaskResults")
+    .withIndex("by_task", (q) => q.eq("taskId", args.taskId))
+    .unique();
+
+  const fields = {
+    taskId: args.taskId,
+    ownerClerkUserId: args.ownerClerkUserId,
+    answerText,
+    format: args.format ?? ("markdown" as const),
+    createdAt: args.now,
+    completedBy: args.completedBy,
+    model: args.model,
+    toolId: args.toolId,
+    durationMs: args.durationMs,
+  };
+
+  if (existing) {
+    await ctx.db.patch(existing._id, fields);
+    return existing._id;
+  }
+  return await ctx.db.insert("nexusTaskResults", fields);
+}
+
+export type TaskSourceInput = {
+  sourceType: Doc<"nexusTaskSources">["sourceType"];
+  title: string;
+  locator?: string;
+  excerpt?: string;
+  provenanceLabel?: string;
+};
+
+/**
+ * Replace all provenance sources for a task (delete existing, insert the
+ * bounded new set). Extracted so `taskSources.replaceTaskSourcesInternal`
+ * (preserved P5 surface) and the P6 Connector `completeTask` mutation share
+ * identical bounded-write logic.
+ */
+export async function replaceTaskSourceRows(
+  ctx: MutationCtx,
+  args: {
+    taskId: Id<"nexusTasks">;
+    ownerClerkUserId: string;
+    sources: TaskSourceInput[];
+    now: number;
+  },
+): Promise<{ taskId: Id<"nexusTasks">; count: number }> {
+  const existing = await ctx.db
+    .query("nexusTaskSources")
+    .withIndex("by_task_and_ordinal", (q) => q.eq("taskId", args.taskId))
+    .collect();
+  for (const row of existing) {
+    await ctx.db.delete(row._id);
+  }
+
+  const bounded = args.sources.slice(0, P5_LIMITS.maxSourcesPerTask);
+  let ordinal = 0;
+  for (const source of bounded) {
+    await ctx.db.insert("nexusTaskSources", {
+      taskId: args.taskId,
+      ownerClerkUserId: args.ownerClerkUserId,
+      sourceType: source.sourceType,
+      title: clampLength(source.title, P5_LIMITS.maxSourceTitleLength),
+      locator: source.locator
+        ? clampLength(source.locator, P5_LIMITS.maxSourceLocatorLength)
+        : undefined,
+      excerpt: source.excerpt
+        ? clampLength(source.excerpt, P5_LIMITS.maxSourceExcerptLength)
+        : undefined,
+      provenanceLabel: source.provenanceLabel
+        ? clampLength(source.provenanceLabel, P5_LIMITS.maxSourceTitleLength)
+        : undefined,
+      ordinal,
+      createdAt: args.now,
+    });
+    ordinal += 1;
+  }
+  return { taskId: args.taskId, count: bounded.length };
 }
 
 /** Bump a conversation's activity timestamps. updatedAt always advances. */

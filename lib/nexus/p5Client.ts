@@ -29,6 +29,8 @@ export const nexusChat = {
   listMyTaskProgress: api.taskProgress.listMyTaskProgress,
   getMyTaskResult: api.taskResults.getMyTaskResult,
   listMyTaskSources: api.taskSources.listMyTaskSources,
+  // P6 — truthful, content-free Connector presence for ordinary users.
+  connectorStatus: api.connectorRegistry.getConnectorStatusPublic,
 } as const;
 
 /** A fresh, URL-safe idempotency key for a single submission attempt. */

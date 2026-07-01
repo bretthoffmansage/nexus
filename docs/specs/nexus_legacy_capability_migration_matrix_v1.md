@@ -1207,8 +1207,8 @@ See **§9** (summary: **D4** on Nexus, **D7** successor).
 | **P3** ✅ | UI port foundation | Theme, layout, stubs | D1/D5 |
 | **P4** ✅ | Clerk approval + roles | Auth, roles | D1/D4 |
 | **P5** ✅ | Private Convex conversations/tasks + shared queue | Persisted chat submit/history/reopen, task cancel/retry, global queue ordering — no execution yet | D1/D2 |
-| **P6** | Connector API + claims | Heartbeat, presence, gateway checks | D1/D2 |
-| **P7** | Connector daemon (`claudia_system`) | Transport | D2 |
+| **P6** ✅ | Trusted Connector queue protocol (Nexus/Convex side) | Signed claim/lease/heartbeat/progress/complete/fail/cancel over the canonical queue; content-free Connector status. No execution yet — P5 ownership/privacy remain authoritative | D1/D2 |
+| **P7** | Connector poller (`claudia_system`) | Outbound polling loop that executes queued work through Claudia (see P6→P7 handoff contract) | D2 |
 | **P8** | Control Center UI | Dashboard, diagnostics split | D7/D1 |
 | **P9** | Read-only tools E2E | Chat KB, sources, task runs | D2 |
 | **P10** | Prod hardening | Audit, API tokens?, webhooks?, notifications? | D6/D8 |

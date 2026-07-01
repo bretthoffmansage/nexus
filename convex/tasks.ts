@@ -20,10 +20,12 @@ import {
 } from "./lib/p5config";
 import { allocateQueueSequence, defaultQueuePriority } from "./lib/queue";
 import { appendMessage, appendProgress, recordAudit, touchConversation } from "./lib/p5writes";
+import { performTaskTransition } from "./lib/taskTransitions";
 import {
   assertTransition,
   isRetryable,
   isUserCancellable,
+  isUserCancelRequestable,
   type TaskStatus,
   taskStatusValidator,
   TASK_STATUSES,
@@ -335,9 +337,15 @@ export const myTaskCounts = query({
 });
 
 /**
- * Request cancellation of an owned task. In P5 (no worker) a `queued` task is
- * cancelled immediately. Repeated cancellation is idempotent. Completed/failed
- * tasks cannot be cancelled.
+ * Request cancellation of an owned task. Repeated cancellation is idempotent.
+ * Completed/failed tasks cannot be cancelled.
+ *
+ * - `queued` (no Connector holds it yet): cancelled immediately.
+ * - `claimed`/`running` (P6 — a Connector holds the lease): moves to
+ *   `cancel_requested`. The lease is left untouched so the Connector keeps
+ *   observing it via its next lease heartbeat; the Connector (or P6's
+ *   stale-lease recovery policy, if the Connector has disappeared) finalizes
+ *   the task to `cancelled`.
  */
 export const cancelMyTask = mutation({
   args: { taskId: v.id("nexusTasks") },
@@ -348,37 +356,64 @@ export const cancelMyTask = mutation({
     if (task.status === "cancelled" || task.status === "cancel_requested") {
       return { taskId: task._id, status: task.status };
     }
-    if (!isUserCancellable(task.status)) {
-      nexusError(
-        NEXUS_ERROR_CODES.CANCELLATION_NOT_ALLOWED,
-        "Task cannot be cancelled in its current state",
-      );
-    }
 
     const now = Date.now();
-    assertTransition(task.status, "cancelled");
-    await ctx.db.patch(task._id, {
-      status: "cancelled",
-      cancellationRequestedAt: now,
-      cancelledAt: now,
-      updatedAt: now,
-    });
-    await appendProgress(ctx, {
-      taskId: task._id,
-      ownerClerkUserId: clerkUserId,
-      eventType: "task_cancelled",
-      message: "Cancelled by you before execution.",
-      now,
-    });
-    await recordAudit(ctx, {
-      ownerClerkUserId: clerkUserId,
-      eventType: "task_cancelled",
-      conversationId: task.conversationId,
-      taskId: task._id,
-      now,
-    });
-    await touchConversation(ctx, task.conversationId, { now });
-    return { taskId: task._id, status: "cancelled" as const };
+
+    if (isUserCancellable(task.status)) {
+      assertTransition(task.status, "cancelled");
+      await ctx.db.patch(task._id, {
+        status: "cancelled",
+        cancellationRequestedAt: now,
+        cancelledAt: now,
+        updatedAt: now,
+      });
+      await appendProgress(ctx, {
+        taskId: task._id,
+        ownerClerkUserId: clerkUserId,
+        eventType: "task_cancelled",
+        message: "Cancelled by you before execution.",
+        now,
+      });
+      await recordAudit(ctx, {
+        ownerClerkUserId: clerkUserId,
+        eventType: "task_cancelled",
+        conversationId: task.conversationId,
+        taskId: task._id,
+        now,
+      });
+      await touchConversation(ctx, task.conversationId, { now });
+      return { taskId: task._id, status: "cancelled" as const };
+    }
+
+    if (isUserCancelRequestable(task.status)) {
+      assertTransition(task.status, "cancel_requested");
+      await ctx.db.patch(task._id, {
+        status: "cancel_requested",
+        cancellationRequestedAt: now,
+        updatedAt: now,
+      });
+      await appendProgress(ctx, {
+        taskId: task._id,
+        ownerClerkUserId: clerkUserId,
+        eventType: "cancel_requested",
+        message: "Cancellation requested — waiting for the Claudia Connector to stop.",
+        now,
+      });
+      await recordAudit(ctx, {
+        ownerClerkUserId: clerkUserId,
+        eventType: "task_cancel_requested",
+        conversationId: task.conversationId,
+        taskId: task._id,
+        now,
+      });
+      await touchConversation(ctx, task.conversationId, { now });
+      return { taskId: task._id, status: "cancel_requested" as const };
+    }
+
+    nexusError(
+      NEXUS_ERROR_CODES.CANCELLATION_NOT_ALLOWED,
+      "Task cannot be cancelled in its current state",
+    );
   },
 });
 
@@ -507,63 +542,5 @@ export const transitionTaskInternal = internalMutation({
     errorMessage: v.optional(v.string()),
     progressMessage: v.optional(v.string()),
   },
-  handler: async (ctx, args) => {
-    const task = await ctx.db.get(args.taskId);
-    if (!task) throw new Error("task_not_found");
-    assertTransition(task.status, args.toStatus);
-
-    const now = Date.now();
-    const patch: Partial<Doc<"nexusTasks">> = { status: args.toStatus, updatedAt: now };
-    if (args.resultSummary !== undefined) {
-      patch.resultSummary = clampLength(args.resultSummary, P5_LIMITS.maxResultSummaryLength);
-    }
-    if (args.errorCode !== undefined) patch.errorCode = args.errorCode;
-    if (args.errorMessage !== undefined) {
-      patch.errorMessage = clampLength(args.errorMessage, P5_LIMITS.maxErrorMessageLength);
-    }
-
-    const progressByStatus: Record<TaskStatus, Doc<"nexusTaskProgressEvents">["eventType"]> = {
-      queued: "task_queued",
-      cancel_requested: "cancel_requested",
-      cancelled: "task_cancelled",
-      claimed: "task_claimed",
-      running: "task_started",
-      completed: "task_completed",
-      failed: "task_failed",
-    };
-
-    switch (args.toStatus) {
-      case "claimed":
-        patch.claimedAt = now;
-        break;
-      case "running":
-        patch.startedAt = now;
-        break;
-      case "completed":
-        patch.completedAt = now;
-        break;
-      case "failed":
-        patch.failedAt = now;
-        break;
-      case "cancel_requested":
-        patch.cancellationRequestedAt = now;
-        break;
-      case "cancelled":
-        patch.cancelledAt = now;
-        break;
-      default:
-        break;
-    }
-
-    await ctx.db.patch(args.taskId, patch);
-    await appendProgress(ctx, {
-      taskId: args.taskId,
-      ownerClerkUserId: task.ownerClerkUserId,
-      eventType: progressByStatus[args.toStatus],
-      message: args.progressMessage,
-      now,
-    });
-    await touchConversation(ctx, task.conversationId, { now });
-    return { taskId: args.taskId, status: args.toStatus };
-  },
+  handler: (ctx, args) => performTaskTransition(ctx, args),
 });

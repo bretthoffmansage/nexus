@@ -3,7 +3,7 @@
 import { UserButton } from "@clerk/nextjs";
 import { usePathname } from "next/navigation";
 import { useChatSession } from "@/components/chat/ChatSessionContext";
-import { ClaudiaPresence } from "@/components/status/ClaudiaPresence";
+import { ClaudiaPresenceLive } from "@/components/status/ClaudiaPresenceLive";
 import { TaskHistorySection } from "@/components/history/TaskHistorySection";
 import { ToolNavigation } from "@/components/layout/ToolNavigation";
 import { NexusIcon } from "@/components/ui/NexusIcon";
@@ -82,7 +82,7 @@ export function Sidebar({
       ) : null}
 
       <div className="nexus-sidebar-presence">
-        <ClaudiaPresence />
+        <ClaudiaPresenceLive />
       </div>
 
       <div className="nexus-sidebar-footer">

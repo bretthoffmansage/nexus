@@ -3,12 +3,22 @@
 **Package:** P5 — Canonical privacy/queue contract for all later Connector/worker work
 **Status:** Authoritative contract — binding on P6+ (Console Connector) and any trusted worker
 **Date:** 2026-06-30
-**Related:** `docs/specs/nexus_p5_private_conversations_tasks_shared_queue_v1.md`
+**Related:** `docs/specs/nexus_p5_private_conversations_tasks_shared_queue_v1.md`,
+`docs/specs/nexus_p6_trusted_connector_queue_protocol_v1.md` (P6 implements this contract)
 
 This document is the canonical contract that later Connector work **must**
 honor. Where any future implementation conflicts with this contract, this
 contract governs until explicitly superseded by a new versioned spec plus an
 operator decision.
+
+> **P6 status (2026-07-01):** The trusted Connector queue protocol is now
+> implemented on the Nexus/Convex side and honors this contract in full:
+> ownership is copied from the task record on every worker write (never from a
+> Connector payload), claiming changes only scheduling state (never ownership,
+> priority, or `queueSequence`), worker functions are internal-only, the global
+> queue is never exposed to ordinary users, and `nexus_admin` still receives no
+> private content. The local execution poller (P7, inside `claudia_system`)
+> remains unimplemented. See the P6 spec and the P6→P7 handoff contract.
 
 ## 1. Two visibility planes
 
