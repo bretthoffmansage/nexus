@@ -47,6 +47,15 @@ const HTTP_STATUS_BY_CODE: Record<string, number> = {
   [NEXUS_ERROR_CODES.TOO_MANY_SOURCES]: 400,
   [NEXUS_ERROR_CODES.PROGRESS_TOO_LARGE]: 413,
   [NEXUS_ERROR_CODES.INTERNAL_ERROR]: 500,
+  [NEXUS_ERROR_CODES.ATTACHMENT_NOT_FOUND]: 404,
+  [NEXUS_ERROR_CODES.ATTACHMENT_NOT_BOUND]: 404,
+  [NEXUS_ERROR_CODES.ATTACHMENT_VERSION_MISMATCH]: 409,
+  [NEXUS_ERROR_CODES.ATTACHMENT_UNAVAILABLE]: 404,
+  [NEXUS_ERROR_CODES.ATTACHMENT_STORAGE_UNAVAILABLE]: 404,
+  [NEXUS_ERROR_CODES.ATTACHMENT_METADATA_MISMATCH]: 409,
+  [NEXUS_ERROR_CODES.ATTACHMENT_TOO_LARGE]: 413,
+  [NEXUS_ERROR_CODES.UNSUPPORTED_ATTACHMENT_ACTION]: 400,
+  [NEXUS_ERROR_CODES.ATTACHMENT_READ_FAILED]: 500,
 };
 
 function newRequestId(): string {
@@ -277,6 +286,7 @@ const taskHandler = httpAction(async (ctx, request) => {
           model: str(payload.model),
           toolId: str(payload.toolId),
           durationMs: num(payload.durationMs),
+          dropzoneResult: normalizeDropzoneResult(payload.dropzoneResult),
         });
         break;
       case "fail":
@@ -351,10 +361,112 @@ function normalizeSources(value: unknown): NormalizedSource[] | undefined {
   return out;
 }
 
+const DROPZONE_DISPOSITIONS = [
+  "processed",
+  "needs_review",
+  "failed",
+  "blocked",
+  "paused",
+  "already_completed",
+] as const;
+
+function normalizeDropzoneResult(value: unknown) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return undefined;
+  const record = value as Record<string, unknown>;
+  const processingDisposition = str(record.processingDisposition);
+  const userSafeMessage = str(record.userSafeMessage);
+  if (!processingDisposition || !userSafeMessage) return undefined;
+  if (!(DROPZONE_DISPOSITIONS as readonly string[]).includes(processingDisposition)) {
+    return undefined;
+  }
+  const warnings = Array.isArray(record.warnings)
+    ? record.warnings.filter((w): w is string => typeof w === "string").slice(0, 8)
+    : undefined;
+  return {
+    processingDisposition: processingDisposition as (typeof DROPZONE_DISPOSITIONS)[number],
+    userSafeMessage,
+    notesCreated: num(record.notesCreated),
+    vaultLocatorCount: num(record.vaultLocatorCount),
+    warnings,
+    retryable: bool(record.retryable),
+    partial: bool(record.partial),
+  };
+}
+
+const attachmentHandler = httpAction(async (ctx, request) => {
+  const requestId = newRequestId();
+  if (request.headers.get("range")) {
+    return errorResponse(
+      NEXUS_ERROR_CODES.INVALID_REQUEST,
+      "Range requests are not supported in attachment protocol v1",
+      requestId,
+    );
+  }
+
+  const auth = await authenticate(ctx, request);
+  if (!auth.ok) return errorResponse(auth.code, auth.message, requestId);
+
+  const action = str(auth.payload.action);
+  if (action !== "download") {
+    return errorResponse(NEXUS_ERROR_CODES.UNSUPPORTED_ATTACHMENT_ACTION, "Unsupported attachment action", requestId);
+  }
+  const taskId = str(auth.payload.taskId);
+  const leaseId = str(auth.payload.leaseId);
+  const attachmentId = str(auth.payload.attachmentId);
+  if (!taskId || !leaseId || !attachmentId) {
+    return errorResponse(
+      NEXUS_ERROR_CODES.INVALID_REQUEST,
+      "action, taskId, leaseId and attachmentId are required",
+      requestId,
+    );
+  }
+
+  try {
+    const { attachmentSuccessHeaders } = await import("./connectorAttachments");
+    const info = await ctx.runQuery(internal.connectorAttachments.authorizeAttachmentDownload, {
+      connectorId: auth.connectorId,
+      taskId: taskId as import("./_generated/dataModel").Id<"nexusTasks">,
+      leaseId,
+      attachmentId,
+      now: Date.now(),
+    });
+    const blob = await ctx.storage.get(info.storageId);
+    if (!blob) {
+      return errorResponse(
+        NEXUS_ERROR_CODES.ATTACHMENT_STORAGE_UNAVAILABLE,
+        "Stored attachment is unavailable",
+        requestId,
+      );
+    }
+    const bytes = await blob.arrayBuffer();
+    if (bytes.byteLength !== info.byteLength) {
+      return errorResponse(
+        NEXUS_ERROR_CODES.ATTACHMENT_METADATA_MISMATCH,
+        "Attachment byte length mismatch",
+        requestId,
+      );
+    }
+    const headers = attachmentSuccessHeaders({
+      attachmentId: info.attachmentId,
+      documentVersionId: info.documentVersionId,
+      contentType: info.contentType,
+      displayFilename: info.displayFilename,
+      byteLength: info.byteLength,
+      sha256: info.sha256,
+      requestId,
+    });
+    return new Response(bytes, { status: 200, headers });
+  } catch (error) {
+    const stable = toStableError(error);
+    return errorResponse(stable.code, stable.message, requestId);
+  }
+});
+
 const http = httpRouter();
 
 http.route({ path: "/api/connector/v1/heartbeat", method: "POST", handler: heartbeatHandler });
 http.route({ path: "/api/connector/v1/claim", method: "POST", handler: claimHandler });
 http.route({ path: "/api/connector/v1/task", method: "POST", handler: taskHandler });
+http.route({ path: "/api/connector/v1/attachment", method: "POST", handler: attachmentHandler });
 
 export default http;

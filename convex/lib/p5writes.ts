@@ -219,9 +219,10 @@ export async function replaceTaskSourceRows(
 /** Bump a conversation's activity timestamps. updatedAt always advances. */
 export async function touchConversation(
   ctx: MutationCtx,
-  conversationId: Id<"nexusConversations">,
+  conversationId: Id<"nexusConversations"> | undefined,
   patch: { now: number; lastMessageAt?: number; lastTaskAt?: number },
 ): Promise<void> {
+  if (!conversationId) return;
   await ctx.db.patch(conversationId, {
     updatedAt: patch.now,
     ...(patch.lastMessageAt !== undefined ? { lastMessageAt: patch.lastMessageAt } : {}),

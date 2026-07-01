@@ -45,6 +45,23 @@ export const NEXUS_ERROR_CODES = {
   PROGRESS_TOO_LARGE: "progress_too_large",
   PROTOCOL_VERSION_UNSUPPORTED: "protocol_version_unsupported",
   INTERNAL_ERROR: "internal_error",
+  // P6/P7 — task-bound attachment download.
+  ATTACHMENT_NOT_FOUND: "attachment_not_found",
+  ATTACHMENT_NOT_BOUND: "attachment_not_bound",
+  ATTACHMENT_VERSION_MISMATCH: "attachment_version_mismatch",
+  ATTACHMENT_UNAVAILABLE: "attachment_unavailable",
+  ATTACHMENT_STORAGE_UNAVAILABLE: "attachment_storage_unavailable",
+  ATTACHMENT_METADATA_MISMATCH: "attachment_metadata_mismatch",
+  ATTACHMENT_TOO_LARGE: "attachment_too_large",
+  UNSUPPORTED_ATTACHMENT_ACTION: "unsupported_attachment_action",
+  ATTACHMENT_READ_FAILED: "attachment_read_failed",
+  LIBRARY_VERSION_NOT_FOUND: "library_version_not_found",
+  LIBRARY_DOCUMENT_NOT_FOUND: "library_document_not_found",
+  LIBRARY_PROCESS_NOT_ALLOWED: "library_process_not_allowed",
+  LIBRARY_ACTIVE_TASK_EXISTS: "library_active_task_exists",
+  LIBRARY_UNSUPPORTED_FORMAT: "library_unsupported_format",
+  LIBRARY_UPLOAD_TOO_LARGE: "library_upload_too_large",
+  LIBRARY_UPLOAD_INVALID: "library_upload_invalid",
 } as const;
 
 export type NexusErrorCode =

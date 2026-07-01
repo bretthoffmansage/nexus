@@ -3,6 +3,42 @@ import { v } from "convex/values";
 import { boundedMetadataValidator } from "./lib/p5config";
 import { taskStatusValidator } from "./lib/taskStatus";
 
+const libraryProcessingStatusValidator = v.union(
+  v.literal("uploaded"),
+  v.literal("queued"),
+  v.literal("processing"),
+  v.literal("processed"),
+  v.literal("needs_review"),
+  v.literal("failed"),
+  v.literal("unsupported"),
+  v.literal("archived"),
+);
+
+const libraryDocumentStatusValidator = v.union(
+  v.literal("active"),
+  v.literal("archived"),
+  v.literal("deleted"),
+);
+
+const libraryTaskKindValidator = v.union(
+  v.literal("chat"),
+  v.literal("library_document_processing"),
+);
+
+const libraryTaskMetadataValidator = v.object({
+  kind: v.literal("library_document_processing"),
+  explicitUserAction: v.literal("process"),
+  documentId: v.id("nexusLibraryDocuments"),
+  documentVersionId: v.id("nexusLibraryDocumentVersions"),
+  idempotencyKey: v.string(),
+  attachments: v.array(
+    v.object({
+      attachmentId: v.string(),
+      role: v.literal("primary_document"),
+    }),
+  ),
+});
+
 const userStatus = v.union(
   v.literal("pending"),
   v.literal("active"),
@@ -130,8 +166,12 @@ export default defineSchema({
   // claim and execute these; in P5 they remain honestly `queued`.
   nexusTasks: defineTable({
     ownerClerkUserId: v.string(),
-    conversationId: v.id("nexusConversations"),
-    requestMessageId: v.id("nexusMessages"),
+    conversationId: v.optional(v.id("nexusConversations")),
+    requestMessageId: v.optional(v.id("nexusMessages")),
+    taskKind: v.optional(libraryTaskKindValidator),
+    libraryDocumentId: v.optional(v.id("nexusLibraryDocuments")),
+    libraryDocumentVersionId: v.optional(v.id("nexusLibraryDocumentVersions")),
+    taskMetadata: v.optional(libraryTaskMetadataValidator),
     requestedToolId: v.string(),
     /** Exact user-visible request text (Chat transcript + Tasks UI). */
     requestText: v.string(),
@@ -193,7 +233,81 @@ export default defineSchema({
     // whose lease has expired). NEVER exposed through public user queries.
     .index("by_status_and_lease_expires_at", ["status", "leaseExpiresAt"])
     // Retry lineage.
-    .index("by_retry_of_task", ["retryOfTaskId"]),
+    .index("by_retry_of_task", ["retryOfTaskId"])
+    .index("by_library_document_version", ["libraryDocumentVersionId"]),
+
+  // Immutable hosted Library document versions (Dropzone upload contract).
+  nexusLibraryDocuments: defineTable({
+    ownerClerkUserId: v.string(),
+    displayName: v.string(),
+    status: libraryDocumentStatusValidator,
+    latestVersionId: v.optional(v.id("nexusLibraryDocumentVersions")),
+    versionCount: v.number(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+    archivedAt: v.optional(v.number()),
+    deletedAt: v.optional(v.number()),
+  })
+    .index("by_owner_and_updated_at", ["ownerClerkUserId", "updatedAt"])
+    .index("by_owner_and_status_and_updated_at", [
+      "ownerClerkUserId",
+      "status",
+      "updatedAt",
+    ]),
+
+  nexusLibraryDocumentVersions: defineTable({
+    documentId: v.id("nexusLibraryDocuments"),
+    ownerClerkUserId: v.string(),
+    versionNumber: v.number(),
+    originalFilename: v.string(),
+    displayFilename: v.string(),
+    contentType: v.string(),
+    fileExtension: v.string(),
+    byteLength: v.number(),
+    sha256: v.string(),
+    storageId: v.id("_storage"),
+    uploadedAt: v.number(),
+    processingStatus: libraryProcessingStatusValidator,
+    activeTaskId: v.optional(v.id("nexusTasks")),
+    lastTaskId: v.optional(v.id("nexusTasks")),
+    progressMessage: v.optional(v.string()),
+    terminalSummary: v.optional(v.string()),
+    terminalDisposition: v.optional(v.string()),
+    terminalRetryable: v.optional(v.boolean()),
+    terminalPartial: v.optional(v.boolean()),
+    terminalWarnings: v.optional(v.array(v.string())),
+    notesCreatedCount: v.optional(v.number()),
+    vaultLocatorCount: v.optional(v.number()),
+    unsupportedReason: v.optional(v.string()),
+    archivedAt: v.optional(v.number()),
+    deletedAt: v.optional(v.number()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_document_and_version", ["documentId", "versionNumber"])
+    .index("by_owner_and_uploaded_at", ["ownerClerkUserId", "uploadedAt"])
+    .index("by_owner_and_processing_status", ["ownerClerkUserId", "processingStatus"])
+    .index("by_active_task", ["activeTaskId"]),
+
+  nexusTaskAttachments: defineTable({
+    attachmentId: v.string(),
+    taskId: v.id("nexusTasks"),
+    ownerClerkUserId: v.string(),
+    documentId: v.id("nexusLibraryDocuments"),
+    documentVersionId: v.id("nexusLibraryDocumentVersions"),
+    role: v.literal("primary_document"),
+    storageId: v.id("_storage"),
+    originalFilename: v.string(),
+    displayFilename: v.string(),
+    contentType: v.string(),
+    fileExtension: v.string(),
+    byteLength: v.number(),
+    sha256: v.string(),
+    createdAt: v.number(),
+  })
+    .index("by_task", ["taskId"])
+    .index("by_attachment_id", ["attachmentId"])
+    .index("by_document_version", ["documentVersionId"]),
 
   // A bounded chronological status event for a task. User-safe content only.
   nexusTaskProgressEvents: defineTable({

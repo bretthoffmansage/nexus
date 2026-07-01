@@ -103,13 +103,21 @@ describe("Nexus P4.4 legacy workspace port", () => {
       "CalendarWorkspace.tsx",
       "NotesWorkspace.tsx",
       "EmailWorkspace.tsx",
-      "DocumentsWorkspace.tsx",
     ];
     for (const file of files) {
       const src = readFileSync(path.join(portDir, file), "utf8");
       expect(src).not.toContain("/api/");
       expect(src).not.toContain("fetch(");
     }
+  });
+
+  it("Documents workspace uploads via Convex storage, not legacy FastAPI", () => {
+    const src = readFileSync(
+      path.join(ROOT, "components/workspace/port/DocumentsWorkspace.tsx"),
+      "utf8",
+    );
+    expect(src).not.toContain("/api/documents");
+    expect(src).toContain("finalizeUpload");
   });
 
   it("adapter boundaries exist for migrated tools", () => {
@@ -124,7 +132,12 @@ describe("Nexus P4.4 legacy workspace port", () => {
       "lib/adapters/tasks/adapter.ts",
     ];
     for (const file of adapters) {
-      expect(readFileSync(path.join(ROOT, file), "utf8")).toContain("connector_required");
+      const adapterSrc = readFileSync(path.join(ROOT, file), "utf8");
+      if (file.includes("documents/adapter")) {
+        expect(adapterSrc).toContain("available");
+      } else {
+        expect(adapterSrc).toContain("connector_required");
+      }
     }
   });
 

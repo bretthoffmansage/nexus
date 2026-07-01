@@ -17,6 +17,12 @@ import {
   executionSafetyForTool,
   isConnectorProgressStage,
 } from "./lib/p6config";
+import { LIBRARY_ATTACHMENT_DOWNLOAD_PATH } from "./lib/libraryDropzoneConfig";
+import {
+  applyDropzoneTerminalResult,
+  patchLibraryVersionForTaskStatus,
+  type DropzoneProcessingDisposition,
+} from "./lib/libraryProjection";
 
 /**
  * P6 — trusted Connector task protocol business logic.
@@ -43,6 +49,34 @@ const sourceTypeValidator = v.union(
   v.literal("file"),
   v.literal("other"),
 );
+
+const dropzoneDispositionValidator = v.union(
+  v.literal("processed"),
+  v.literal("needs_review"),
+  v.literal("failed"),
+  v.literal("blocked"),
+  v.literal("paused"),
+  v.literal("already_completed"),
+);
+
+async function loadClaimAttachments(ctx: MutationCtx, taskId: Id<"nexusTasks">) {
+  const rows = await ctx.db
+    .query("nexusTaskAttachments")
+    .withIndex("by_task", (q) => q.eq("taskId", taskId))
+    .collect();
+  return rows.map((row) => ({
+    attachmentId: row.attachmentId,
+    documentId: row.documentId,
+    documentVersionId: row.documentVersionId,
+    role: row.role,
+    originalFilename: row.originalFilename,
+    contentType: row.contentType,
+    fileExtension: row.fileExtension,
+    byteLength: row.byteLength,
+    sha256: row.sha256,
+    downloadPath: LIBRARY_ATTACHMENT_DOWNLOAD_PATH,
+  }));
+}
 
 function requireLeaseOwnership(
   task: Doc<"nexusTasks">,
@@ -182,12 +216,15 @@ export const claimNextTask = internalMutation({
       now,
     });
     await touchConversation(ctx, target.conversationId, { now });
+    await patchLibraryVersionForTaskStatus(ctx, target, "claimed");
     await ctx.db.patch(connector._id, {
       ...connectorPatch,
       currentTaskId: target._id,
       currentLeaseId: leaseId,
       operatingState: "running",
     });
+
+    const attachments = await loadClaimAttachments(ctx, target._id);
 
     return {
       status: "claimed" as const,
@@ -198,12 +235,15 @@ export const claimNextTask = internalMutation({
         requestMessageId: target.requestMessageId,
         requestedToolId: target.requestedToolId,
         requestText: effectiveExecutionRequestText(target),
+        taskKind: target.taskKind,
+        taskMetadata: target.taskMetadata,
         attemptNumber: target.attemptNumber,
         createdAt: target.createdAt,
         queueSequence: target.queueSequence,
         cancellationState: "none" as const,
         leaseExpiresAt,
         protocolVersion: P6_PROTOCOL_VERSION,
+        attachments: attachments.length > 0 ? attachments : undefined,
       },
     };
   },
@@ -239,6 +279,7 @@ export const startTask = internalMutation({
       toStatus: "running",
       progressMessage: "Execution started.",
     });
+    await patchLibraryVersionForTaskStatus(ctx, task, "running", "Processing document.");
     await recordAudit(ctx, {
       ownerClerkUserId: task.ownerClerkUserId,
       eventType: "task_started",
@@ -329,6 +370,9 @@ export const appendConnectorProgress = internalMutation({
       metadata,
       now,
     });
+    if (task.libraryDocumentVersionId) {
+      await patchLibraryVersionForTaskStatus(ctx, task, task.status, args.message);
+    }
     return { taskId: task._id, accepted: true as const };
   },
 });
@@ -359,6 +403,17 @@ export const completeTask = internalMutation({
     model: v.optional(v.string()),
     toolId: v.optional(v.string()),
     durationMs: v.optional(v.number()),
+    dropzoneResult: v.optional(
+      v.object({
+        processingDisposition: dropzoneDispositionValidator,
+        userSafeMessage: v.string(),
+        notesCreated: v.optional(v.number()),
+        vaultLocatorCount: v.optional(v.number()),
+        warnings: v.optional(v.array(v.string())),
+        retryable: v.optional(v.boolean()),
+        partial: v.optional(v.boolean()),
+      }),
+    ),
   },
   handler: async (ctx, args) => {
     await requireActiveConnector(ctx, args.connectorId);
@@ -421,15 +476,30 @@ export const completeTask = internalMutation({
       sources,
       now,
     });
-    await appendMessage(ctx, {
-      conversationId: task.conversationId,
-      ownerClerkUserId: task.ownerClerkUserId,
-      author: "assistant",
-      kind: "result_summary",
-      content: clampLength(args.answerText, P5_LIMITS.maxMessageLength),
-      taskId: task._id,
-      now,
-    });
+    if (task.conversationId) {
+      await appendMessage(ctx, {
+        conversationId: task.conversationId,
+        ownerClerkUserId: task.ownerClerkUserId,
+        author: "assistant",
+        kind: "result_summary",
+        content: clampLength(args.answerText, P5_LIMITS.maxMessageLength),
+        taskId: task._id,
+        now,
+      });
+    }
+    if (args.dropzoneResult && task.libraryDocumentVersionId) {
+      await applyDropzoneTerminalResult(ctx, task, {
+        processingDisposition: args.dropzoneResult.processingDisposition as DropzoneProcessingDisposition,
+        userSafeMessage: args.dropzoneResult.userSafeMessage,
+        notesCreated: args.dropzoneResult.notesCreated,
+        vaultLocatorCount: args.dropzoneResult.vaultLocatorCount,
+        warnings: args.dropzoneResult.warnings,
+        retryable: args.dropzoneResult.retryable,
+        partial: args.dropzoneResult.partial,
+      });
+    } else if (task.libraryDocumentVersionId) {
+      await patchLibraryVersionForTaskStatus(ctx, task, "completed", args.answerText);
+    }
     const transition = await performTaskTransition(ctx, {
       taskId: task._id,
       toStatus: "completed",
@@ -508,15 +578,28 @@ export const failTask = internalMutation({
       errorMessage: args.userSafeMessage,
       progressMessage: args.userSafeMessage,
     });
-    await appendMessage(ctx, {
-      conversationId: task.conversationId,
-      ownerClerkUserId: task.ownerClerkUserId,
-      author: "system",
-      kind: "error",
-      content: clampLength(args.userSafeMessage, P5_LIMITS.maxMessageLength),
-      taskId: task._id,
-      now,
-    });
+    if (task.conversationId) {
+      await appendMessage(ctx, {
+        conversationId: task.conversationId,
+        ownerClerkUserId: task.ownerClerkUserId,
+        author: "system",
+        kind: "error",
+        content: clampLength(args.userSafeMessage, P5_LIMITS.maxMessageLength),
+        taskId: task._id,
+        now,
+      });
+    }
+    if (task.libraryDocumentVersionId) {
+      await patchLibraryVersionForTaskStatus(ctx, task, "failed", args.userSafeMessage);
+      const version = await ctx.db.get(task.libraryDocumentVersionId);
+      if (version) {
+        await ctx.db.patch(version._id, {
+          terminalSummary: clampLength(args.userSafeMessage, P5_LIMITS.maxResultSummaryLength),
+          terminalRetryable: args.retryable,
+          updatedAt: now,
+        });
+      }
+    }
     await recordAudit(ctx, {
       ownerClerkUserId: task.ownerClerkUserId,
       eventType: "task_failed",

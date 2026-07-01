@@ -2,10 +2,10 @@ import type { AdapterReadResult, ToolAdapterMeta } from "@/lib/adapters/types";
 
 export const documentsAdapterMeta: ToolAdapterMeta = {
   toolId: "documents",
-  availability: "connector_required",
-  authority: "claudia_connector",
-  futureConvexCollection: "documents",
-  futureClaudiaTaskKind: "documents.sync",
+  availability: "available",
+  authority: "convex",
+  futureConvexCollection: "nexusLibraryDocuments",
+  futureClaudiaTaskKind: "obsidian.dropzone.process_document",
 };
 
 export type DocumentRecord = {

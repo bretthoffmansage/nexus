@@ -1,3 +1,4 @@
+import { LIBRARY_DROPZONE_TOOL_ID } from "./libraryDropzoneConfig";
 import { P5_LIMITS, P5_SUPPORTED_TOOL_IDS, type P5ToolId } from "./p5config";
 
 /**
@@ -90,9 +91,10 @@ export type ExecutionSafetyClass = (typeof EXECUTION_SAFETY_CLASSES)[number];
 
 /** Every P5-supported tool is read-only retrieval today. Unknown tool ids are
  * treated as `non_idempotent` (fail safe: never blindly requeue unknown work). */
-const TOOL_EXECUTION_SAFETY: Record<P5ToolId, ExecutionSafetyClass> = {
+const TOOL_EXECUTION_SAFETY: Record<string, ExecutionSafetyClass> = {
   "vault.agentic_retrieval": "read_only_idempotent",
   "membership_io.transcript_retrieve": "read_only_idempotent",
+  [LIBRARY_DROPZONE_TOOL_ID]: "write_requires_confirmation",
 };
 
 export function executionSafetyForTool(toolId: string): ExecutionSafetyClass {
@@ -100,7 +102,10 @@ export function executionSafetyForTool(toolId: string): ExecutionSafetyClass {
 }
 
 /** Tool ids a Connector may claim when it declares no explicit allowlist. */
-export const DEFAULT_CONNECTOR_TOOL_IDS: readonly string[] = P5_SUPPORTED_TOOL_IDS;
+export const DEFAULT_CONNECTOR_TOOL_IDS: readonly string[] = [
+  ...P5_SUPPORTED_TOOL_IDS,
+  LIBRARY_DROPZONE_TOOL_ID,
+];
 
 /** Approved Connector progress "stage" values (bounded vocabulary; the
  * Connector cannot invent arbitrary system-authority events). */
@@ -110,6 +115,10 @@ export const CONNECTOR_PROGRESS_STAGES = [
   "analyzing",
   "synthesizing",
   "finalizing",
+  "downloading_attachment",
+  "verifying_attachment",
+  "staging_attachment",
+  "processing_document",
 ] as const;
 export type ConnectorProgressStage = (typeof CONNECTOR_PROGRESS_STAGES)[number];
 

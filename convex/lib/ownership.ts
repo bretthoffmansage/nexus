@@ -91,6 +91,30 @@ export async function requireOwnedMessage(
   return message;
 }
 
+export async function requireOwnedLibraryDocument(
+  ctx: QueryCtx | MutationCtx,
+  clerkUserId: string,
+  documentId: Id<"nexusLibraryDocuments">,
+): Promise<Doc<"nexusLibraryDocuments">> {
+  const document = await ctx.db.get(documentId);
+  if (!document || document.ownerClerkUserId !== clerkUserId || document.status === "deleted") {
+    nexusError(NEXUS_ERROR_CODES.LIBRARY_DOCUMENT_NOT_FOUND, "Document not found");
+  }
+  return document;
+}
+
+export async function requireOwnedLibraryVersion(
+  ctx: QueryCtx | MutationCtx,
+  clerkUserId: string,
+  versionId: Id<"nexusLibraryDocumentVersions">,
+): Promise<Doc<"nexusLibraryDocumentVersions">> {
+  const version = await ctx.db.get(versionId);
+  if (!version || version.ownerClerkUserId !== clerkUserId || version.deletedAt) {
+    nexusError(NEXUS_ERROR_CODES.LIBRARY_VERSION_NOT_FOUND, "Document version not found");
+  }
+  return version;
+}
+
 /**
  * Defense-in-depth: a child record (message/task/source/result) must both be
  * owned by the caller AND belong to the conversation/task it claims to. Guards
