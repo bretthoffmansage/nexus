@@ -1,8 +1,16 @@
 import { v } from "convex/values";
 import { action } from "./_generated/server";
 import { internal } from "./_generated/api";
+import type { Id } from "./_generated/dataModel";
 import { NEXUS_ERROR_CODES, nexusError } from "./lib/errors";
 import { sha256HexFromBytes } from "./lib/librarySha256";
+
+type FinalizeUploadResult = {
+  documentId: Id<"nexusLibraryDocuments">;
+  documentVersionId: Id<"nexusLibraryDocumentVersions">;
+  versionNumber: number;
+  processingStatus: string;
+};
 
 export const finalizeUpload = action({
   args: {
@@ -12,7 +20,7 @@ export const finalizeUpload = action({
     documentId: v.optional(v.id("nexusLibraryDocuments")),
     clientSha256: v.optional(v.string()),
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx, args): Promise<FinalizeUploadResult> => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) {
       nexusError(NEXUS_ERROR_CODES.UNAUTHENTICATED, "Authentication required");

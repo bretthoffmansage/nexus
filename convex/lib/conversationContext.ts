@@ -132,6 +132,7 @@ export async function collectEligiblePriorTurns(
   for (const task of tasks) {
     if (task.status !== "completed") continue;
     if (args.excludeTaskId && task._id === args.excludeTaskId) continue;
+    if (!task.requestMessageId) continue;
 
     const userMessage = await ctx.db.get(task.requestMessageId);
     if (!userMessage || userMessage.author !== "user") continue;

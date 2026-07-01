@@ -459,6 +459,9 @@ export const retryMyTask = mutation({
     if (!isRetryable(original.status)) {
       nexusError(NEXUS_ERROR_CODES.RETRY_NOT_ALLOWED, "Task is not eligible for retry");
     }
+    if (!original.conversationId || !original.requestMessageId) {
+      nexusError(NEXUS_ERROR_CODES.RETRY_NOT_ALLOWED, "Task is not eligible for retry");
+    }
     if (original.attemptNumber >= P5_LIMITS.maxRetryDepth) {
       nexusError(NEXUS_ERROR_CODES.RETRY_NOT_ALLOWED, "Maximum retry depth reached");
     }
