@@ -71,6 +71,24 @@ describe("Nexus Calendar navigation and badge policy", () => {
     expect(adapterSrc).not.toContain("connector_required");
   });
 
+  it("Calendar toolbar omits nonfunctional Month/Week/Agenda view controls", () => {
+    const workspaceSrc = readFileSync(
+      path.join(ROOT, "components/workspace/port/CalendarWorkspace.tsx"),
+      "utf8",
+    );
+    const cssSrc = readFileSync(path.join(ROOT, "styles/legacy-port.css"), "utf8");
+
+    expect(workspaceSrc).not.toContain("cal-view-toggle");
+    expect(workspaceSrc).not.toMatch(/>Week</);
+    expect(workspaceSrc).not.toMatch(/>Agenda</);
+    expect(workspaceSrc).toContain('aria-label="Previous month"');
+    expect(workspaceSrc).toContain("Today");
+    expect(workspaceSrc).toContain('aria-label="Next month"');
+    expect(workspaceSrc).toContain("cal-add-btn");
+    expect(workspaceSrc).toContain("cal-month-grid");
+    expect(cssSrc).not.toContain(".cal-view-toggle");
+  });
+
   it("ToolNavigation hides Connector badge for available tools only", () => {
     const navSrc = readFileSync(path.join(ROOT, "components/layout/ToolNavigation.tsx"), "utf8");
     expect(navSrc).toContain('tool.availability !== "available"');

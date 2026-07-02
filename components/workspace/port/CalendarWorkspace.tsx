@@ -135,31 +135,6 @@ export function CalendarWorkspace() {
           </button>
         </div>
         <div className="cal-toolbar-right">
-          <div className="cal-view-toggle" role="tablist" aria-label="Calendar view">
-            <button type="button" role="tab" aria-selected className="cal-view-btn active">
-              Month
-            </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={false}
-              className="cal-view-btn"
-              disabled
-              title="Week view is not available in this version"
-            >
-              Week
-            </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={false}
-              className="cal-view-btn"
-              disabled
-              title="Agenda view is not available in this version"
-            >
-              Agenda
-            </button>
-          </div>
           <button
             type="button"
             className="cal-add-btn cal-add-btn-text"

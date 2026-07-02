@@ -149,7 +149,6 @@
 }
 
 .cal-nav,
-.cal-view-btn,
 .cal-add-btn {
   border: 1px solid var(--nexus-border);
   background: var(--nexus-panel);
@@ -157,24 +156,6 @@
   border-radius: 6px;
   padding: 0.35rem 0.55rem;
   cursor: pointer;
-}
-
-.cal-view-btn.active {
-  background: var(--nexus-accent);
-  color: var(--nexus-bg);
-  border-color: transparent;
-}
-
-.cal-view-toggle {
-  display: inline-flex;
-  border: 1px solid var(--nexus-border);
-  border-radius: 6px;
-  overflow: hidden;
-}
-
-.cal-view-toggle .cal-view-btn {
-  border: none;
-  border-radius: 0;
 }
 
 .cal-quickadd-row {
