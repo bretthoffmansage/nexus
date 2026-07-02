@@ -77,6 +77,7 @@ export const NEXUS_TOOL_REGISTRY: NexusToolDefinition[] = [
     legacyButtonId: "tool-gallery-btn",
     legacyModules: ["static/js/gallery.js"],
     availability: "connector_required",
+    hiddenFromNavigation: true,
   },
   {
     id: "documents",
@@ -113,6 +114,7 @@ export const NEXUS_TOOL_REGISTRY: NexusToolDefinition[] = [
     legacyButtonId: "tool-cookbook-btn",
     legacyModules: ["static/js/cookbook.js", "static/js/cookbookServe.js"],
     availability: "local_only",
+    hiddenFromNavigation: true,
   },
   {
     id: "skills",

@@ -152,6 +152,20 @@ describe("Nexus P4.4 legacy workspace port", () => {
     );
   });
 
+  it("Gallery and Cookbook are hidden from sidebar navigation but remain registered", () => {
+    const nav = toolsForNavigation({ isAdmin: true });
+    expect(nav.find((t) => t.id === "gallery")).toBeUndefined();
+    expect(nav.find((t) => t.id === "knowledge")).toBeUndefined();
+    expect(nav.find((t) => t.id === "calendar")).toBeDefined();
+    expect(nav.find((t) => t.id === "skills")).toBeDefined();
+    expect(toolByHref("/gallery")?.id).toBe("gallery");
+    expect(toolByHref("/knowledge")?.id).toBe("knowledge");
+    expect(NEXUS_TOOL_REGISTRY.find((t) => t.id === "gallery")?.hiddenFromNavigation).toBe(true);
+    expect(NEXUS_TOOL_REGISTRY.find((t) => t.id === "knowledge")?.hiddenFromNavigation).toBe(true);
+    expect(readFileSync(path.join(ROOT, "app/gallery/page.tsx"), "utf8")).toContain("GalleryWorkspace");
+    expect(readFileSync(path.join(ROOT, "app/knowledge/page.tsx"), "utf8")).toContain("KnowledgeWorkspace");
+  });
+
   it("sidebar keeps global navigation only (chat history moved to Nexus Chat)", () => {
     const src = readFileSync(path.join(ROOT, "components/layout/Sidebar.tsx"), "utf8");
     expect(src).not.toContain("TaskHistorySection");
