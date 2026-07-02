@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { Component, type ReactNode, useMemo } from "react";
 import { useQuery } from "convex/react";
 import {
   accessModeLabel,
@@ -67,11 +67,124 @@ function SkillsToolCard({
   );
 }
 
+export const SKILLS_CATALOG_QUERY_ERROR_MESSAGE =
+  "Could not load live availability. Showing the known catalog.";
+
+function SkillsCatalogQueryBoundary({
+  children,
+  fallback,
+}: {
+  children: ReactNode;
+  fallback: ReactNode;
+}) {
+  return (
+    <SkillsCatalogQueryBoundaryInner fallback={fallback}>{children}</SkillsCatalogQueryBoundaryInner>
+  );
+}
+
+class SkillsCatalogQueryBoundaryInner extends Component<
+  { children: ReactNode; fallback: ReactNode },
+  { hasError: boolean }
+> {
+  state = { hasError: false };
+
+  static getDerivedStateFromError(): { hasError: boolean } {
+    return { hasError: true };
+  }
+
+  render() {
+    if (this.state.hasError) return this.props.fallback;
+    return this.props.children;
+  }
+}
+
+function SkillsCatalogPanel({
+  availabilityPending,
+  sections,
+}: {
+  availabilityPending: boolean;
+  sections: NonNullable<ReturnType<typeof buildSkillsCatalogSections>>;
+}) {
+  return (
+    <div className="skills-catalog-sections">
+      {sections.map((section) => (
+        <section
+          key={section.id}
+          className={`skills-catalog-section${
+            section.tools.length > 1 ? " skills-catalog-section--span-wide" : ""
+          }`}
+          aria-labelledby={`skills-section-${section.id}`}
+          data-tool-count={section.tools.length}
+        >
+          <h2 id={`skills-section-${section.id}`} className="skills-catalog-section-title">
+            {section.label}
+          </h2>
+          <div className="skills-catalog-grid">
+            {section.tools.map((tool) => (
+              <SkillsToolCard
+                key={tool.toolId}
+                tool={tool}
+                availabilityPending={availabilityPending}
+              />
+            ))}
+          </div>
+        </section>
+      ))}
+    </div>
+  );
+}
+
+function SkillsCatalogContent({
+  staticSections,
+  readyForPrivateQueries,
+}: {
+  staticSections: ReturnType<typeof buildSkillsCatalogSections>;
+  readyForPrivateQueries: boolean;
+}) {
+  const queryFailedFallback = (
+    <>
+      <p className="skills-catalog-error" role="alert">
+        {SKILLS_CATALOG_QUERY_ERROR_MESSAGE}
+      </p>
+      <SkillsCatalogPanel availabilityPending={false} sections={staticSections} />
+    </>
+  );
+
+  return (
+    <SkillsCatalogQueryBoundary fallback={queryFailedFallback}>
+      <SkillsCatalogLoaded
+        staticSections={staticSections}
+        readyForPrivateQueries={readyForPrivateQueries}
+      />
+    </SkillsCatalogQueryBoundary>
+  );
+}
+
+function SkillsCatalogLoaded({
+  staticSections,
+  readyForPrivateQueries,
+}: {
+  staticSections: ReturnType<typeof buildSkillsCatalogSections>;
+  readyForPrivateQueries: boolean;
+}) {
+  const catalog = useQuery(nexusSkills.listCatalog, readyForPrivateQueries ? {} : "skip");
+  const availabilityPending = readyForPrivateQueries && catalog === undefined;
+  const sections = catalog?.sections ?? staticSections;
+
+  if (sections.length === 0) {
+    return (
+      <p className="skills-catalog-empty" role="status">
+        No Nexus tools are configured yet.
+      </p>
+    );
+  }
+
+  return <SkillsCatalogPanel availabilityPending={availabilityPending} sections={sections} />;
+}
+
 /** Read-only catalog of Nexus-accessible system tools. */
 export function SkillsWorkspace() {
   const { isLoading: authLoading, readyForPrivateQueries } = useNexusAuthReadiness();
-  const catalog = useQuery(nexusSkills.listCatalog, readyForPrivateQueries ? {} : "skip");
-  const availabilityPending = readyForPrivateQueries && catalog === undefined;
 
   const staticSections = useMemo(
     () =>
@@ -82,8 +195,6 @@ export function SkillsWorkspace() {
       }),
     [],
   );
-
-  const sections = catalog?.sections ?? (readyForPrivateQueries ? staticSections : null);
 
   return (
     <section className="skills-catalog-workspace" aria-labelledby="skills-heading">
@@ -100,36 +211,11 @@ export function SkillsWorkspace() {
         <p className="skills-catalog-loading" role="status">
           Loading catalog…
         </p>
-      ) : sections === null || sections.length === 0 ? (
-        <p className="skills-catalog-empty" role="status">
-          No Nexus tools are configured yet.
-        </p>
       ) : (
-        <div className="skills-catalog-sections">
-          {sections.map((section) => (
-            <section
-              key={section.id}
-              className={`skills-catalog-section${
-                section.tools.length > 1 ? " skills-catalog-section--span-wide" : ""
-              }`}
-              aria-labelledby={`skills-section-${section.id}`}
-              data-tool-count={section.tools.length}
-            >
-              <h2 id={`skills-section-${section.id}`} className="skills-catalog-section-title">
-                {section.label}
-              </h2>
-              <div className="skills-catalog-grid">
-                {section.tools.map((tool) => (
-                  <SkillsToolCard
-                    key={tool.toolId}
-                    tool={tool}
-                    availabilityPending={availabilityPending}
-                  />
-                ))}
-              </div>
-            </section>
-          ))}
-        </div>
+        <SkillsCatalogContent
+          staticSections={staticSections}
+          readyForPrivateQueries={readyForPrivateQueries}
+        />
       )}
     </section>
   );

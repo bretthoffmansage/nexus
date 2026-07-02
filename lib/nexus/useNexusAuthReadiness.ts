@@ -12,6 +12,8 @@ import { useConvexAuth } from "convex/react";
  * Issuing an owner-scoped query in that gap causes the backend's (correct)
  * `unauthenticated` rejection. `readyForPrivateQueries` is the only signal
  * components should use to decide whether to run a protected query/mutation.
+ * It also drops during Convex token refresh (`isRefreshing`) so queries are
+ * not issued while the client is between tokens.
  *
  * Wraps Convex's own `useConvexAuth()` — the authoritative signal for whether
  * the Convex client currently has a confirmed auth token. Convex remains the
@@ -26,6 +28,8 @@ export type NexusAuthReadiness = {
   isLoading: boolean;
   /** Convex has confirmed the current token belongs to a signed-in user. */
   isAuthenticated: boolean;
+  /** Convex is refreshing the auth token for a signed-in user. */
+  isRefreshing: boolean;
   /** Safe to issue a P5/P6 private query/mutation right now. */
   readyForPrivateQueries: boolean;
 };
@@ -33,6 +37,7 @@ export type NexusAuthReadiness = {
 const NOT_READY: NexusAuthReadiness = {
   isLoading: false,
   isAuthenticated: false,
+  isRefreshing: false,
   readyForPrivateQueries: false,
 };
 
@@ -46,11 +51,12 @@ export function useNexusAuthReadiness(): NexusAuthReadiness {
   // stable across renders.
   try {
     // eslint-disable-next-line react-hooks/rules-of-hooks -- always invoked; the catch only degrades a provider-less render to "not ready".
-    const { isLoading, isAuthenticated } = useConvexAuth();
+    const { isLoading, isAuthenticated, isRefreshing } = useConvexAuth();
     return {
       isLoading,
       isAuthenticated,
-      readyForPrivateQueries: !isLoading && isAuthenticated,
+      isRefreshing,
+      readyForPrivateQueries: !isLoading && isAuthenticated && !isRefreshing,
     };
   } catch {
     return NOT_READY;

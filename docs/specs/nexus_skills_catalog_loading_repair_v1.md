@@ -23,7 +23,11 @@ Because `ready` was always `undefined` (falsy):
 2. The UI condition `!ready || catalog === undefined` was always true.
 3. The page never left the loading state even after Convex auth succeeded.
 
-This matches the earlier Nexus P5.1 auth-readiness pattern already fixed on Calendar, Library, Chat, and Tasks surfaces.
+During token refresh, Convex can report `isAuthenticated: true` with `isLoading: false` while `isRefreshing: true`. Queries issued in that window receive the backend's correct `unauthenticated` rejection.
+
+`readyForPrivateQueries` now requires `!isRefreshing` in addition to `!isLoading && isAuthenticated`.
+
+The Skills page also defers mounting `SkillsCatalogContent` (which calls `useQuery`) until `readyForPrivateQueries` is true, so the private query is not subscribed during initialization, sign-out, or refresh.
 
 ## Query / auth / deployment findings
 

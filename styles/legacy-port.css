@@ -1043,9 +1043,15 @@
 }
 
 .skills-catalog-loading,
-.skills-catalog-empty {
+.skills-catalog-empty,
+.skills-catalog-error {
   color: var(--nexus-muted, #5c6670);
   font-size: 0.9rem;
+}
+
+.skills-catalog-error {
+  color: #8a4b00;
+  margin: 0 0 0.65rem;
 }
 
 @media (min-width: 56rem) {
