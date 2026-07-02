@@ -16,7 +16,7 @@ import {
   taskExecutionNote,
   taskStatusLabel,
 } from "@/lib/nexus/p5Client";
-import type { P5ToolId } from "@/convex/lib/p5config";
+import { P5_TOOL_DISPLAY_TITLES, type P5ToolId } from "@/convex/lib/p5config";
 import type { NexusSource } from "@/lib/types/presentation";
 
 export function ChatEmptyState() {
@@ -31,7 +31,7 @@ export function ChatEmptyState() {
       </p>
       <ul className="nexus-chat-empty-list">
         <li>Sage Knowledge Base retrieval</li>
-        <li>Membership.io transcript retrieval</li>
+        <li>{P5_TOOL_DISPLAY_TITLES["membership_io.transcript_retrieve"]}</li>
         <li>Summaries and synthesis with sources</li>
       </ul>
     </div>

@@ -7,13 +7,14 @@ import type { Id } from "@/convex/_generated/dataModel";
 import {
   buildMembershipFullSyncTaskMetadata,
   CALENDAR_SCHEDULED_TOOLS,
+  getCalendarScheduledTool,
   membershipFullSyncScheduledForUtcIso,
   MEMBERSHIP_FULL_SYNC_REQUEST_TEXT,
   MEMBERSHIP_FULL_SYNC_TASK_KIND,
   MEMBERSHIP_FULL_SYNC_TOOL_ID,
 } from "@/convex/lib/calendarScheduledTools";
 import { CALENDAR_SCHEDULE, scheduledEventIdempotencyKey } from "@/convex/lib/calendarScheduleConfig";
-import { isSupportedToolId, P5_SUPPORTED_TOOL_IDS } from "@/convex/lib/p5config";
+import { isSupportedToolId, P5_SUPPORTED_TOOL_IDS, P5_TOOL_DISPLAY_TITLES } from "@/convex/lib/p5config";
 import { KNOWN_CONNECTOR_TOOL_IDS } from "@/convex/lib/p6config";
 import { IDENTITY_A, p5Test, seedApprovedReader } from "./helpers/convexP5";
 import {
@@ -77,6 +78,8 @@ describe("Membership.io full sync Calendar option", () => {
     const fullSync = CALENDAR_SCHEDULED_TOOLS.find(
       (t) => t.requestedToolId === MEMBERSHIP_FULL_SYNC_TOOL_ID,
     );
+    const transcript = getCalendarScheduledTool("membership_io.transcript_retrieve");
+    expect(transcript?.displayLabel).toBe(P5_TOOL_DISPLAY_TITLES["membership_io.transcript_retrieve"]);
     expect(fullSync?.displayLabel).toBe("Membership.io full sync");
     expect(fullSync?.inputMode).toBe("no_input_action");
     expect(fullSync?.taskKind).toBe(MEMBERSHIP_FULL_SYNC_TASK_KIND);

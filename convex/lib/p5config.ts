@@ -49,6 +49,12 @@ export const P5_SUPPORTED_TOOL_IDS = [
 
 export type P5ToolId = (typeof P5_SUPPORTED_TOOL_IDS)[number];
 
+/** User-facing tool titles shared by Skills, Calendar, and other Nexus surfaces. */
+export const P5_TOOL_DISPLAY_TITLES: Record<P5ToolId, string> = {
+  "vault.agentic_retrieval": "SAGE Knowledge Vault",
+  "membership_io.transcript_retrieve": "Transcript retrieval",
+};
+
 /** Safe default when the UI does not (yet) expose explicit tool selection. */
 export const P5_DEFAULT_TOOL_ID: P5ToolId = "vault.agentic_retrieval";
 

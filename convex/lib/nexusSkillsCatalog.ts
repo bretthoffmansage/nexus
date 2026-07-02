@@ -5,7 +5,7 @@ import {
   MEMBERSHIP_FULL_SYNC_TOOL_ID,
   type ExecutionSafetyClass,
 } from "./p6config";
-import { P5_SUPPORTED_TOOL_IDS } from "./p5config";
+import { P5_SUPPORTED_TOOL_IDS, P5_TOOL_DISPLAY_TITLES } from "./p5config";
 import { isCalendarScheduledToolAvailable } from "./calendarScheduledTools";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
 
@@ -57,7 +57,7 @@ export const SKILLS_CATALOG_SECTIONS: readonly {
 export const SKILLS_CATALOG_TOOL_DEFS: readonly SkillsCatalogToolDef[] = [
   {
     toolId: "vault.agentic_retrieval",
-    displayName: "SAGE Knowledge Vault",
+    displayName: P5_TOOL_DISPLAY_TITLES["vault.agentic_retrieval"],
     shortDescription:
       "Searches and synthesizes information from the approved SAGE Knowledge Base vault.",
     category: "knowledge_research",
@@ -70,7 +70,7 @@ export const SKILLS_CATALOG_TOOL_DEFS: readonly SkillsCatalogToolDef[] = [
   },
   {
     toolId: "membership_io.transcript_retrieve",
-    displayName: "Membership.io Transcript Search",
+    displayName: P5_TOOL_DISPLAY_TITLES["membership_io.transcript_retrieve"],
     shortDescription:
       "Searches and retrieves relevant knowledge from the indexed Membership.io transcript library.",
     category: "knowledge_research",

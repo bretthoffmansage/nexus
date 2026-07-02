@@ -12,6 +12,7 @@ import {
 } from "@/convex/lib/nexusSkillsCatalog";
 import { LIBRARY_DROPZONE_TOOL_ID } from "@/convex/lib/libraryDropzoneConfig";
 import { MEMBERSHIP_FULL_SYNC_TOOL_ID } from "@/convex/lib/p6config";
+import { P5_TOOL_DISPLAY_TITLES } from "@/convex/lib/p5config";
 import { NEXUS_TOOL_REGISTRY } from "@/lib/navigation/toolRegistry";
 import { IDENTITY_A, p5Test, seedApprovedReader } from "./helpers/convexP5";
 import { seedConnector } from "./helpers/convexP6";
@@ -59,6 +60,15 @@ describe("Nexus Skills catalog", () => {
     expect(fullSync.ordinaryChatAvailable).toBe(false);
     expect(fullSync.calendarAvailable).toBe(true);
     expect(fullSync.inputType).toBe("no_input_action");
+  });
+
+  it("uses Transcript retrieval as the transcript tool display title", () => {
+    const transcript = SKILLS_CATALOG_TOOL_DEFS.find(
+      (t) => t.toolId === "membership_io.transcript_retrieve",
+    )!;
+    expect(transcript.displayName).toBe("Transcript retrieval");
+    expect(transcript.displayName).toBe(P5_TOOL_DISPLAY_TITLES["membership_io.transcript_retrieve"]);
+    expect(transcript.shortDescription).toContain("Membership.io");
   });
 
   it("does not mark tools available without Connector advertisement", () => {

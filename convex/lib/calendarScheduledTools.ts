@@ -1,7 +1,7 @@
 import type { Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
 import { DEFAULT_CONNECTOR_TOOL_IDS, MEMBERSHIP_FULL_SYNC_TOOL_ID } from "./p6config";
-import { P5_SUPPORTED_TOOL_IDS } from "./p5config";
+import { P5_SUPPORTED_TOOL_IDS, P5_TOOL_DISPLAY_TITLES } from "./p5config";
 import type { TaskStatus } from "./taskStatus";
 
 /** Re-export for Calendar registry consumers. */
@@ -41,8 +41,8 @@ const TEXT_SCHEDULED_TOOLS: readonly CalendarScheduledToolDefinition[] =
     requestedToolId,
     displayLabel:
       requestedToolId === "vault.agentic_retrieval"
-        ? "SAGE Knowledge Vault retrieval"
-        : "Membership.io transcript retrieval",
+        ? `${P5_TOOL_DISPLAY_TITLES["vault.agentic_retrieval"]} retrieval`
+        : P5_TOOL_DISPLAY_TITLES["membership_io.transcript_retrieve"],
     taskKind: "scheduled_task" as const,
     inputMode: "text_request" as const,
     description: "",
