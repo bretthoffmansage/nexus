@@ -42,6 +42,7 @@ function projectDeepResearchTask(doc: Doc<"nexusTasks">) {
     errorCode: doc.errorCode ?? null,
     errorMessage: doc.errorMessage ?? null,
     researchRequestId: metadata?.researchRequestId ?? null,
+    requestedModelId: doc.requestedModelId ?? null,
     idempotencyKey: doc.idempotencyKey,
   };
 }
@@ -69,6 +70,8 @@ function envelopeErrorToNexus(code: string): never {
       nexusError(NEXUS_ERROR_CODES.INVALID_INPUT, "Invalid research request id");
     case "invalid_idempotency_key":
       nexusError(NEXUS_ERROR_CODES.INVALID_INPUT, "Invalid idempotency key");
+    case "invalid_model_id":
+      nexusError(NEXUS_ERROR_CODES.INVALID_INPUT, "Invalid model selection");
     default:
       nexusError(NEXUS_ERROR_CODES.INVALID_INPUT, "Invalid deep research request");
   }
@@ -83,6 +86,8 @@ export const submitDeepResearch = mutation({
     requestText: v.string(),
     researchRequestId: v.string(),
     idempotencyKey: v.string(),
+    /** Optional governed model selection; omit for the Claudia default. */
+    requestedModelId: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const { clerkUserId } = await requireKnowledgeReader(ctx);
@@ -95,11 +100,13 @@ export const submitDeepResearch = mutation({
       requestText: args.requestText,
       researchRequestId: args.researchRequestId,
       idempotencyKey: args.idempotencyKey,
+      requestedModelId: args.requestedModelId,
     });
     if (!built.ok) {
       envelopeErrorToNexus(built.code);
     }
     const { envelope } = built;
+    const requestedModelId = envelope.requestedModelId ?? null;
 
     const existing = await findByIdempotencyKey(ctx, clerkUserId, envelope.taskMetadata.idempotencyKey);
     if (existing) {
@@ -120,6 +127,7 @@ export const submitDeepResearch = mutation({
       taskKind: envelope.taskKind,
       requestedToolId: envelope.requestedToolId,
       requestText: clampLength(envelope.requestText, P5_LIMITS.maxRequestLength),
+      ...(requestedModelId ? { requestedModelId } : {}),
       taskMetadata: envelope.taskMetadata,
       status: "queued",
       queueSequence,

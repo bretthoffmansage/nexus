@@ -239,6 +239,14 @@ export default defineSchema({
     requestedToolId: v.string(),
     /** Exact user-visible request text (Chat transcript + Tasks UI). */
     requestText: v.string(),
+    /**
+     * Optional governed model selection (Deep Research page only, v1.1). A
+     * validated Vercel AI Gateway model identifier captured at submission time
+     * so the run is reproducible; absent means "use Claudia's default". Only
+     * the Deep Research submission path ever sets this; the Connector forwards
+     * it only for the research tool, and Claudia is the final authority.
+     */
+    requestedModelId: v.optional(v.string()),
     /** Immutable contextual payload sent to the Connector; omitted when identical to requestText. */
     executionRequestText: v.optional(v.string()),
     normalizedRequestHash: v.optional(v.string()),

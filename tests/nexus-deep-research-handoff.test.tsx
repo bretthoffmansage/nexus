@@ -223,12 +223,14 @@ describe("Nexus Deep Research handoff", () => {
   });
 
   describe("page UI", () => {
-    it("renders multiline request, character count, and read-only model field", () => {
+    it("renders multiline request, character count, and the model selector", () => {
       const src = read("components/workspace/port/ResearchWorkspace.tsx");
       expect(src).toContain('id="research-request"');
       expect(src).toContain("textarea");
       expect(src).toContain("DEEP_RESEARCH_MAX_REQUEST_LENGTH");
-      expect(src).toContain("Managed by Claudia");
+      // v1.1: the legacy disabled field is replaced by a real selector.
+      expect(src).toContain("ResearchModelSelector");
+      expect(src).not.toContain("Managed by Claudia");
       expect(src).not.toContain("Max rounds");
       expect(src).not.toContain("ToolAvailabilityBanner");
       expect(src).not.toContain("Hide settings");

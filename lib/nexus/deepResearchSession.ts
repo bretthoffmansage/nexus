@@ -1,11 +1,14 @@
 import {
   DEEP_RESEARCH_MAX_REQUEST_LENGTH,
   isValidDeepResearchIdentifier,
+  isValidDeepResearchModelId,
 } from "@/convex/lib/deepResearchConfig";
+import { CLAUDIA_DEFAULT_MODEL_VALUE } from "@/lib/nexus/deepResearchModelCatalog";
 
 const STORAGE_REQUEST_ID = "nexus.deepResearch.researchRequestId";
 const STORAGE_IDEMPOTENCY_KEY = "nexus.deepResearch.idempotencyKey";
 const STORAGE_ACTIVE_TASK_ID = "nexus.deepResearch.activeTaskId";
+const STORAGE_SELECTED_MODEL = "nexus.deepResearch.selectedModelId";
 
 function randomIdentifier(prefix: string): string {
   const uuid =
@@ -95,6 +98,45 @@ export function loadActiveTaskId(): string | null {
 
 export function clearActiveTaskId(): void {
   removeStored(STORAGE_ACTIVE_TASK_ID);
+}
+
+/**
+ * Load the persisted Deep Research model selection. Returns the sentinel
+ * "Claudia default" value when nothing valid is stored, so the selector always
+ * has a safe starting option. A stored concrete model is only returned when it
+ * still passes syntax (a corrupted value degrades to the default).
+ */
+export function loadSelectedModelId(): string {
+  const stored = readStored(STORAGE_SELECTED_MODEL);
+  if (!stored || stored === CLAUDIA_DEFAULT_MODEL_VALUE) {
+    return CLAUDIA_DEFAULT_MODEL_VALUE;
+  }
+  return isValidDeepResearchModelId(stored) ? stored : CLAUDIA_DEFAULT_MODEL_VALUE;
+}
+
+/**
+ * Persist the operator's model choice. The choice is a UI preference only —
+ * every submitted task still captures its own model explicitly. Storing does
+ * not submit anything.
+ */
+export function saveSelectedModelId(value: string): void {
+  if (value === CLAUDIA_DEFAULT_MODEL_VALUE) {
+    writeStored(STORAGE_SELECTED_MODEL, CLAUDIA_DEFAULT_MODEL_VALUE);
+    return;
+  }
+  if (isValidDeepResearchModelId(value)) {
+    writeStored(STORAGE_SELECTED_MODEL, value);
+  }
+}
+
+/**
+ * Resolve the selector value into the envelope field: the sentinel default
+ * yields undefined (omit → Claudia default); a concrete valid id passes
+ * through. Anything else is treated as the default (fail safe).
+ */
+export function selectedModelToEnvelopeField(value: string): string | undefined {
+  if (!value || value === CLAUDIA_DEFAULT_MODEL_VALUE) return undefined;
+  return isValidDeepResearchModelId(value) ? value : undefined;
 }
 
 export function validateResearchRequestLength(text: string): {

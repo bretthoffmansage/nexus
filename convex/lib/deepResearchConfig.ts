@@ -14,7 +14,26 @@
  */
 
 export const DEEP_RESEARCH_CONTRACT_VERSION =
-  "nexus_hermes_deep_research_connector_handoff_v1";
+  "nexus_hermes_deep_research_connector_handoff_v1_1";
+
+/**
+ * Bounded model-id syntax. Mirrors the Claudia Connector + research-tool gate
+ * exactly ("provider/model", no whitespace/url/path/shell/credential syntax).
+ * Nexus is not the authority — Claudia re-validates — but the envelope must not
+ * carry an obviously malformed value.
+ */
+export const DEEP_RESEARCH_MODEL_ID_PATTERN =
+  /^[a-z0-9][a-z0-9._-]{0,40}\/[A-Za-z0-9][A-Za-z0-9._:-]{0,80}$/;
+export const DEEP_RESEARCH_MAX_MODEL_ID_LENGTH = 128;
+
+export function isValidDeepResearchModelId(value: string): boolean {
+  return (
+    typeof value === "string" &&
+    value.length <= DEEP_RESEARCH_MAX_MODEL_ID_LENGTH &&
+    !/\s/.test(value) &&
+    DEEP_RESEARCH_MODEL_ID_PATTERN.test(value)
+  );
+}
 
 /** Canonical Claudia tool ID for governed deep research. */
 export const DEEP_RESEARCH_TOOL_ID = "research.hermes_deep_research";
@@ -65,6 +84,13 @@ export type DeepResearchEnvelope = {
   requestedToolId: typeof DEEP_RESEARCH_TOOL_ID;
   taskKind: typeof DEEP_RESEARCH_TASK_KIND;
   requestText: string;
+  /**
+   * Optional governed model selection (v1.1). Omitted entirely when the
+   * operator chose the Claudia default. When present it is a validated Gateway
+   * model identifier; it is the ONLY execution-selection field allowed to cross
+   * — no provider, transport, prompt, or runtime controls ever appear here.
+   */
+  requestedModelId?: string;
   taskMetadata: DeepResearchTaskMetadata;
 };
 
@@ -72,7 +98,8 @@ export type DeepResearchEnvelopeError =
   | "empty_request"
   | "request_too_large"
   | "invalid_research_request_id"
-  | "invalid_idempotency_key";
+  | "invalid_idempotency_key"
+  | "invalid_model_id";
 
 export type DeepResearchEnvelopeResult =
   | { ok: true; envelope: DeepResearchEnvelope }
@@ -88,6 +115,8 @@ export function buildDeepResearchEnvelope(input: {
   requestText: string;
   researchRequestId: string;
   idempotencyKey: string;
+  /** Optional. Omit or pass undefined/empty for the Claudia default. */
+  requestedModelId?: string;
 }): DeepResearchEnvelopeResult {
   const requestText = input.requestText.trim();
   if (!requestText) {
@@ -102,18 +131,25 @@ export function buildDeepResearchEnvelope(input: {
   if (!isValidDeepResearchIdentifier(input.idempotencyKey)) {
     return { ok: false, code: "invalid_idempotency_key" };
   }
-  return {
-    ok: true,
-    envelope: {
-      requestedToolId: DEEP_RESEARCH_TOOL_ID,
-      taskKind: DEEP_RESEARCH_TASK_KIND,
-      requestText,
-      taskMetadata: buildDeepResearchTaskMetadata(
-        input.researchRequestId,
-        input.idempotencyKey,
-      ),
-    },
+  const trimmedModel = (input.requestedModelId ?? "").trim();
+  if (trimmedModel && !isValidDeepResearchModelId(trimmedModel)) {
+    return { ok: false, code: "invalid_model_id" };
+  }
+  const envelope: DeepResearchEnvelope = {
+    requestedToolId: DEEP_RESEARCH_TOOL_ID,
+    taskKind: DEEP_RESEARCH_TASK_KIND,
+    requestText,
+    taskMetadata: buildDeepResearchTaskMetadata(
+      input.researchRequestId,
+      input.idempotencyKey,
+    ),
   };
+  // Only include the field when a concrete model was chosen. Omission is the
+  // canonical "use Claudia default" signal.
+  if (trimmedModel) {
+    envelope.requestedModelId = trimmedModel;
+  }
+  return { ok: true, envelope };
 }
 
 /**

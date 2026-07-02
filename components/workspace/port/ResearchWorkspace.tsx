@@ -12,12 +12,20 @@ import {
   loadActiveTaskId,
   loadOrCreateIdempotencyKey,
   loadOrCreateResearchRequestId,
+  loadSelectedModelId,
   rememberActiveTaskId,
   researchRequestValidationMessage,
   rotateIdempotencyKey,
   rotateResearchRequestSession,
+  saveSelectedModelId,
+  selectedModelToEnvelopeField,
   validateResearchRequestLength,
 } from "@/lib/nexus/deepResearchSession";
+import {
+  CLAUDIA_DEFAULT_MODEL_VALUE,
+  type NexusResearchModel,
+} from "@/lib/nexus/deepResearchModelCatalog";
+import { ResearchModelSelector } from "@/components/workspace/port/ResearchModelSelector";
 import {
   blockedResearchMessage,
   deepResearchLifecycleLabel,
@@ -47,15 +55,60 @@ export function ResearchWorkspace() {
   const [selectedTaskId, setSelectedTaskId] = useState<Id<"nexusTasks"> | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [selectedModelId, setSelectedModelId] = useState<string>(CLAUDIA_DEFAULT_MODEL_VALUE);
+  const [modelCatalog, setModelCatalog] = useState<NexusResearchModel[]>([]);
+  const [modelCatalogLoading, setModelCatalogLoading] = useState(true);
+  const [modelCatalogError, setModelCatalogError] = useState(false);
 
   useEffect(() => {
     setResearchRequestId(loadOrCreateResearchRequestId());
     setIdempotencyKey(loadOrCreateIdempotencyKey());
+    setSelectedModelId(loadSelectedModelId());
     const storedTaskId = loadActiveTaskId();
     if (storedTaskId) {
       setSelectedTaskId(storedTaskId as Id<"nexusTasks">);
     }
   }, []);
+
+  // Fetch the research-compatible model catalog once via the server-only route
+  // (credential never reaches the browser). A failure degrades to the Claudia
+  // default + any last valid selection; it never blocks the page.
+  useEffect(() => {
+    let cancelled = false;
+    setModelCatalogLoading(true);
+    fetch("/api/deep-research/models")
+      .then((res) => (res.ok ? res.json() : Promise.reject(new Error("catalog"))))
+      .then((data: { ok?: boolean; models?: NexusResearchModel[] }) => {
+        if (cancelled) return;
+        if (data.ok && Array.isArray(data.models)) {
+          setModelCatalog(data.models);
+          setModelCatalogError(false);
+        } else {
+          setModelCatalogError(true);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setModelCatalogError(true);
+      })
+      .finally(() => {
+        if (!cancelled) setModelCatalogLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const handleModelChange = useCallback((next: string) => {
+    setSelectedModelId(next);
+    saveSelectedModelId(next);
+  }, []);
+
+  // Block submission when a concrete saved model is no longer in the catalog.
+  const savedModelUnavailable = useMemo(() => {
+    if (selectedModelId === CLAUDIA_DEFAULT_MODEL_VALUE) return false;
+    if (modelCatalogLoading || modelCatalogError) return false;
+    return !modelCatalog.some((m) => m.id === selectedModelId);
+  }, [modelCatalog, modelCatalogError, modelCatalogLoading, selectedModelId]);
 
   const tasksPage = useQuery(
     nexusDeepResearch.listMyDeepResearchTasks,
@@ -115,6 +168,7 @@ export function ResearchWorkspace() {
     validation.ok &&
     !submitting &&
     !hasActiveExecution &&
+    !savedModelUnavailable &&
     !isLoading &&
     isAuthenticated;
 
@@ -127,6 +181,9 @@ export function ResearchWorkspace() {
         requestText: validation.trimmed,
         researchRequestId,
         idempotencyKey,
+        // Captured at submit time so the run is reproducible; undefined ⇒
+        // Claudia default. The selector preference is not the source of truth.
+        requestedModelId: selectedModelToEnvelopeField(selectedModelId),
       });
       setSelectedTaskId(result.taskId);
       rememberActiveTaskId(result.taskId);
@@ -139,6 +196,7 @@ export function ResearchWorkspace() {
     canSubmit,
     idempotencyKey,
     researchRequestId,
+    selectedModelId,
     submitDeepResearch,
     validation,
   ]);
@@ -227,18 +285,14 @@ export function ResearchWorkspace() {
               ) : null}
             </div>
 
-            <label htmlFor="research-model">
-              Model
-              <input
-                id="research-model"
-                type="text"
-                className="research-model-field"
-                value="Managed by Claudia"
-                readOnly
-                disabled
-                aria-readonly="true"
-              />
-            </label>
+            <ResearchModelSelector
+              value={selectedModelId}
+              onChange={handleModelChange}
+              models={modelCatalog}
+              loading={modelCatalogLoading}
+              error={modelCatalogError}
+              disabled={submitting || hasActiveExecution}
+            />
 
             <div className="research-form-actions">
               <button

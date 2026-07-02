@@ -237,6 +237,7 @@ export const claimNextTask = internalMutation({
         requestMessageId: target.requestMessageId,
         requestedToolId: target.requestedToolId,
         requestText: effectiveExecutionRequestText(target),
+        requestedModelId: target.requestedModelId,
         taskKind: target.taskKind,
         taskMetadata: target.taskMetadata,
         attemptNumber: target.attemptNumber,
