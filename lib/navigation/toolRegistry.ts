@@ -12,6 +12,8 @@ export type NexusToolDefinition = {
   availability: ToolAvailability;
   requiredRole?: "nexus_admin";
   showInChatHistoryRegion?: boolean;
+  /** Omit from sidebar navigation while keeping route/registry entry restorable. */
+  hiddenFromNavigation?: boolean;
 };
 
 export const NEXUS_CHAT_TOOL: NexusToolDefinition = {
@@ -144,6 +146,7 @@ export const NEXUS_TOOL_REGISTRY: NexusToolDefinition[] = [
     group: "system",
     legacyModules: ["operations-terminal-legacy"],
     availability: "deferred",
+    hiddenFromNavigation: true,
   },
   {
     id: "admin-access",
@@ -158,6 +161,7 @@ export const NEXUS_TOOL_REGISTRY: NexusToolDefinition[] = [
 
 export function toolsForNavigation(options?: { isAdmin?: boolean }): NexusToolDefinition[] {
   return NEXUS_TOOL_REGISTRY.filter((tool) => {
+    if (tool.hiddenFromNavigation) return false;
     if (tool.requiredRole === "nexus_admin" && !options?.isAdmin) return false;
     return true;
   });

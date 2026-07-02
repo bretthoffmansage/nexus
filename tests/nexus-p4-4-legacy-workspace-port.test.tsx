@@ -3,7 +3,7 @@ import path from "node:path";
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { NexusChatWorkspace } from "@/components/chat/NexusChatWorkspace";
-import { NEXUS_TOOL_REGISTRY } from "@/lib/navigation/toolRegistry";
+import { NEXUS_TOOL_REGISTRY, toolByHref, toolsForNavigation } from "@/lib/navigation/toolRegistry";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 
 // The chat workspace now uses Convex hooks; override just those two so the
@@ -139,6 +139,17 @@ describe("Nexus P4.4 legacy workspace port", () => {
         expect(adapterSrc).toContain("connector_required");
       }
     }
+  });
+
+  it("Operations is hidden from sidebar navigation but remains registered", () => {
+    const nav = toolsForNavigation({ isAdmin: true });
+    expect(nav.find((t) => t.id === "operations")).toBeUndefined();
+    expect(nav.find((t) => t.id === "settings")).toBeDefined();
+    expect(nav.find((t) => t.id === "status")).toBeDefined();
+    expect(toolByHref("/operations")?.id).toBe("operations");
+    expect(NEXUS_TOOL_REGISTRY.find((t) => t.id === "operations")?.hiddenFromNavigation).toBe(
+      true,
+    );
   });
 
   it("sidebar keeps global navigation only (chat history moved to Nexus Chat)", () => {
