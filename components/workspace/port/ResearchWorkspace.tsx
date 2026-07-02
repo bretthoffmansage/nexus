@@ -96,6 +96,14 @@ export function ResearchWorkspace() {
     ready && detailTaskId ? { taskId: detailTaskId } : "skip",
   );
 
+  useEffect(() => {
+    if (!ready || tasksPage === undefined) return;
+    if (tasksPage.tasks.length === 0 && detailTaskId) {
+      setSelectedTaskId(null);
+      clearActiveTaskId();
+    }
+  }, [detailTaskId, ready, tasksPage]);
+
   const lifecycle = deriveDeepResearchLifecycle({
     taskStatus: detailTask?.status,
     errorCode: detailTask?.errorCode,
@@ -161,6 +169,9 @@ export function ResearchWorkspace() {
         : null;
 
   const pastTasks = tasksPage?.tasks ?? [];
+  const authInitializing = isLoading || (isAuthenticated && !ready);
+  const tasksLoading = ready && tasksPage === undefined;
+  const detailTaskLoading = Boolean(ready && detailTaskId && detailTask === undefined);
   const blockedMessage =
     lifecycle === "blocked"
       ? blockedResearchMessage(detailTask?.errorCode, detailTask?.errorMessage)
@@ -258,11 +269,17 @@ export function ResearchWorkspace() {
         <div className="research-jobs">
           <h2 className="research-section-title">Current research</h2>
           <div className="research-current-panel">
-            {!ready || detailTask === undefined ? (
+            {authInitializing || tasksLoading ? (
+              <p className="legacy-port-empty">Loading research state…</p>
+            ) : !isAuthenticated ? (
+              <p className="legacy-port-empty">Sign in to view research history.</p>
+            ) : !detailTaskId ? (
+              <p className="legacy-port-empty">No research is currently running.</p>
+            ) : detailTaskLoading ? (
               <p className="legacy-port-empty">Loading research state…</p>
             ) : !detailTask ? (
-              <p className="legacy-port-empty">
-                No research submitted yet. Enter a request and click Research.
+              <p className="legacy-port-empty" role="alert">
+                Could not load this research task.
               </p>
             ) : (
               <>
@@ -412,8 +429,12 @@ export function ResearchWorkspace() {
 
           <h2 className="research-section-title">Recent research</h2>
           <div className="research-job-list">
-            {pastTasks.length === 0 ? (
-              <p className="legacy-port-empty">Completed and in-progress research appears here.</p>
+            {authInitializing || tasksLoading ? (
+              <p className="legacy-port-empty">Loading research history…</p>
+            ) : !isAuthenticated ? (
+              <p className="legacy-port-empty">Sign in to view research history.</p>
+            ) : pastTasks.length === 0 ? (
+              <p className="legacy-port-empty">No research runs yet.</p>
             ) : (
               <ul className="research-history-list">
                 {pastTasks.map((task) => (
