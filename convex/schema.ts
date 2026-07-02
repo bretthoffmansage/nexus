@@ -24,6 +24,7 @@ const taskKindValidator = v.union(
   v.literal("chat"),
   v.literal("library_document_processing"),
   v.literal("scheduled_task"),
+  v.literal("membership_full_sync"),
 );
 
 const libraryTaskMetadataValidator = v.object({
@@ -45,6 +46,15 @@ const scheduledTaskMetadataValidator = v.object({
   scheduledEventId: v.id("nexusScheduledEvents"),
   scheduledForUtc: v.number(),
   explicitUserAction: v.literal("schedule"),
+  lateDispatch: v.optional(v.boolean()),
+});
+
+const membershipFullSyncTaskMetadataValidator = v.object({
+  kind: v.literal("membership_full_sync"),
+  scheduledEventId: v.id("nexusScheduledEvents"),
+  scheduledForUtc: v.number(),
+  explicitUserAction: v.literal("sync"),
+  idempotencyKey: v.string(),
   lateDispatch: v.optional(v.boolean()),
 });
 
@@ -201,7 +211,11 @@ export default defineSchema({
     libraryDocumentVersionId: v.optional(v.id("nexusLibraryDocumentVersions")),
     scheduledEventId: v.optional(v.id("nexusScheduledEvents")),
     taskMetadata: v.optional(
-      v.union(libraryTaskMetadataValidator, scheduledTaskMetadataValidator),
+      v.union(
+        libraryTaskMetadataValidator,
+        scheduledTaskMetadataValidator,
+        membershipFullSyncTaskMetadataValidator,
+      ),
     ),
     requestedToolId: v.string(),
     /** Exact user-visible request text (Chat transcript + Tasks UI). */

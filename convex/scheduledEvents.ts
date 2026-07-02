@@ -2,6 +2,12 @@ import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { CALENDAR_SCHEDULE, isAllowedScheduledToolId } from "./lib/calendarScheduleConfig";
 import {
+  CALENDAR_SCHEDULED_TOOLS,
+  getCalendarScheduledTool,
+  isCalendarScheduledToolAvailable,
+  MEMBERSHIP_FULL_SYNC_UNAVAILABLE_REASON,
+} from "./lib/calendarScheduledTools";
+import {
   isCalendarEventDeletable,
   isCalendarEventEditable,
 } from "./lib/calendarProjection";
@@ -70,30 +76,47 @@ function projectEvent(event: {
   };
 }
 
-function validateScheduleInput(args: {
-  title: string;
-  taskRequest: string;
-  requestedToolId: string;
-  localScheduledDate: string;
-  localScheduledTime: string;
-  timezone: string;
-}): number {
+function initialScheduleStatus(scheduledForUtc: number, now: number): "scheduled" | "due" {
+  return scheduledForUtc > now ? "scheduled" : "due";
+}
+
+async function validateScheduleInputAsync(
+  ctx: import("./_generated/server").MutationCtx,
+  args: {
+    title: string;
+    taskRequest: string;
+    requestedToolId: string;
+    localScheduledDate: string;
+    localScheduledTime: string;
+    timezone: string;
+  },
+): Promise<number> {
   const title = args.title.trim();
   const taskRequest = args.taskRequest.trim();
   if (!title) {
     nexusError(NEXUS_ERROR_CODES.INVALID_INPUT, "Event title is required");
   }
-  if (!taskRequest) {
+  if (!isAllowedScheduledToolId(args.requestedToolId)) {
+    nexusError(NEXUS_ERROR_CODES.INVALID_TOOL, "Tool is not available for scheduled tasks");
+  }
+  const tool = getCalendarScheduledTool(args.requestedToolId);
+  if (!tool) {
+    nexusError(NEXUS_ERROR_CODES.INVALID_TOOL, "Tool is not available for scheduled tasks");
+  }
+  if (tool.inputMode === "text_request" && !taskRequest) {
     nexusError(NEXUS_ERROR_CODES.INVALID_INPUT, "Task request is required");
+  }
+  if (!(await isCalendarScheduledToolAvailable(ctx, args.requestedToolId))) {
+    nexusError(
+      NEXUS_ERROR_CODES.SCHEDULED_TOOL_UNAVAILABLE,
+      MEMBERSHIP_FULL_SYNC_UNAVAILABLE_REASON,
+    );
   }
   if (title.length > CALENDAR_SCHEDULE.maxTitleLength) {
     nexusError(NEXUS_ERROR_CODES.REQUEST_TOO_LARGE, "Title is too long");
   }
-  if (taskRequest.length > CALENDAR_SCHEDULE.maxTaskRequestLength) {
+  if (tool.inputMode === "text_request" && taskRequest.length > CALENDAR_SCHEDULE.maxTaskRequestLength) {
     nexusError(NEXUS_ERROR_CODES.REQUEST_TOO_LARGE, "Task request is too long");
-  }
-  if (!isAllowedScheduledToolId(args.requestedToolId)) {
-    nexusError(NEXUS_ERROR_CODES.INVALID_TOOL, "Tool is not available for scheduled tasks");
   }
   if (!isValidIanaTimeZone(args.timezone)) {
     nexusError(NEXUS_ERROR_CODES.SCHEDULED_EVENT_INVALID_TIME, "Invalid timezone");
@@ -105,8 +128,15 @@ function validateScheduleInput(args: {
   }
 }
 
-function initialScheduleStatus(scheduledForUtc: number, now: number): "scheduled" | "due" {
-  return scheduledForUtc > now ? "scheduled" : "due";
+function normalizedTaskRequestForTool(
+  requestedToolId: string,
+  taskRequest: string,
+): string {
+  const tool = getCalendarScheduledTool(requestedToolId);
+  if (tool?.inputMode === "no_input_action") {
+    return tool.fixedRequestText ?? "";
+  }
+  return clampLength(taskRequest.trim(), CALENDAR_SCHEDULE.maxTaskRequestLength);
 }
 
 /** List the caller's scheduled events visible on calendar days in [startDate, endDate]. */
@@ -184,7 +214,7 @@ export const createMyScheduledEvent = mutation({
   },
   handler: async (ctx, args) => {
     const { clerkUserId } = await getCurrentApprovedClerkUserId(ctx);
-    const scheduledForUtc = validateScheduleInput(args);
+    const scheduledForUtc = await validateScheduleInputAsync(ctx, args);
     const now = Date.now();
     const { localScheduledDate, localScheduledTime } = formatLocalDateTime(
       scheduledForUtc,
@@ -196,7 +226,7 @@ export const createMyScheduledEvent = mutation({
       description: args.description
         ? clampLength(args.description.trim(), CALENDAR_SCHEDULE.maxDescriptionLength)
         : undefined,
-      taskRequest: clampLength(args.taskRequest.trim(), CALENDAR_SCHEDULE.maxTaskRequestLength),
+      taskRequest: normalizedTaskRequestForTool(args.requestedToolId, args.taskRequest),
       requestedToolId: args.requestedToolId,
       timezone: args.timezone,
       localScheduledDate,
@@ -239,7 +269,7 @@ export const updateMyScheduledEvent = mutation({
     const localScheduledDate = args.localScheduledDate ?? event.localScheduledDate;
     const localScheduledTime = args.localScheduledTime ?? event.localScheduledTime;
 
-    const scheduledForUtc = validateScheduleInput({
+    const scheduledForUtc = await validateScheduleInputAsync(ctx, {
       title,
       taskRequest,
       requestedToolId,
@@ -258,7 +288,7 @@ export const updateMyScheduledEvent = mutation({
             ? clampLength(args.description.trim(), CALENDAR_SCHEDULE.maxDescriptionLength)
             : undefined
           : event.description,
-      taskRequest: clampLength(taskRequest, CALENDAR_SCHEDULE.maxTaskRequestLength),
+      taskRequest: normalizedTaskRequestForTool(requestedToolId, taskRequest),
       requestedToolId,
       timezone,
       localScheduledDate: formatted.localScheduledDate,
@@ -303,14 +333,19 @@ export const listAllowedScheduledTools = query({
   args: {},
   handler: async (ctx) => {
     await requireKnowledgeReader(ctx);
-    return CALENDAR_SCHEDULE.allowedScheduledToolIds.map((id) => ({
-      id,
-      label:
-        id === "vault.agentic_retrieval"
-          ? "SAGE Knowledge Vault retrieval"
-          : id === "membership_io.transcript_retrieve"
-            ? "Membership.io transcript retrieval"
-            : id,
-    }));
+    const tools = await Promise.all(
+      CALENDAR_SCHEDULED_TOOLS.map(async (tool) => {
+        const available = await isCalendarScheduledToolAvailable(ctx, tool.requestedToolId);
+        return {
+          id: tool.requestedToolId,
+          label: tool.displayLabel,
+          inputMode: tool.inputMode,
+          description: tool.description || null,
+          available,
+          unavailableReason: available ? null : MEMBERSHIP_FULL_SYNC_UNAVAILABLE_REASON,
+        };
+      }),
+    );
+    return tools;
   },
 });

@@ -1,6 +1,9 @@
 import { LIBRARY_DROPZONE_TOOL_ID } from "./libraryDropzoneConfig";
 import { P5_LIMITS, P5_SUPPORTED_TOOL_IDS, type P5ToolId } from "./p5config";
 
+/** Canonical Claudia tool — full Membership.io parent workflow (Calendar-only in Nexus). */
+export const MEMBERSHIP_FULL_SYNC_TOOL_ID = "membership_io.catalog_refresh_and_vault_update";
+
 /**
  * P6 — Trusted Connector queue protocol.
  *
@@ -95,6 +98,7 @@ const TOOL_EXECUTION_SAFETY: Record<string, ExecutionSafetyClass> = {
   "vault.agentic_retrieval": "read_only_idempotent",
   "membership_io.transcript_retrieve": "read_only_idempotent",
   [LIBRARY_DROPZONE_TOOL_ID]: "write_requires_confirmation",
+  [MEMBERSHIP_FULL_SYNC_TOOL_ID]: "write_requires_confirmation",
 };
 
 export function executionSafetyForTool(toolId: string): ExecutionSafetyClass {
@@ -105,6 +109,12 @@ export function executionSafetyForTool(toolId: string): ExecutionSafetyClass {
 export const DEFAULT_CONNECTOR_TOOL_IDS: readonly string[] = [
   ...P5_SUPPORTED_TOOL_IDS,
   LIBRARY_DROPZONE_TOOL_ID,
+];
+
+/** Full operator-configurable tool universe (includes tools not on the default allowlist). */
+export const KNOWN_CONNECTOR_TOOL_IDS: readonly string[] = [
+  ...DEFAULT_CONNECTOR_TOOL_IDS,
+  MEMBERSHIP_FULL_SYNC_TOOL_ID,
 ];
 
 /** Approved Connector progress "stage" values (bounded vocabulary; the

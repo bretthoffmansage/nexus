@@ -1,8 +1,11 @@
 "use client";
 
 import { useMutation, useQuery } from "convex/react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { Id } from "@/convex/_generated/dataModel";
+import {
+  getCalendarScheduledTool,
+} from "@/convex/lib/calendarScheduledTools";
 import {
   calendarStatusLabel,
   nexusCalendar,
@@ -51,6 +54,7 @@ type CalendarEventDialogProps = {
 
 export function CalendarEventDialog({ mode, onClose, onEdit, ready }: CalendarEventDialogProps) {
   const [form, setForm] = useState<EventFormState>(emptyForm(formatLocalDateInput(new Date())));
+  const [draftTextRequest, setDraftTextRequest] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -67,9 +71,17 @@ export function CalendarEventDialog({ mode, onClose, onEdit, ready }: CalendarEv
   const updateEvent = useMutation(nexusCalendar.updateEvent);
   const deleteEvent = useMutation(nexusCalendar.deleteEvent);
 
+  const selectedToolMeta = useMemo(
+    () => tools?.find((tool) => tool.id === form.requestedToolId),
+    [tools, form.requestedToolId],
+  );
+  const isNoInputTool = selectedToolMeta?.inputMode === "no_input_action";
+  const toolUnavailable = selectedToolMeta?.available === false;
+
   useEffect(() => {
     if (mode.kind === "create") {
       setForm(emptyForm(mode.localDate));
+      setDraftTextRequest("");
       setError(null);
     }
   }, [mode]);
@@ -85,6 +97,7 @@ export function CalendarEventDialog({ mode, onClose, onEdit, ready }: CalendarEv
         localScheduledTime: event.localScheduledTime,
         timezone: event.timezone,
       });
+      setDraftTextRequest("");
       setError(null);
     }
   }, [mode, event]);
@@ -103,32 +116,38 @@ export function CalendarEventDialog({ mode, onClose, onEdit, ready }: CalendarEv
     viewEvent && !["queued", "running", "dispatching"].includes(viewEvent.scheduleStatus);
   const canEdit = viewEvent && !viewEvent.linkedTaskId;
 
+  const onToolChange = (requestedToolId: string) => {
+    const next = tools?.find((tool) => tool.id === requestedToolId);
+    if (next?.inputMode === "no_input_action") {
+      setDraftTextRequest(form.taskRequest);
+      setForm((f) => ({ ...f, requestedToolId, taskRequest: "" }));
+      return;
+    }
+    setForm((f) => ({
+      ...f,
+      requestedToolId,
+      taskRequest: draftTextRequest || f.taskRequest,
+    }));
+  };
+
   const onSave = async () => {
-    if (!ready || busy) return;
+    if (!ready || busy || toolUnavailable) return;
     setBusy(true);
     setError(null);
     try {
+      const payload = {
+        title: form.title,
+        description: form.description || undefined,
+        taskRequest: isNoInputTool ? "" : form.taskRequest,
+        requestedToolId: form.requestedToolId,
+        localScheduledDate: form.localScheduledDate,
+        localScheduledTime: form.localScheduledTime,
+        timezone: form.timezone,
+      };
       if (mode.kind === "create") {
-        await createEvent({
-          title: form.title,
-          description: form.description || undefined,
-          taskRequest: form.taskRequest,
-          requestedToolId: form.requestedToolId,
-          localScheduledDate: form.localScheduledDate,
-          localScheduledTime: form.localScheduledTime,
-          timezone: form.timezone,
-        });
+        await createEvent(payload);
       } else if (mode.kind === "edit") {
-        await updateEvent({
-          eventId: mode.eventId,
-          title: form.title,
-          description: form.description || undefined,
-          taskRequest: form.taskRequest,
-          requestedToolId: form.requestedToolId,
-          localScheduledDate: form.localScheduledDate,
-          localScheduledTime: form.localScheduledTime,
-          timezone: form.timezone,
-        });
+        await updateEvent({ eventId: mode.eventId, ...payload });
       }
       onClose();
     } catch (err) {
@@ -152,6 +171,8 @@ export function CalendarEventDialog({ mode, onClose, onEdit, ready }: CalendarEv
       setBusy(false);
     }
   };
+
+  const viewToolDef = viewEvent ? getCalendarScheduledTool(viewEvent.requestedToolId) : null;
 
   return (
     <div className="cal-dialog-backdrop" role="presentation" onClick={onClose}>
@@ -184,7 +205,7 @@ export function CalendarEventDialog({ mode, onClose, onEdit, ready }: CalendarEv
               <input
                 value={form.title}
                 onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
-                placeholder="Cleanup"
+                placeholder="Membership refresh"
               />
             </label>
             <div className="cal-field-row">
@@ -214,27 +235,36 @@ export function CalendarEventDialog({ mode, onClose, onEdit, ready }: CalendarEv
               />
             </label>
             <label className="cal-field">
-              <span>Task request</span>
-              <textarea
-                rows={4}
-                value={form.taskRequest}
-                onChange={(e) => setForm((f) => ({ ...f, taskRequest: e.target.value }))}
-                placeholder="What should Claudia do when this event is due?"
-              />
-            </label>
-            <label className="cal-field">
               <span>Task type</span>
               <select
                 value={form.requestedToolId}
-                onChange={(e) => setForm((f) => ({ ...f, requestedToolId: e.target.value }))}
+                onChange={(e) => onToolChange(e.target.value)}
               >
                 {(tools ?? []).map((tool) => (
                   <option key={tool.id} value={tool.id}>
                     {tool.label}
+                    {!tool.available && tool.unavailableReason ? ` — ${tool.unavailableReason}` : ""}
                   </option>
                 ))}
               </select>
             </label>
+            {toolUnavailable && selectedToolMeta?.unavailableReason ? (
+              <p className="cal-dialog-hint">{selectedToolMeta.unavailableReason}</p>
+            ) : null}
+            {isNoInputTool && selectedToolMeta?.description ? (
+              <p className="cal-dialog-hint">{selectedToolMeta.description}</p>
+            ) : null}
+            {!isNoInputTool ? (
+              <label className="cal-field">
+                <span>Task request</span>
+                <textarea
+                  rows={4}
+                  value={form.taskRequest}
+                  onChange={(e) => setForm((f) => ({ ...f, taskRequest: e.target.value }))}
+                  placeholder="What should Claudia do when this event is due?"
+                />
+              </label>
+            ) : null}
             <label className="cal-field">
               <span>Notes (optional)</span>
               <textarea
@@ -259,12 +289,20 @@ export function CalendarEventDialog({ mode, onClose, onEdit, ready }: CalendarEv
                 <strong>Queued:</strong> {new Date(viewEvent.dispatchedAt).toLocaleString()}
               </p>
             ) : null}
+            {viewToolDef?.inputMode === "no_input_action" ? (
+              <p>
+                <strong>Action:</strong> {viewToolDef.description}
+              </p>
+            ) : (
+              <>
+                <p>
+                  <strong>Task request:</strong>
+                </p>
+                <pre className="cal-detail-pre">{viewEvent.taskRequest}</pre>
+              </>
+            )}
             <p>
-              <strong>Task request:</strong>
-            </p>
-            <pre className="cal-detail-pre">{viewEvent.taskRequest}</pre>
-            <p>
-              <strong>Tool:</strong> {viewEvent.requestedToolId}
+              <strong>Tool:</strong> {viewToolDef?.displayLabel ?? viewEvent.requestedToolId}
             </p>
             {viewEvent.progressMessage ? (
               <p>
@@ -325,7 +363,7 @@ export function CalendarEventDialog({ mode, onClose, onEdit, ready }: CalendarEv
                 type="button"
                 className="cal-btn cal-btn-primary"
                 onClick={onSave}
-                disabled={busy}
+                disabled={busy || toolUnavailable}
               >
                 Save
               </button>

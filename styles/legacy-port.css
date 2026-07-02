@@ -391,6 +391,13 @@
   font-size: 0.85rem;
 }
 
+.cal-dialog-hint {
+  margin: 0 0 0.5rem;
+  color: var(--nexus-muted, #5c6670);
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
 .cal-field {
   display: flex;
   flex-direction: column;

@@ -1,4 +1,9 @@
-import { P5_LIMITS, P5_SUPPORTED_TOOL_IDS } from "./p5config";
+import {
+  CALENDAR_DEFAULT_SCHEDULED_TOOL_ID,
+  CALENDAR_SCHEDULED_TOOL_IDS,
+  isCalendarScheduledToolId,
+} from "./calendarScheduledTools";
+import { P5_LIMITS } from "./p5config";
 
 /** Nexus Calendar scheduled-task dispatch — single configuration surface. */
 export const CALENDAR_SCHEDULE = {
@@ -14,9 +19,9 @@ export const CALENDAR_SCHEDULE = {
   maxTitleLength: 200,
   maxDescriptionLength: 1_000,
   maxTaskRequestLength: P5_LIMITS.maxRequestLength,
-  /** Tools users may schedule explicitly (read-only P5 tools only in v1). */
-  allowedScheduledToolIds: [...P5_SUPPORTED_TOOL_IDS] as const,
-  defaultToolId: P5_SUPPORTED_TOOL_IDS[0],
+  /** Tools users may schedule (see `calendarScheduledTools.ts`). */
+  allowedScheduledToolIds: CALENDAR_SCHEDULED_TOOL_IDS,
+  defaultToolId: CALENDAR_DEFAULT_SCHEDULED_TOOL_ID,
   /** Normal dispatch precision bound (one scheduler interval; see spec). */
   schedulingPrecisionMs: 5 * 60 * 1000,
 } as const;
@@ -24,7 +29,7 @@ export const CALENDAR_SCHEDULE = {
 export type CalendarAllowedToolId = (typeof CALENDAR_SCHEDULE.allowedScheduledToolIds)[number];
 
 export function isAllowedScheduledToolId(value: string): value is CalendarAllowedToolId {
-  return (CALENDAR_SCHEDULE.allowedScheduledToolIds as readonly string[]).includes(value);
+  return isCalendarScheduledToolId(value);
 }
 
 export function scheduledEventIdempotencyKey(eventId: string): string {

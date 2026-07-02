@@ -8,6 +8,7 @@ import { boundedMetadataValidator } from "./lib/p5config";
 import {
   CONNECTOR_OPERATING_STATES,
   DEFAULT_CONNECTOR_TOOL_IDS,
+  KNOWN_CONNECTOR_TOOL_IDS,
   P6_LEASE,
   P6_LIMITS,
   P6_PROTOCOL_VERSION,
@@ -132,7 +133,7 @@ export const setConnectorAllowedTools = internalMutation({
     if (args.allowedToolIds.length === 0) {
       throw new Error("allowedToolIds must not be empty — pass the full explicit tool list");
     }
-    const known = new Set<string>(DEFAULT_CONNECTOR_TOOL_IDS);
+    const known = new Set<string>(KNOWN_CONNECTOR_TOOL_IDS);
     const deduped: string[] = [];
     for (const toolId of args.allowedToolIds) {
       if (!known.has(toolId)) {

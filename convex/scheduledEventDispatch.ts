@@ -8,6 +8,15 @@ import {
   scheduledEventIdempotencyKey,
 } from "./lib/calendarScheduleConfig";
 import {
+  findActiveSingleFlightTask,
+  getCalendarScheduledTool,
+  isCalendarScheduledToolAvailable,
+  membershipFullSyncMetadataIdempotencyKey,
+  MEMBERSHIP_FULL_SYNC_TASK_KIND,
+  MEMBERSHIP_FULL_SYNC_UNAVAILABLE_REASON,
+  MEMBERSHIP_FULL_SYNC_WAIT_MESSAGE,
+} from "./lib/calendarScheduledTools";
+import {
   patchScheduledEventForTaskStatus,
   projectScheduledEventFromTask,
 } from "./lib/calendarProjection";
@@ -50,6 +59,23 @@ async function linkEventToTask(
     queuedAt: now,
     dispatchClaimToken: undefined,
     lastDispatchError: undefined,
+    progressMessage: undefined,
+    updatedAt: now,
+  });
+}
+
+async function releaseDispatchWait(
+  ctx: import("./_generated/server").MutationCtx,
+  eventId: Id<"nexusScheduledEvents">,
+  now: number,
+  progressMessage: string,
+) {
+  await ctx.db.patch(eventId, {
+    dispatchState: "undispatched",
+    scheduleStatus: "due",
+    dispatchClaimToken: undefined,
+    dispatchStartedAt: undefined,
+    progressMessage,
     updatedAt: now,
   });
 }
@@ -66,6 +92,22 @@ async function dispatchOneEvent(
   if (!["scheduled", "due"].includes(event.scheduleStatus)) return "skipped";
   if (event.dispatchState === "dispatched") return "skipped";
   if (!isAllowedScheduledToolId(event.requestedToolId)) return "failed";
+
+  const toolDef = getCalendarScheduledTool(event.requestedToolId);
+  if (!toolDef) return "failed";
+
+  if (!(await isCalendarScheduledToolAvailable(ctx, event.requestedToolId))) {
+    await releaseDispatchWait(ctx, event._id, now, MEMBERSHIP_FULL_SYNC_UNAVAILABLE_REASON);
+    return "skipped";
+  }
+
+  if (toolDef.singleFlightKey) {
+    const active = await findActiveSingleFlightTask(ctx, toolDef.singleFlightKey);
+    if (active) {
+      await releaseDispatchWait(ctx, event._id, now, MEMBERSHIP_FULL_SYNC_WAIT_MESSAGE);
+      return "skipped";
+    }
+  }
 
   if (event.dispatchState === "dispatching" && event.dispatchStartedAt) {
     if (now - event.dispatchStartedAt < CALENDAR_SCHEDULE.dispatchClaimTimeoutMs) {
@@ -92,6 +134,19 @@ async function dispatchOneEvent(
     return "skipped";
   }
 
+  if (!(await isCalendarScheduledToolAvailable(ctx, fresh.requestedToolId))) {
+    await releaseDispatchWait(ctx, fresh._id, now, MEMBERSHIP_FULL_SYNC_UNAVAILABLE_REASON);
+    return "skipped";
+  }
+
+  if (toolDef.singleFlightKey) {
+    const active = await findActiveSingleFlightTask(ctx, toolDef.singleFlightKey);
+    if (active) {
+      await releaseDispatchWait(ctx, fresh._id, now, MEMBERSHIP_FULL_SYNC_WAIT_MESSAGE);
+      return "skipped";
+    }
+  }
+
   const existingTask = await findExistingScheduledTask(ctx, fresh.ownerClerkUserId, fresh._id);
   if (existingTask) {
     await linkEventToTask(ctx, fresh, existingTask._id, existingTask.queueSequence, now);
@@ -103,21 +158,17 @@ async function dispatchOneEvent(
     const queueSequence = await allocateQueueSequence(ctx);
     const idempotencyKey = scheduledEventIdempotencyKey(fresh._id);
     const lateDispatch = now > fresh.scheduledForUtc;
+    const requestText =
+      toolDef.inputMode === "no_input_action"
+        ? (toolDef.fixedRequestText ?? "")
+        : clampLength(fresh.taskRequest, P5_LIMITS.maxRequestLength);
 
-    const taskId = await ctx.db.insert("nexusTasks", {
+    const taskInsertBase = {
       ownerClerkUserId: fresh.ownerClerkUserId,
-      taskKind: SCHEDULED_TASK_KIND,
       scheduledEventId: fresh._id,
       requestedToolId: fresh.requestedToolId,
-      requestText: clampLength(fresh.taskRequest, P5_LIMITS.maxRequestLength),
-      taskMetadata: {
-        kind: SCHEDULED_TASK_KIND,
-        scheduledEventId: fresh._id,
-        scheduledForUtc: fresh.scheduledForUtc,
-        explicitUserAction: "schedule",
-        lateDispatch: lateDispatch || undefined,
-      },
-      status: "queued",
+      requestText,
+      status: "queued" as const,
       queueSequence,
       priority: defaultQueuePriority(),
       createdAt: now,
@@ -125,7 +176,36 @@ async function dispatchOneEvent(
       queuedAt: now,
       attemptNumber: 1,
       idempotencyKey,
-    });
+    };
+
+    const taskId =
+      toolDef.taskKind === MEMBERSHIP_FULL_SYNC_TASK_KIND
+        ? await ctx.db.insert("nexusTasks", {
+            ...taskInsertBase,
+            taskKind: MEMBERSHIP_FULL_SYNC_TASK_KIND,
+            taskMetadata: {
+              kind: MEMBERSHIP_FULL_SYNC_TASK_KIND,
+              scheduledEventId: fresh._id,
+              scheduledForUtc: fresh.scheduledForUtc,
+              explicitUserAction: "sync",
+              idempotencyKey: membershipFullSyncMetadataIdempotencyKey(
+                fresh._id,
+                fresh.scheduledForUtc,
+              ),
+              lateDispatch: lateDispatch || undefined,
+            },
+          })
+        : await ctx.db.insert("nexusTasks", {
+            ...taskInsertBase,
+            taskKind: SCHEDULED_TASK_KIND,
+            taskMetadata: {
+              kind: SCHEDULED_TASK_KIND,
+              scheduledEventId: fresh._id,
+              scheduledForUtc: fresh.scheduledForUtc,
+              explicitUserAction: "schedule",
+              lateDispatch: lateDispatch || undefined,
+            },
+          });
 
     await appendProgress(ctx, {
       taskId,
