@@ -95,12 +95,43 @@ describe("Nexus signed attachment download route", () => {
 
     expect(res.status).toBe(200);
     expect(res.headers.get("content-type")).toContain("text/markdown");
-    expect(res.headers.get("content-length")).toBe(String(byteLength));
     expect(res.headers.get("x-nexus-attachment-id")).toBe(attachmentId);
     expect(res.headers.get("x-nexus-content-sha256")).toBe(sha256);
+    // Canonical v1.1 length contract: the custom header is authoritative
+    // because the deployed edge may deliver the body chunked WITHOUT a
+    // standard Content-Length (convex-test preserves it; production does
+    // not for larger bodies — the 2026-07-01 1701-byte live failure).
+    expect(res.headers.get("x-nexus-content-length")).toBe(String(byteLength));
+    expect(res.headers.get("x-nexus-protocol-version")).toBe("v1");
+    expect(res.headers.get("x-nexus-document-version-id")).toBeTruthy();
+    expect(res.headers.get("x-nexus-request-id")).toBeTruthy();
     const body = new Uint8Array(await res.arrayBuffer());
     expect(body.byteLength).toBe(byteLength);
     expect(await sha256HexFromBytes(body.buffer as ArrayBuffer)).toBe(sha256);
+  });
+
+  it("attachmentSuccessHeaders emits the full canonical v1.1 contract", async () => {
+    const { attachmentSuccessHeaders, ATTACHMENT_RESPONSE_HEADER_CONTRACT } = await import(
+      "@/convex/connectorAttachments"
+    );
+    const headers = attachmentSuccessHeaders({
+      attachmentId: "att-contract",
+      documentVersionId: "ver-contract" as never,
+      contentType: "text/markdown",
+      displayFilename: "doc.md",
+      byteLength: 1701,
+      sha256: "ab".repeat(32),
+      requestId: "req-contract",
+    });
+    for (const name of ATTACHMENT_RESPONSE_HEADER_CONTRACT) {
+      expect(headers[name], `missing contract header ${name}`).toBeTruthy();
+    }
+    // Both length representations agree; the custom one survives chunked
+    // delivery and is what the Connector validates.
+    expect(headers["X-Nexus-Content-Length"]).toBe("1701");
+    expect(headers["Content-Length"]).toBe("1701");
+    expect(headers["X-Nexus-Content-Sha256"]).toBe("ab".repeat(32));
+    expect(headers["X-Nexus-Protocol-Version"]).toBe("v1");
   });
 
   it("rejects invalid HMAC signatures", async () => {

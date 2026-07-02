@@ -130,6 +130,11 @@ export function attachmentSuccessHeaders(
   const safeType = info.contentType || "application/octet-stream";
   return {
     "Content-Type": safeType,
+    // Standard Content-Length is set for well-behaved intermediaries, but it
+    // is NOT the protocol's authoritative length: the deployed edge delivers
+    // larger bodies with chunked transfer encoding and no Content-Length.
+    // X-Nexus-Content-Length below is the authoritative, edge-stable copy —
+    // custom headers survive chunked delivery; framing headers do not.
     "Content-Length": String(info.byteLength),
     "Content-Disposition": contentDispositionAttachment(
       sanitizeDisplayFilename(info.displayFilename),
@@ -137,7 +142,26 @@ export function attachmentSuccessHeaders(
     "X-Nexus-Protocol-Version": LIBRARY_ATTACHMENT_PROTOCOL_VERSION,
     "X-Nexus-Attachment-Id": info.attachmentId,
     "X-Nexus-Document-Version-Id": info.documentVersionId,
+    "X-Nexus-Content-Length": String(info.byteLength),
     "X-Nexus-Content-Sha256": info.sha256,
     "X-Nexus-Request-Id": info.requestId,
   };
 }
+
+/**
+ * Canonical attachment success-response header contract (v1.1). The Claudia
+ * Connector validates against exactly these spellings (case-insensitively).
+ * `X-Nexus-Content-Length` is authoritative for the protocol byte length;
+ * standard `Content-Length` is an optional cross-check that intermediaries
+ * may omit (chunked delivery) but must never contradict.
+ */
+export const ATTACHMENT_RESPONSE_HEADER_CONTRACT = [
+  "Content-Type",
+  "Content-Disposition",
+  "X-Nexus-Protocol-Version",
+  "X-Nexus-Attachment-Id",
+  "X-Nexus-Document-Version-Id",
+  "X-Nexus-Content-Length",
+  "X-Nexus-Content-Sha256",
+  "X-Nexus-Request-Id",
+] as const;
