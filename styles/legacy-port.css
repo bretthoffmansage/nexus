@@ -1535,6 +1535,81 @@
   gap: 0.75rem;
 }
 
+.legacy-port-status-centered {
+  width: 100%;
+  max-width: min(100%, var(--nexus-calendar-content-max));
+  margin-inline: auto;
+}
+
+.claudia-system-status-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.claudia-system-status-card {
+  border: 1px solid var(--nexus-border);
+  border-radius: 8px;
+  padding: 0.75rem;
+  background: var(--nexus-panel);
+  min-width: 0;
+}
+
+.claudia-system-status-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.35rem;
+}
+
+.claudia-system-status-card-title {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.claudia-system-status-card-indicator {
+  width: 0.55rem;
+  height: 0.55rem;
+  flex-shrink: 0;
+}
+
+.claudia-system-status-dot {
+  display: block;
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+}
+
+.claudia-system-status-dot--live {
+  background: #2ecc71;
+  box-shadow: 0 0 0 2px color-mix(in srgb, #2ecc71 25%, transparent);
+}
+
+.claudia-system-status-card-status {
+  margin: 0 0 0.35rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.claudia-system-status-card-description,
+.claudia-system-status-card-detail {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--nexus-muted);
+  line-height: 1.45;
+}
+
+.claudia-system-status-card-detail {
+  margin-top: 0.35rem;
+}
+
+@media (max-width: 720px) {
+  .claudia-system-status-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 900px) {
   .doclib-split,
   .email-workspace-grid,

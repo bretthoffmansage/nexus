@@ -14,6 +14,10 @@ import {
   P6_PROTOCOL_VERSION,
   type ConnectorPresenceState,
 } from "./lib/p6config";
+import {
+  claudiaSystemStatusRecordValidator,
+  type StoredClaudiaSystemStatus,
+} from "./lib/claudiaSystemStatus";
 
 /**
  * P6 — trusted Connector identity.
@@ -199,6 +203,9 @@ export const heartbeatConnector = internalMutation({
     environment: v.optional(v.string()),
     operatingState: v.optional(operatingStateValidator),
     lastErrorCode: v.optional(v.string()),
+    /** When true, replace `claudiaSystemStatus` with `claudiaSystemStatus` arg (undefined clears). */
+    replaceClaudiaSystemStatus: v.optional(v.boolean()),
+    claudiaSystemStatus: v.optional(claudiaSystemStatusRecordValidator),
   },
   handler: async (ctx, args) => {
     const connector = await requireActiveConnector(ctx, args.connectorId);
@@ -223,6 +230,9 @@ export const heartbeatConnector = internalMutation({
     if (args.lastErrorCode !== undefined) {
       patch.lastErrorCode = args.lastErrorCode;
       patch.lastErrorAt = now;
+    }
+    if (args.replaceClaudiaSystemStatus) {
+      patch.claudiaSystemStatus = args.claudiaSystemStatus as StoredClaudiaSystemStatus | undefined;
     }
     await ctx.db.patch(connector._id, patch);
     return {
@@ -260,6 +270,52 @@ export const getConnectorStatusPublic = query({
     const connector = await ctx.db.query("nexusConnectors").withIndex("by_status").first();
     const state = deriveConnectorPresence(connector, Date.now());
     return { state, protocolVersion: P6_PROTOCOL_VERSION };
+  },
+});
+
+/** Bounded Claudia system status for the Status page (approved users only). */
+export const getClaudiaSystemStatusForPage = query({
+  args: {},
+  handler: async (ctx) => {
+    await requireKnowledgeReader(ctx);
+    const now = Date.now();
+    const connector = await ctx.db.query("nexusConnectors").withIndex("by_status").first();
+    if (!connector) {
+      return {
+        configured: false as const,
+        presence: "not_configured" as const,
+        lastHeartbeatAt: null,
+        operatingState: null,
+        softwareVersion: null,
+        hasSystemStatus: false,
+        snapshotObservedAt: null,
+        components: null,
+      };
+    }
+
+    const presence = deriveConnectorPresence(connector, now);
+    const components = connector.claudiaSystemStatus?.components ?? null;
+
+    return {
+      configured: true as const,
+      presence,
+      lastHeartbeatAt: connector.lastHeartbeatAt ?? connector.lastSeenAt ?? null,
+      operatingState: connector.operatingState ?? null,
+      softwareVersion: connector.softwareVersion ?? null,
+      hasSystemStatus: Boolean(connector.claudiaSystemStatus),
+      snapshotObservedAt: connector.claudiaSystemStatus?.snapshotObservedAt ?? null,
+      components: components
+        ? {
+            core_api: components.core_api ?? null,
+            nexus_connector: components.nexus_connector ?? null,
+            viktor_retrieval: components.viktor_retrieval ?? null,
+            sage_knowledge_base: components.sage_knowledge_base ?? null,
+            claude_cli: components.claude_cli ?? null,
+            codex_cli: components.codex_cli ?? null,
+            cleanup_storage: components.cleanup_storage ?? null,
+          }
+        : null,
+    };
   },
 });
 
