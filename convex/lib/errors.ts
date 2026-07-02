@@ -68,6 +68,8 @@ export const NEXUS_ERROR_CODES = {
   SCHEDULED_EVENT_NOT_DELETABLE: "scheduled_event_not_deletable",
   SCHEDULED_EVENT_INVALID_TIME: "scheduled_event_invalid_time",
   SCHEDULED_TOOL_UNAVAILABLE: "scheduled_tool_unavailable",
+  NOTE_NOT_FOUND: "note_not_found",
+  NOTE_INVALID: "note_invalid",
 } as const;
 
 export type NexusErrorCode =

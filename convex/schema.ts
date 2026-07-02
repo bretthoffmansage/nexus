@@ -66,6 +66,15 @@ const deepResearchTaskMetadataValidator = v.object({
   idempotencyKey: v.string(),
 });
 
+const noteTypeValidator = v.union(v.literal("note"), v.literal("checklist"));
+
+const checklistItemValidator = v.object({
+  id: v.string(),
+  text: v.string(),
+  completed: v.boolean(),
+  order: v.number(),
+});
+
 const calendarEventStatusValidator = v.union(
   v.literal("scheduled"),
   v.literal("due"),
@@ -574,4 +583,29 @@ export default defineSchema({
   })
     .index("by_connector_and_nonce", ["connectorId", "nonce"])
     .index("by_expires_at", ["expiresAt"]),
+
+  // Private per-user Google Keep–style notes (Nexus-owned authority).
+  nexusNotes: defineTable({
+    ownerClerkUserId: v.string(),
+    title: v.string(),
+    content: v.string(),
+    noteType: noteTypeValidator,
+    checklistItems: v.array(checklistItemValidator),
+    labels: v.array(v.string()),
+    pinned: v.boolean(),
+    archived: v.boolean(),
+    dueAtUtc: v.optional(v.number()),
+    dueLocalDate: v.optional(v.string()),
+    dueLocalTime: v.optional(v.string()),
+    timezone: v.optional(v.string()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+    archivedAt: v.optional(v.number()),
+  })
+    .index("by_owner_and_archived_and_updated_at", [
+      "ownerClerkUserId",
+      "archived",
+      "updatedAt",
+    ])
+    .index("by_owner_and_archived_and_due_at", ["ownerClerkUserId", "archived", "dueAtUtc"]),
 });

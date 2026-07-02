@@ -94,7 +94,7 @@ export const NEXUS_TOOL_REGISTRY: NexusToolDefinition[] = [
     group: "tools",
     legacyButtonId: "tool-notes-btn",
     legacyModules: ["static/js/notes.js"],
-    availability: "connector_required",
+    availability: "available",
   },
   {
     id: "tasks",

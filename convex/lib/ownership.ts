@@ -132,6 +132,18 @@ export async function requireOwnedScheduledEvent(
   return event;
 }
 
+export async function requireOwnedNote(
+  ctx: QueryCtx | MutationCtx,
+  clerkUserId: string,
+  noteId: Id<"nexusNotes">,
+): Promise<Doc<"nexusNotes">> {
+  const note = await ctx.db.get(noteId);
+  if (!note || note.ownerClerkUserId !== clerkUserId) {
+    nexusError(NEXUS_ERROR_CODES.NOTE_NOT_FOUND, "Note not found");
+  }
+  return note;
+}
+
 /**
  * Defense-in-depth: a child record (message/task/source/result) must both be
  * owned by the caller AND belong to the conversation/task it claims to. Guards

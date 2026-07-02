@@ -1,27 +1,9 @@
-import type { AdapterReadResult, ToolAdapterMeta } from "@/lib/adapters/types";
+import type { ToolAdapterMeta } from "@/lib/adapters/types";
 
+/** Nexus Notes are Convex-owned; no Connector required for CRUD. */
 export const notesAdapterMeta: ToolAdapterMeta = {
   toolId: "notes",
-  availability: "connector_required",
-  authority: "claudia_connector",
-  futureConvexCollection: "notes",
-  futureClaudiaTaskKind: "notes.sync",
+  availability: "available",
+  authority: "convex",
+  futureConvexCollection: "nexusNotes",
 };
-
-export type NoteRecord = {
-  id: string;
-  title: string;
-  body: string;
-  dueAt?: string;
-  reminderAt?: string;
-  archived?: boolean;
-};
-
-export async function listNotes(): Promise<AdapterReadResult<NoteRecord[]>> {
-  return {
-    ok: false,
-    availability: "connector_required",
-    reason: "Notes are stored in Claudia and require the Console Connector.",
-    data: [],
-  };
-}
