@@ -67,6 +67,7 @@ export function NotesWorkspace() {
   const [labelFilter, setLabelFilter] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>("list");
   const [createNoteType, setCreateNoteType] = useState<"note" | "checklist">("note");
+  const [editorOpen, setEditorOpen] = useState(false);
   const [editorMode, setEditorMode] = useState<"create" | "edit">("create");
   const [editingNote, setEditingNote] = useState<NexusNoteView | null>(null);
   const [editorError, setEditorError] = useState<string | null>(null);

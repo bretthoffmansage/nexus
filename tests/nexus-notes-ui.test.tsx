@@ -1,6 +1,8 @@
-// @vitest-environment edge-runtime
+// @vitest-environment jsdom
 import { readFileSync } from "node:fs";
 import path from "node:path";
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
 vi.mock("convex/react", async (importOriginal) => ({
@@ -14,6 +16,7 @@ vi.mock("convex/react", async (importOriginal) => ({
   }),
 }));
 
+import { NotesWorkspace } from "@/components/workspace/port/NotesWorkspace";
 import { NEXUS_TOOL_REGISTRY } from "@/lib/navigation/toolRegistry";
 
 const ROOT = path.resolve(import.meta.dirname, "..");
@@ -44,6 +47,7 @@ describe("Nexus Notes UI activation", () => {
     expect(src).toContain("deleteMyNotes");
     expect(src).toContain("NoteEditorDialog");
     expect(src).toContain("LibraryConfirmDialog");
+    expect(src).toContain("const [editorOpen, setEditorOpen] = useState(false)");
   });
 
   it("removes Notes sidebar Connector badge metadata", () => {
@@ -57,5 +61,14 @@ describe("Nexus Notes UI activation", () => {
     expect(adapter).toContain('availability: "available"');
     expect(adapter).toContain('authority: "convex"');
     expect(adapter).toContain("nexusNotes");
+  });
+
+  it("renders without editorOpen ReferenceError and opens the editor dialog", async () => {
+    const user = userEvent.setup();
+    render(<NotesWorkspace />);
+
+    expect(screen.getByRole("heading", { name: "Notes" })).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "New note" }));
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
   });
 });
