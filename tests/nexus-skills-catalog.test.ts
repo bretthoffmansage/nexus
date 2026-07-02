@@ -97,6 +97,16 @@ describe("Nexus Skills catalog", () => {
       expect(tool.shortDescription).toBeTruthy();
     }
   });
+
+  it("listSkillsCatalog returns known tools without an active Connector", async () => {
+    const t = p5Test();
+    await seedApprovedReader(t, IDENTITY_A);
+    const catalog = await t.withIdentity(IDENTITY_A).query(api.skillsCatalog.listSkillsCatalog, {});
+    const tools = catalog.sections.flatMap((s) => s.tools);
+    expect(tools.map((t) => t.toolId)).toEqual(NEXUS_SKILLS_CATALOG_TOOL_IDS);
+    expect(tools.every((tool) => tool.currentAvailability === "connector_required")).toBe(true);
+    expect(catalog.connectorConfigured).toBe(false);
+  });
 });
 
 describe("Nexus Skills page and navigation", () => {
@@ -113,6 +123,9 @@ describe("Nexus Skills page and navigation", () => {
     expect(src).toContain("nexusSkills");
     expect(src).not.toContain("runTool");
     expect(src).not.toContain("submitRequest");
+    expect(src).toContain("readyForPrivateQueries");
+    expect(src).not.toMatch(/\{\s*ready\s*\}\s*=\s*useNexusAuthReadiness/);
+    expect(src).toContain("buildSkillsCatalogSections");
   });
 
   it("Skills sidebar item has no minus symbol badge and no Connector badge", () => {

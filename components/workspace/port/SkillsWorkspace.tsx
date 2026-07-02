@@ -1,26 +1,44 @@
 "use client";
 
+import { useMemo } from "react";
 import { useQuery } from "convex/react";
 import {
   accessModeLabel,
+  buildSkillsCatalogSections,
   type SkillsCatalogEntry,
   type SkillsCurrentAvailability,
 } from "@/convex/lib/nexusSkillsCatalog";
 import { nexusSkills } from "@/lib/nexus/skillsClient";
 import { useNexusAuthReadiness } from "@/lib/nexus/useNexusAuthReadiness";
 
+export const SKILLS_CATALOG_PENDING_AVAILABILITY_LABEL = "Checking availability…";
+
 function availabilityClass(status: SkillsCurrentAvailability): string {
   return `skills-catalog-status skills-catalog-status--${status}`;
 }
 
-function SkillsToolCard({ tool }: { tool: SkillsCatalogEntry }) {
+function SkillsToolCard({
+  tool,
+  availabilityPending = false,
+}: {
+  tool: SkillsCatalogEntry;
+  availabilityPending?: boolean;
+}) {
   return (
     <article className="skills-catalog-card" aria-labelledby={`skill-${tool.toolId}`}>
       <header className="skills-catalog-card-header">
         <h3 id={`skill-${tool.toolId}`} className="skills-catalog-card-title">
           {tool.displayName}
         </h3>
-        <span className={availabilityClass(tool.currentAvailability)}>{tool.availabilityLabel}</span>
+        <span
+          className={
+            availabilityPending
+              ? "skills-catalog-status skills-catalog-status--connector_required"
+              : availabilityClass(tool.currentAvailability)
+          }
+        >
+          {availabilityPending ? SKILLS_CATALOG_PENDING_AVAILABILITY_LABEL : tool.availabilityLabel}
+        </span>
       </header>
       <p className="skills-catalog-card-description">{tool.shortDescription}</p>
       <dl className="skills-catalog-card-meta">
@@ -49,8 +67,21 @@ function SkillsToolCard({ tool }: { tool: SkillsCatalogEntry }) {
 
 /** Read-only catalog of Nexus-accessible system tools. */
 export function SkillsWorkspace() {
-  const { ready } = useNexusAuthReadiness();
-  const catalog = useQuery(nexusSkills.listCatalog, ready ? {} : "skip");
+  const { isLoading: authLoading, readyForPrivateQueries } = useNexusAuthReadiness();
+  const catalog = useQuery(nexusSkills.listCatalog, readyForPrivateQueries ? {} : "skip");
+  const availabilityPending = readyForPrivateQueries && catalog === undefined;
+
+  const staticSections = useMemo(
+    () =>
+      buildSkillsCatalogSections({
+        connectorConfigured: false,
+        connectorOnline: false,
+        allowedToolIds: [],
+      }),
+    [],
+  );
+
+  const sections = catalog?.sections ?? (readyForPrivateQueries ? staticSections : null);
 
   return (
     <section className="skills-catalog-workspace" aria-labelledby="skills-heading">
@@ -63,17 +94,17 @@ export function SkillsWorkspace() {
         </p>
       </header>
 
-      {!ready || catalog === undefined ? (
+      {authLoading || !readyForPrivateQueries ? (
         <p className="skills-catalog-loading" role="status">
           Loading catalog…
         </p>
-      ) : catalog.sections.length === 0 ? (
+      ) : sections === null || sections.length === 0 ? (
         <p className="skills-catalog-empty" role="status">
           No Nexus tools are configured yet.
         </p>
       ) : (
         <div className="skills-catalog-sections">
-          {catalog.sections.map((section) => (
+          {sections.map((section) => (
             <section
               key={section.id}
               className="skills-catalog-section"
@@ -84,7 +115,11 @@ export function SkillsWorkspace() {
               </h2>
               <div className="skills-catalog-grid">
                 {section.tools.map((tool) => (
-                  <SkillsToolCard key={tool.toolId} tool={tool} />
+                  <SkillsToolCard
+                    key={tool.toolId}
+                    tool={tool}
+                    availabilityPending={availabilityPending}
+                  />
                 ))}
               </div>
             </section>
