@@ -317,6 +317,10 @@ export default defineSchema({
     description: v.optional(v.string()),
     taskRequest: v.string(),
     requestedToolId: v.string(),
+    /** Primary research request for Calendar Deep Research (composed at dispatch). */
+    deepResearchReportRules: v.optional(v.string()),
+    /** Server-built stable researchRequestId for Calendar Deep Research. */
+    deepResearchRequestId: v.optional(v.string()),
     timezone: v.string(),
     localScheduledDate: v.string(),
     localScheduledTime: v.string(),

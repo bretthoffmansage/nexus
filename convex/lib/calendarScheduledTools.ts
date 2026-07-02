@@ -1,11 +1,18 @@
 import type { Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
+import { scheduledEventIdempotencyKey } from "./calendarScheduleConfig";
+import {
+  buildDeepResearchTaskMetadata,
+  DEEP_RESEARCH_TASK_KIND,
+  DEEP_RESEARCH_TOOL_ID,
+} from "./deepResearchConfig";
 import { DEFAULT_CONNECTOR_TOOL_IDS, MEMBERSHIP_FULL_SYNC_TOOL_ID } from "./p6config";
 import { P5_SUPPORTED_TOOL_IDS, P5_TOOL_DISPLAY_TITLES } from "./p5config";
 import type { TaskStatus } from "./taskStatus";
 
 /** Re-export for Calendar registry consumers. */
 export { MEMBERSHIP_FULL_SYNC_TOOL_ID } from "./p6config";
+export { DEEP_RESEARCH_TASK_KIND, DEEP_RESEARCH_TOOL_ID } from "./deepResearchConfig";
 
 export const MEMBERSHIP_FULL_SYNC_TASK_KIND = "membership_full_sync";
 export const MEMBERSHIP_FULL_SYNC_REQUEST_TEXT = "Run Membership.io full synchronization";
@@ -13,14 +20,22 @@ export const MEMBERSHIP_FULL_SYNC_DESCRIPTION =
   "Runs the full Membership.io catalog scrape, transcript refresh, index rebuild, and vault update.";
 export const MEMBERSHIP_FULL_SYNC_UNAVAILABLE_REASON =
   "Unavailable — Claudia support required";
+export const DEEP_RESEARCH_UNAVAILABLE_REASON =
+  "Unavailable — Deep Research requires Connector capability";
 export const MEMBERSHIP_FULL_SYNC_WAIT_MESSAGE = "Waiting for existing Membership.io sync";
 
 /** Claudia registry guidance — enforced on Claudia side; documented for operators. */
 export const MEMBERSHIP_FULL_SYNC_EXECUTION_TIMEOUT_SECONDS = 3600;
 
-export type CalendarScheduledInputMode = "text_request" | "no_input_action";
+export type CalendarScheduledInputMode =
+  | "text_request"
+  | "no_input_action"
+  | "structured_deep_research";
 
-export type CalendarScheduledTaskKind = "scheduled_task" | typeof MEMBERSHIP_FULL_SYNC_TASK_KIND;
+export type CalendarScheduledTaskKind =
+  | "scheduled_task"
+  | typeof MEMBERSHIP_FULL_SYNC_TASK_KIND
+  | typeof DEEP_RESEARCH_TASK_KIND;
 
 export type CalendarScheduledToolDefinition = {
   requestedToolId: string;
@@ -51,6 +66,18 @@ const TEXT_SCHEDULED_TOOLS: readonly CalendarScheduledToolDefinition[] =
     requiresConnectorCapability: false,
   }));
 
+export const DEEP_RESEARCH_SCHEDULED_TOOL: CalendarScheduledToolDefinition = {
+  requestedToolId: DEEP_RESEARCH_TOOL_ID,
+  displayLabel: "Deep Research",
+  taskKind: DEEP_RESEARCH_TASK_KIND,
+  inputMode: "structured_deep_research",
+  description:
+    "Runs governed multi-source research through the same Hermes deep research path as the Deep Research page.",
+  writeCapable: false,
+  chatAvailable: false,
+  requiresConnectorCapability: true,
+};
+
 export const MEMBERSHIP_FULL_SYNC_SCHEDULED_TOOL: CalendarScheduledToolDefinition = {
   requestedToolId: MEMBERSHIP_FULL_SYNC_TOOL_ID,
   displayLabel: "Membership.io full sync",
@@ -68,6 +95,7 @@ export const MEMBERSHIP_FULL_SYNC_SCHEDULED_TOOL: CalendarScheduledToolDefinitio
 /** Single registry for Nexus Calendar scheduled tools. */
 export const CALENDAR_SCHEDULED_TOOLS: readonly CalendarScheduledToolDefinition[] = [
   ...TEXT_SCHEDULED_TOOLS,
+  DEEP_RESEARCH_SCHEDULED_TOOL,
   MEMBERSHIP_FULL_SYNC_SCHEDULED_TOOL,
 ];
 
@@ -139,6 +167,39 @@ export async function findActiveSingleFlightTask(
 
 export function membershipFullSyncScheduledForUtcIso(scheduledForUtcMs: number): string {
   return new Date(scheduledForUtcMs).toISOString();
+}
+
+/** Stable researchRequestId for a Calendar-scheduled Deep Research event. */
+export function buildCalendarDeepResearchRequestId(
+  scheduledEventId: Id<"nexusScheduledEvents">,
+): string {
+  return `cal-dr-req:${scheduledEventId}`;
+}
+
+/** Stable execution idempotency key for one scheduled event fire. */
+export function buildCalendarDeepResearchIdempotencyKey(
+  scheduledEventId: Id<"nexusScheduledEvents">,
+): string {
+  return scheduledEventIdempotencyKey(scheduledEventId);
+}
+
+/** Claudia contract metadata for a Calendar-dispatched Deep Research task. */
+export function buildCalendarDeepResearchTaskMetadata(
+  scheduledEventId: Id<"nexusScheduledEvents">,
+) {
+  const researchRequestId = buildCalendarDeepResearchRequestId(scheduledEventId);
+  const idempotencyKey = buildCalendarDeepResearchIdempotencyKey(scheduledEventId);
+  return buildDeepResearchTaskMetadata(researchRequestId, idempotencyKey);
+}
+
+export function calendarScheduledToolUnavailableReason(toolId: string): string {
+  if (toolId === DEEP_RESEARCH_TOOL_ID) {
+    return DEEP_RESEARCH_UNAVAILABLE_REASON;
+  }
+  if (toolId === MEMBERSHIP_FULL_SYNC_TOOL_ID) {
+    return MEMBERSHIP_FULL_SYNC_UNAVAILABLE_REASON;
+  }
+  return MEMBERSHIP_FULL_SYNC_UNAVAILABLE_REASON;
 }
 
 export type MembershipFullSyncTaskMetadata = {

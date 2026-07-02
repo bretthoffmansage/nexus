@@ -225,11 +225,12 @@ describe("Nexus Deep Research handoff", () => {
   describe("page UI", () => {
     it("renders multiline request, character count, and the model selector", () => {
       const src = read("components/workspace/port/ResearchWorkspace.tsx");
-      expect(src).toContain('id="research-request"');
-      expect(src).toContain("textarea");
-      expect(src).toContain("DEEP_RESEARCH_MAX_REQUEST_LENGTH");
-      // v1.1: the legacy disabled field is replaced by a real selector.
-      expect(src).toContain("ResearchModelSelector");
+      const fieldsSrc = read("components/workspace/DeepResearchRequestFields.tsx");
+      expect(src).toContain("DeepResearchRequestFields");
+      expect(fieldsSrc).toContain("research-request-input");
+      expect(fieldsSrc).toContain("textarea");
+      expect(fieldsSrc).toContain("DEEP_RESEARCH_MAX_REQUEST_LENGTH");
+      expect(fieldsSrc).toContain("ResearchModelSelector");
       expect(src).not.toContain("Managed by Claudia");
       expect(src).not.toContain("Max rounds");
       expect(src).not.toContain("ToolAvailabilityBanner");
@@ -239,7 +240,7 @@ describe("Nexus Deep Research handoff", () => {
     it("disables Research until request text is valid", () => {
       const src = read("components/workspace/port/ResearchWorkspace.tsx");
       expect(src).toContain("disabled={!canSubmit}");
-      expect(src).toContain("validateResearchRequestLength");
+      expect(src).toContain("validateComposedDeepResearchRequest");
     });
   });
 
@@ -256,14 +257,14 @@ describe("Nexus Deep Research handoff", () => {
       const def = SKILLS_CATALOG_TOOL_DEFS.find((tool) => tool.toolId === DEEP_RESEARCH_TOOL_ID)!;
       expect(def.displayName).toBe("Deep Research");
       expect(def.ordinaryChatAvailable).toBe(false);
-      expect(def.calendarAvailable).toBe(false);
+      expect(def.calendarAvailable).toBe(true);
       expect(def.libraryAvailable).toBe(false);
-      expect(def.accessModes).toContain("deep_research");
+      expect(def.accessModes).toEqual(["deep_research", "calendar", "connector"]);
     });
 
-    it("excludes the tool from Chat and Calendar selectors", () => {
+    it("includes Deep Research in Calendar selectors when Connector allows it", () => {
       expect(P5_SUPPORTED_TOOL_IDS).not.toContain(DEEP_RESEARCH_TOOL_ID);
-      expect(CALENDAR_SCHEDULED_TOOLS.map((tool) => tool.requestedToolId)).not.toContain(
+      expect(CALENDAR_SCHEDULED_TOOLS.map((tool) => tool.requestedToolId)).toContain(
         DEEP_RESEARCH_TOOL_ID,
       );
     });
@@ -325,10 +326,11 @@ describe("Nexus Deep Research handoff", () => {
       const workspaceSrc = read("components/workspace/port/ResearchWorkspace.tsx");
       const convexSrc = read("convex/deepResearch.ts");
       for (const src of [workspaceSrc, convexSrc]) {
-        expect(src).not.toMatch(/hermes/i);
         expect(src).not.toMatch(/tavily/i);
         expect(src).not.toContain("/api/research");
       }
+      expect(workspaceSrc).not.toMatch(/research\.hermes/i);
+      expect(convexSrc).not.toMatch(/hermes/i);
       expect(convexSrc).toContain('insert("nexusTasks"');
       expect(convexSrc).not.toContain("submitKnowledgeRequest");
       expect(KNOWN_CONNECTOR_TOOL_IDS).toContain(DEEP_RESEARCH_TOOL_ID);

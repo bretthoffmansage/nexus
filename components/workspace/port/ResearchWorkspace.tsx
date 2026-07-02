@@ -3,10 +3,10 @@
 import { useMutation, useQuery } from "convex/react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Id } from "@/convex/_generated/dataModel";
-import { DEEP_RESEARCH_MAX_REQUEST_LENGTH } from "@/convex/lib/deepResearchConfig";
 import { SafeExternalLink } from "@/components/nexus/SafeExternalLink";
 import { SafeMarkdown } from "@/components/nexus/SafeMarkdown";
 import { nexusDeepResearch } from "@/lib/nexus/deepResearchClient";
+import { DeepResearchRequestFields } from "@/components/workspace/DeepResearchRequestFields";
 import {
   clearActiveTaskId,
   loadActiveTaskId,
@@ -22,14 +22,12 @@ import {
   saveSelectedModelId,
 } from "@/lib/nexus/deepResearchSession";
 import {
-  composedResearchRequestValidationMessage,
   validateComposedDeepResearchRequest,
 } from "@/lib/nexus/deepResearchRequestCompose";
 import {
   CLAUDIA_DEFAULT_MODEL_VALUE,
-  type NexusResearchModel,
 } from "@/lib/nexus/deepResearchModelCatalog";
-import { ResearchModelSelector } from "@/components/workspace/port/ResearchModelSelector";
+import { useDeepResearchModelCatalog } from "@/lib/nexus/useDeepResearchModelCatalog";
 import {
   blockedResearchMessage,
   deepResearchLifecycleLabel,
@@ -61,9 +59,9 @@ export function ResearchWorkspace() {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [selectedModelId, setSelectedModelId] = useState<string>(CLAUDIA_DEFAULT_MODEL_VALUE);
-  const [modelCatalog, setModelCatalog] = useState<NexusResearchModel[]>([]);
-  const [modelCatalogLoading, setModelCatalogLoading] = useState(true);
-  const [modelCatalogError, setModelCatalogError] = useState(false);
+
+  const { models: modelCatalog, loading: modelCatalogLoading, error: modelCatalogError } =
+    useDeepResearchModelCatalog();
 
   useEffect(() => {
     setResearchRequestId(loadOrCreateResearchRequestId());
@@ -74,34 +72,6 @@ export function ResearchWorkspace() {
     if (storedTaskId) {
       setSelectedTaskId(storedTaskId as Id<"nexusTasks">);
     }
-  }, []);
-
-  // Fetch the research-compatible model catalog once via the server-only route
-  // (credential never reaches the browser). A failure degrades to the Claudia
-  // default + any last valid selection; it never blocks the page.
-  useEffect(() => {
-    let cancelled = false;
-    setModelCatalogLoading(true);
-    fetch("/api/deep-research/models")
-      .then((res) => (res.ok ? res.json() : Promise.reject(new Error("catalog"))))
-      .then((data: { ok?: boolean; models?: NexusResearchModel[] }) => {
-        if (cancelled) return;
-        if (data.ok && Array.isArray(data.models)) {
-          setModelCatalog(data.models);
-          setModelCatalogError(false);
-        } else {
-          setModelCatalogError(true);
-        }
-      })
-      .catch(() => {
-        if (!cancelled) setModelCatalogError(true);
-      })
-      .finally(() => {
-        if (!cancelled) setModelCatalogLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
   }, []);
 
   const handleModelChange = useCallback((next: string) => {
@@ -124,8 +94,6 @@ export function ResearchWorkspace() {
     () => validateComposedDeepResearchRequest(requestText, reportRules),
     [requestText, reportRules],
   );
-  const composedCharCount = validation.length;
-  const requestOnlyCharCount = requestText.trim().length;
 
   const activeTask = useMemo(() => {
     const rows = tasksPage?.tasks ?? [];
@@ -245,7 +213,7 @@ export function ResearchWorkspace() {
       <header className="legacy-port-head">
         <h1 id="research-heading">Deep Research</h1>
         <p className="legacy-port-subhead">
-          Run governed, multi-source research through Claudia.
+          Hermes agent + Web, Transcript, Knowledge Vault runtime
         </p>
       </header>
 
@@ -264,56 +232,22 @@ export function ResearchWorkspace() {
               void handleSubmit();
             }}
           >
-            <label htmlFor="research-request">
-              Research request
-              <textarea
-                id="research-request"
-                className="research-request-input"
-                rows={8}
-                value={requestText}
-                placeholder="Describe the question, task, or report you want researched…"
-                disabled={submitting || hasActiveExecution}
-                onChange={(event) => setRequestText(event.target.value)}
-              />
-            </label>
-            <div className="research-request-meta" aria-live="polite">
-              <span>
-                {composedCharCount.toLocaleString()} /{" "}
-                {DEEP_RESEARCH_MAX_REQUEST_LENGTH.toLocaleString()} submitted characters
-              </span>
-              <span className="research-request-meta-secondary">
-                Request field: {requestOnlyCharCount.toLocaleString()}
-              </span>
-              {!validation.ok && validation.code === "too_large" ? (
-                <span className="research-validation-error">
-                  {composedResearchRequestValidationMessage("too_large")}
-                </span>
-              ) : null}
-            </div>
-
-            <label htmlFor="research-report-rules">
-              Report rules
-              <textarea
-                id="research-report-rules"
-                className="research-report-rules-input"
-                rows={4}
-                value={reportRules}
-                placeholder="Optional rules for the final report…"
-                disabled={submitting || hasActiveExecution}
-                onChange={(event) => {
-                  setReportRules(event.target.value);
-                  saveReportRulesDraft(event.target.value);
-                }}
-              />
-            </label>
-
-            <ResearchModelSelector
-              value={selectedModelId}
-              onChange={handleModelChange}
+            <DeepResearchRequestFields
+              idPrefix="research-page"
+              researchRequest={requestText}
+              onResearchRequestChange={setRequestText}
+              reportRules={reportRules}
+              onReportRulesChange={(value) => {
+                setReportRules(value);
+                saveReportRulesDraft(value);
+              }}
+              selectedModelId={selectedModelId}
+              onModelChange={handleModelChange}
               models={modelCatalog}
-              loading={modelCatalogLoading}
-              error={modelCatalogError}
+              modelCatalogLoading={modelCatalogLoading}
+              modelCatalogError={modelCatalogError}
               disabled={submitting || hasActiveExecution}
+              className="research-form-fields"
             />
 
             <div className="research-form-actions">

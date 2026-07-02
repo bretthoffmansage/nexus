@@ -214,6 +214,9 @@ describe("ResearchModelSelector component", () => {
     );
     expect(screen.getByRole("option", { name: "Claudia default" })).toBeTruthy();
     expect(screen.getByRole("option", { name: /Claude Sonnet 4.6/ })).toBeTruthy();
+    expect(
+      screen.queryByText(/Claudia selects and validates the model for each run/i),
+    ).not.toBeInTheDocument();
   });
 
   it("shows a loading state and a catalog-error fallback", () => {

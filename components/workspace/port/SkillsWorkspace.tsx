@@ -200,10 +200,9 @@ export function SkillsWorkspace() {
     <section className="skills-catalog-workspace" aria-labelledby="skills-heading">
       <header className="skills-catalog-header">
         <h1 id="skills-heading">Skills</h1>
-        <p className="skills-catalog-subtitle">Tools and capabilities available to Nexus</p>
-        <p className="skills-catalog-intro">
-          Skills are the approved system tools Nexus can use through Chat, Calendar, Library, or
-          the Claudia Connector.
+        <p className="skills-catalog-subtitle">
+          Tools and capabilities available to Nexus to use through Chat, Calendar, Library, or the
+          Connector.
         </p>
       </header>
 

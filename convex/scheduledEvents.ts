@@ -3,10 +3,12 @@ import { mutation, query } from "./_generated/server";
 import { CALENDAR_SCHEDULE, isAllowedScheduledToolId } from "./lib/calendarScheduleConfig";
 import {
   CALENDAR_SCHEDULED_TOOLS,
+  buildCalendarDeepResearchRequestId,
+  calendarScheduledToolUnavailableReason,
   getCalendarScheduledTool,
   isCalendarScheduledToolAvailable,
-  MEMBERSHIP_FULL_SYNC_UNAVAILABLE_REASON,
 } from "./lib/calendarScheduledTools";
+import { validateComposedDeepResearchRequest } from "./lib/deepResearchRequestCompose";
 import {
   isCalendarEventDeletable,
   isCalendarEventEditable,
@@ -45,6 +47,8 @@ function projectEvent(event: {
   terminalResultSummary?: string;
   terminalErrorCode?: string;
   terminalUserSafeMessage?: string;
+  deepResearchReportRules?: string;
+  deepResearchRequestId?: string;
   revision: number;
   createdAt: number;
   updatedAt: number;
@@ -70,6 +74,8 @@ function projectEvent(event: {
     terminalResultSummary: event.terminalResultSummary ?? null,
     terminalErrorCode: event.terminalErrorCode ?? null,
     terminalUserSafeMessage: event.terminalUserSafeMessage ?? null,
+    deepResearchReportRules: event.deepResearchReportRules ?? null,
+    deepResearchRequestId: event.deepResearchRequestId ?? null,
     revision: event.revision,
     createdAt: event.createdAt,
     updatedAt: event.updatedAt,
@@ -89,6 +95,7 @@ async function validateScheduleInputAsync(
     localScheduledDate: string;
     localScheduledTime: string;
     timezone: string;
+    deepResearchReportRules?: string;
   },
 ): Promise<number> {
   const title = args.title.trim();
@@ -106,10 +113,22 @@ async function validateScheduleInputAsync(
   if (tool.inputMode === "text_request" && !taskRequest) {
     nexusError(NEXUS_ERROR_CODES.INVALID_INPUT, "Task request is required");
   }
+  if (tool.inputMode === "structured_deep_research") {
+    const composed = validateComposedDeepResearchRequest(
+      taskRequest,
+      args.deepResearchReportRules ?? "",
+    );
+    if (!composed.ok) {
+      if (composed.code === "empty") {
+        nexusError(NEXUS_ERROR_CODES.INVALID_INPUT, "Research request is required");
+      }
+      nexusError(NEXUS_ERROR_CODES.REQUEST_TOO_LARGE, "Research request is too long");
+    }
+  }
   if (!(await isCalendarScheduledToolAvailable(ctx, args.requestedToolId))) {
     nexusError(
       NEXUS_ERROR_CODES.SCHEDULED_TOOL_UNAVAILABLE,
-      MEMBERSHIP_FULL_SYNC_UNAVAILABLE_REASON,
+      calendarScheduledToolUnavailableReason(args.requestedToolId),
     );
   }
   if (title.length > CALENDAR_SCHEDULE.maxTitleLength) {
@@ -136,7 +155,20 @@ function normalizedTaskRequestForTool(
   if (tool?.inputMode === "no_input_action") {
     return tool.fixedRequestText ?? "";
   }
+  if (tool?.inputMode === "structured_deep_research") {
+    return taskRequest.trim();
+  }
   return clampLength(taskRequest.trim(), CALENDAR_SCHEDULE.maxTaskRequestLength);
+}
+
+function normalizedDeepResearchReportRules(
+  requestedToolId: string,
+  reportRules: string | undefined,
+): string | undefined {
+  const tool = getCalendarScheduledTool(requestedToolId);
+  if (tool?.inputMode !== "structured_deep_research") return undefined;
+  const trimmed = (reportRules ?? "").trim();
+  return trimmed || undefined;
 }
 
 /** List the caller's scheduled events visible on calendar days in [startDate, endDate]. */
@@ -211,6 +243,7 @@ export const createMyScheduledEvent = mutation({
     localScheduledDate: v.string(),
     localScheduledTime: v.string(),
     timezone: v.string(),
+    deepResearchReportRules: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const { clerkUserId } = await getCurrentApprovedClerkUserId(ctx);
@@ -220,6 +253,7 @@ export const createMyScheduledEvent = mutation({
       scheduledForUtc,
       args.timezone,
     );
+    const tool = getCalendarScheduledTool(args.requestedToolId);
     const eventId = await ctx.db.insert("nexusScheduledEvents", {
       ownerClerkUserId: clerkUserId,
       title: clampLength(args.title.trim(), CALENDAR_SCHEDULE.maxTitleLength),
@@ -228,6 +262,10 @@ export const createMyScheduledEvent = mutation({
         : undefined,
       taskRequest: normalizedTaskRequestForTool(args.requestedToolId, args.taskRequest),
       requestedToolId: args.requestedToolId,
+      deepResearchReportRules: normalizedDeepResearchReportRules(
+        args.requestedToolId,
+        args.deepResearchReportRules,
+      ),
       timezone: args.timezone,
       localScheduledDate,
       localScheduledTime,
@@ -240,6 +278,11 @@ export const createMyScheduledEvent = mutation({
       updatedAt: now,
       createdBy: clerkUserId,
     });
+    if (tool?.inputMode === "structured_deep_research") {
+      await ctx.db.patch(eventId, {
+        deepResearchRequestId: buildCalendarDeepResearchRequestId(eventId),
+      });
+    }
     return { eventId, scheduledForUtc };
   },
 });
@@ -254,6 +297,7 @@ export const updateMyScheduledEvent = mutation({
     localScheduledDate: v.optional(v.string()),
     localScheduledTime: v.optional(v.string()),
     timezone: v.optional(v.string()),
+    deepResearchReportRules: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const { clerkUserId } = await getCurrentApprovedClerkUserId(ctx);
@@ -268,6 +312,10 @@ export const updateMyScheduledEvent = mutation({
     const timezone = args.timezone ?? event.timezone;
     const localScheduledDate = args.localScheduledDate ?? event.localScheduledDate;
     const localScheduledTime = args.localScheduledTime ?? event.localScheduledTime;
+    const deepResearchReportRules =
+      args.deepResearchReportRules !== undefined
+        ? args.deepResearchReportRules
+        : event.deepResearchReportRules;
 
     const scheduledForUtc = await validateScheduleInputAsync(ctx, {
       title,
@@ -276,6 +324,7 @@ export const updateMyScheduledEvent = mutation({
       localScheduledDate,
       localScheduledTime,
       timezone,
+      deepResearchReportRules,
     });
     const now = Date.now();
     const formatted = formatLocalDateTime(scheduledForUtc, timezone);
@@ -290,6 +339,14 @@ export const updateMyScheduledEvent = mutation({
           : event.description,
       taskRequest: normalizedTaskRequestForTool(requestedToolId, taskRequest),
       requestedToolId,
+      deepResearchReportRules: normalizedDeepResearchReportRules(
+        requestedToolId,
+        deepResearchReportRules,
+      ),
+      deepResearchRequestId:
+        getCalendarScheduledTool(requestedToolId)?.inputMode === "structured_deep_research"
+          ? event.deepResearchRequestId ?? buildCalendarDeepResearchRequestId(event._id)
+          : undefined,
       timezone,
       localScheduledDate: formatted.localScheduledDate,
       localScheduledTime: formatted.localScheduledTime,
@@ -342,7 +399,9 @@ export const listAllowedScheduledTools = query({
           inputMode: tool.inputMode,
           description: tool.description || null,
           available,
-          unavailableReason: available ? null : MEMBERSHIP_FULL_SYNC_UNAVAILABLE_REASON,
+          unavailableReason: available
+            ? null
+            : calendarScheduledToolUnavailableReason(tool.requestedToolId),
         };
       }),
     );

@@ -5,7 +5,7 @@ const LABELS: Record<ToolAvailability, string> = {
   partially_available: "Partially available",
   setup_required: "Setup required",
   connector_required: "Connector required",
-  persistence_available: "Saved · execution pending",
+  persistence_available: "",
   execution_connector_required: "Execution: Connector required",
   local_only: "Local Claudia only",
   deferred: "Deferred",
@@ -19,7 +19,7 @@ const MESSAGES: Record<ToolAvailability, string> = {
   connector_required:
     "Data and actions require the private Console Connector on your Claudia Mac. The interface below is preserved; controls that need Claudia are disabled.",
   persistence_available:
-    "Your requests are saved and queued privately in Nexus. Execution waits for the Claudia Connector, which is not configured yet.",
+    "Your requests are saved and queued privately in Nexus. Execution waits for the Connector",
   execution_connector_required:
     "This feature is stored in Nexus, but running it requires the private Console Connector on your Claudia Mac (not configured yet).",
   local_only:
@@ -34,10 +34,12 @@ type ToolAvailabilityBannerProps = {
 };
 
 export function ToolAvailabilityBanner({ availability, detail }: ToolAvailabilityBannerProps) {
+  const label = LABELS[availability];
+  const message = detail ?? MESSAGES[availability];
   return (
     <div className={`legacy-port-banner legacy-port-banner--${availability}`} role="status">
-      <strong>{LABELS[availability]}</strong>
-      <span>{detail ?? MESSAGES[availability]}</span>
+      {label ? <strong>{label}</strong> : null}
+      <span>{message}</span>
     </div>
   );
 }

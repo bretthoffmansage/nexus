@@ -9,13 +9,20 @@ import {
 } from "./lib/calendarScheduleConfig";
 import {
   buildMembershipFullSyncTaskMetadata,
+  buildCalendarDeepResearchRequestId,
+  calendarScheduledToolUnavailableReason,
   findActiveSingleFlightTask,
   getCalendarScheduledTool,
   isCalendarScheduledToolAvailable,
+  DEEP_RESEARCH_TASK_KIND,
   MEMBERSHIP_FULL_SYNC_TASK_KIND,
-  MEMBERSHIP_FULL_SYNC_UNAVAILABLE_REASON,
   MEMBERSHIP_FULL_SYNC_WAIT_MESSAGE,
 } from "./lib/calendarScheduledTools";
+import { composeDeepResearchRequestText } from "./lib/deepResearchRequestCompose";
+import {
+  buildDeepResearchEnvelope,
+  DEEP_RESEARCH_TOOL_ID,
+} from "./lib/deepResearchConfig";
 import {
   patchScheduledEventForTaskStatus,
   projectScheduledEventFromTask,
@@ -97,7 +104,12 @@ async function dispatchOneEvent(
   if (!toolDef) return "failed";
 
   if (!(await isCalendarScheduledToolAvailable(ctx, event.requestedToolId))) {
-    await releaseDispatchWait(ctx, event._id, now, MEMBERSHIP_FULL_SYNC_UNAVAILABLE_REASON);
+    await releaseDispatchWait(
+      ctx,
+      event._id,
+      now,
+      calendarScheduledToolUnavailableReason(event.requestedToolId),
+    );
     return "skipped";
   }
 
@@ -135,7 +147,12 @@ async function dispatchOneEvent(
   }
 
   if (!(await isCalendarScheduledToolAvailable(ctx, fresh.requestedToolId))) {
-    await releaseDispatchWait(ctx, fresh._id, now, MEMBERSHIP_FULL_SYNC_UNAVAILABLE_REASON);
+    await releaseDispatchWait(
+      ctx,
+      fresh._id,
+      now,
+      calendarScheduledToolUnavailableReason(fresh.requestedToolId),
+    );
     return "skipped";
   }
 
@@ -178,24 +195,53 @@ async function dispatchOneEvent(
       idempotencyKey,
     };
 
-    const taskId =
-      toolDef.taskKind === MEMBERSHIP_FULL_SYNC_TASK_KIND
-        ? await ctx.db.insert("nexusTasks", {
-            ...taskInsertBase,
-            taskKind: MEMBERSHIP_FULL_SYNC_TASK_KIND,
-            taskMetadata: buildMembershipFullSyncTaskMetadata(fresh._id, fresh.scheduledForUtc),
-          })
-        : await ctx.db.insert("nexusTasks", {
-            ...taskInsertBase,
-            taskKind: SCHEDULED_TASK_KIND,
-            taskMetadata: {
-              kind: SCHEDULED_TASK_KIND,
-              scheduledEventId: fresh._id,
-              scheduledForUtc: fresh.scheduledForUtc,
-              explicitUserAction: "schedule",
-              lateDispatch: lateDispatch || undefined,
-            },
-          });
+    const taskId = await (async () => {
+      if (toolDef.taskKind === MEMBERSHIP_FULL_SYNC_TASK_KIND) {
+        return await ctx.db.insert("nexusTasks", {
+          ...taskInsertBase,
+          taskKind: MEMBERSHIP_FULL_SYNC_TASK_KIND,
+          taskMetadata: buildMembershipFullSyncTaskMetadata(fresh._id, fresh.scheduledForUtc),
+        });
+      }
+
+      if (toolDef.taskKind === DEEP_RESEARCH_TASK_KIND) {
+        const composed = composeDeepResearchRequestText(
+          fresh.taskRequest,
+          fresh.deepResearchReportRules ?? "",
+        );
+        const researchRequestId =
+          fresh.deepResearchRequestId ?? buildCalendarDeepResearchRequestId(fresh._id);
+        const built = buildDeepResearchEnvelope({
+          requestText: composed,
+          researchRequestId,
+          idempotencyKey,
+        });
+        if (!built.ok) {
+          throw new Error(`deep_research_dispatch_${built.code}`);
+        }
+        const { envelope } = built;
+        return await ctx.db.insert("nexusTasks", {
+          ...taskInsertBase,
+          requestedToolId: DEEP_RESEARCH_TOOL_ID,
+          requestText: clampLength(envelope.requestText, P5_LIMITS.maxRequestLength),
+          taskKind: DEEP_RESEARCH_TASK_KIND,
+          taskMetadata: envelope.taskMetadata,
+          idempotencyKey: envelope.taskMetadata.idempotencyKey,
+        });
+      }
+
+      return await ctx.db.insert("nexusTasks", {
+        ...taskInsertBase,
+        taskKind: SCHEDULED_TASK_KIND,
+        taskMetadata: {
+          kind: SCHEDULED_TASK_KIND,
+          scheduledEventId: fresh._id,
+          scheduledForUtc: fresh.scheduledForUtc,
+          explicitUserAction: "schedule",
+          lateDispatch: lateDispatch || undefined,
+        },
+      });
+    })();
 
     await appendProgress(ctx, {
       taskId,

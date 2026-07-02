@@ -58,6 +58,8 @@ export function ResearchModelSelector({
   const selectedModel = isConcrete ? models.find((m) => m.id === value) ?? null : null;
   const savedUnavailable = isConcrete && !loading && !error && !selectedModel;
 
+  const showHint = savedUnavailable || Boolean(selectedModel);
+
   return (
     <div className="research-model-selector">
       <label htmlFor={`${listId}-select`}>Model</label>
@@ -90,7 +92,7 @@ export function ResearchModelSelector({
         value={savedUnavailable ? "__unavailable__" : value}
         disabled={disabled}
         onChange={(event) => onChange(event.target.value)}
-        aria-describedby={`${listId}-hint`}
+        aria-describedby={showHint ? `${listId}-hint` : undefined}
       >
         <option value={CLAUDIA_DEFAULT_MODEL_VALUE}>Claudia default</option>
         {savedUnavailable ? (
@@ -106,19 +108,19 @@ export function ResearchModelSelector({
         ))}
       </select>
 
-      <p id={`${listId}-hint`} className="research-model-hint">
-        {savedUnavailable ? (
-          <span className="research-validation-error">
-            Your saved model is no longer available. Select a model or use the Claudia default.
-          </span>
-        ) : selectedModel ? (
-          <span>
-            Exact model: <code>{selectedModel.id}</code>
-          </span>
-        ) : (
-          <span>Claudia selects and validates the model for each run. This preference is not sent in the task envelope.</span>
-        )}
-      </p>
+      {showHint ? (
+        <p id={`${listId}-hint`} className="research-model-hint">
+          {savedUnavailable ? (
+            <span className="research-validation-error">
+              Your saved model is no longer available. Select a model or use the Claudia default.
+            </span>
+          ) : selectedModel ? (
+            <span>
+              Exact model: <code>{selectedModel.id}</code>
+            </span>
+          ) : null}
+        </p>
+      ) : null}
     </div>
   );
 }

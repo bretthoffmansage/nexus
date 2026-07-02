@@ -248,15 +248,29 @@ describe("Deep Research report rules and model UI cleanup", () => {
     });
   });
 
+  describe("page copy", () => {
+    it("shows the updated subtitle and omits the legacy model explanation line", async () => {
+      render(<ResearchWorkspace />);
+      await waitFor(() => expect(global.fetch).toHaveBeenCalled());
+      expect(screen.getByText("Hermes agent + Web, Transcript, Knowledge Vault runtime")).toBeInTheDocument();
+      expect(screen.queryByText(/Run governed, multi-source research through Claudia/i)).not.toBeInTheDocument();
+      expect(
+        screen.queryByText(/Claudia selects and validates the model for each run/i),
+      ).not.toBeInTheDocument();
+    });
+  });
+
   describe("layout", () => {
     it("renders report rules below the primary request with a smaller textarea", () => {
       const src = readFileSync(
-        path.join(ROOT, "components/workspace/port/ResearchWorkspace.tsx"),
+        path.join(ROOT, "components/workspace/DeepResearchRequestFields.tsx"),
         "utf8",
       );
-      expect(src.indexOf("research-request")).toBeLessThan(src.indexOf("research-report-rules"));
-      expect(src).toContain('rows={4}');
-      expect(src).toContain('rows={8}');
+      expect(src.indexOf("research-request-input")).toBeLessThan(
+        src.indexOf("research-report-rules-input"),
+      );
+      expect(src).toContain("reportRulesRows = 4");
+      expect(src).toContain("researchRequestRows = 8");
     });
   });
 });

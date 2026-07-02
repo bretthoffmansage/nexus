@@ -117,12 +117,13 @@ export const SKILLS_CATALOG_TOOL_DEFS: readonly SkillsCatalogToolDef[] = [
     shortDescription:
       "Runs governed, multi-source research across approved web, vault, and transcript sources through Claudia.",
     category: "deep_research",
-    accessModes: ["deep_research", "connector"],
+    accessModes: ["deep_research", "calendar", "connector"],
     inputType: "text_request",
     ordinaryChatAvailable: false,
-    calendarAvailable: false,
+    calendarAvailable: true,
     libraryAvailable: false,
     requiresConnector: true,
+    calendarRequiresExplicitCapability: true,
   },
 ] as const;
 
@@ -222,6 +223,13 @@ export function resolveSkillsToolAvailability(
     return {
       currentAvailability: "connector_required",
       availabilityLabel: AVAILABILITY_LABELS.connector_required,
+    };
+  }
+
+  if (def.accessModes.includes("deep_research") && connectorAllowsTool(allowedToolIds, def.toolId)) {
+    return {
+      currentAvailability: "available",
+      availabilityLabel: AVAILABILITY_LABELS.available,
     };
   }
 

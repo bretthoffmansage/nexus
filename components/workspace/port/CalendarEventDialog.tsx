@@ -7,6 +7,11 @@ import {
   getCalendarScheduledTool,
 } from "@/convex/lib/calendarScheduledTools";
 import {
+  DeepResearchRequestFields,
+  CLAUDIA_DEFAULT_MODEL_VALUE,
+  DEFAULT_DEEP_RESEARCH_REPORT_RULES,
+} from "@/components/workspace/DeepResearchRequestFields";
+import {
   calendarStatusLabel,
   nexusCalendar,
   type CalendarEventStatus,
@@ -16,6 +21,9 @@ import {
   detectBrowserTimeZone,
   formatLocalDateInput,
 } from "@/lib/nexus/calendarTimezone";
+import { loadSelectedModelId, saveSelectedModelId } from "@/lib/nexus/deepResearchSession";
+import { validateComposedDeepResearchRequest } from "@/lib/nexus/deepResearchRequestCompose";
+import { useDeepResearchModelCatalog } from "@/lib/nexus/useDeepResearchModelCatalog";
 
 export type CalendarDialogMode =
   | { kind: "closed" }
@@ -27,6 +35,7 @@ type EventFormState = {
   title: string;
   description: string;
   taskRequest: string;
+  deepResearchReportRules: string;
   requestedToolId: string;
   localScheduledDate: string;
   localScheduledTime: string;
@@ -38,6 +47,7 @@ function emptyForm(localDate: string): EventFormState {
     title: "",
     description: "",
     taskRequest: "",
+    deepResearchReportRules: DEFAULT_DEEP_RESEARCH_REPORT_RULES,
     requestedToolId: "",
     localScheduledDate: localDate,
     localScheduledTime: defaultLocalTimeInput(),
@@ -55,8 +65,13 @@ type CalendarEventDialogProps = {
 export function CalendarEventDialog({ mode, onClose, onEdit, ready }: CalendarEventDialogProps) {
   const [form, setForm] = useState<EventFormState>(emptyForm(formatLocalDateInput(new Date())));
   const [draftTextRequest, setDraftTextRequest] = useState("");
+  const [draftReportRules, setDraftReportRules] = useState(DEFAULT_DEEP_RESEARCH_REPORT_RULES);
+  const [selectedModelId, setSelectedModelId] = useState(CLAUDIA_DEFAULT_MODEL_VALUE);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const { models: modelCatalog, loading: modelCatalogLoading, error: modelCatalogError } =
+    useDeepResearchModelCatalog();
 
   const tools = useQuery(nexusCalendar.listAllowedTools, ready ? {} : "skip");
   const eventId =
@@ -76,12 +91,24 @@ export function CalendarEventDialog({ mode, onClose, onEdit, ready }: CalendarEv
     [tools, form.requestedToolId],
   );
   const isNoInputTool = selectedToolMeta?.inputMode === "no_input_action";
+  const isDeepResearchTool = selectedToolMeta?.inputMode === "structured_deep_research";
+  const isTextRequestTool = selectedToolMeta?.inputMode === "text_request";
   const toolUnavailable = selectedToolMeta?.available === false;
+
+  const deepResearchValidation = useMemo(
+    () =>
+      isDeepResearchTool
+        ? validateComposedDeepResearchRequest(form.taskRequest, form.deepResearchReportRules)
+        : null,
+    [form.deepResearchReportRules, form.taskRequest, isDeepResearchTool],
+  );
 
   useEffect(() => {
     if (mode.kind === "create") {
       setForm(emptyForm(mode.localDate));
       setDraftTextRequest("");
+      setDraftReportRules(DEFAULT_DEEP_RESEARCH_REPORT_RULES);
+      setSelectedModelId(loadSelectedModelId());
       setError(null);
     }
   }, [mode]);
@@ -92,12 +119,16 @@ export function CalendarEventDialog({ mode, onClose, onEdit, ready }: CalendarEv
         title: event.title,
         description: event.description ?? "",
         taskRequest: event.taskRequest,
+        deepResearchReportRules:
+          event.deepResearchReportRules ?? DEFAULT_DEEP_RESEARCH_REPORT_RULES,
         requestedToolId: event.requestedToolId,
         localScheduledDate: event.localScheduledDate,
         localScheduledTime: event.localScheduledTime,
         timezone: event.timezone,
       });
       setDraftTextRequest("");
+      setDraftReportRules(DEFAULT_DEEP_RESEARCH_REPORT_RULES);
+      setSelectedModelId(loadSelectedModelId());
       setError(null);
     }
   }, [mode, event]);
@@ -120,18 +151,47 @@ export function CalendarEventDialog({ mode, onClose, onEdit, ready }: CalendarEv
     const next = tools?.find((tool) => tool.id === requestedToolId);
     if (next?.inputMode === "no_input_action") {
       setDraftTextRequest(form.taskRequest);
-      setForm((f) => ({ ...f, requestedToolId, taskRequest: "" }));
+      setDraftReportRules(form.deepResearchReportRules);
+      setForm((f) => ({
+        ...f,
+        requestedToolId,
+        taskRequest: "",
+        deepResearchReportRules: DEFAULT_DEEP_RESEARCH_REPORT_RULES,
+      }));
+      return;
+    }
+    if (next?.inputMode === "structured_deep_research") {
+      setForm((f) => ({
+        ...f,
+        requestedToolId,
+        taskRequest: draftTextRequest || f.taskRequest,
+        deepResearchReportRules: draftReportRules || f.deepResearchReportRules,
+      }));
       return;
     }
     setForm((f) => ({
       ...f,
       requestedToolId,
       taskRequest: draftTextRequest || f.taskRequest,
+      deepResearchReportRules: DEFAULT_DEEP_RESEARCH_REPORT_RULES,
     }));
   };
 
+  const saveDisabled =
+    busy ||
+    toolUnavailable ||
+    (isDeepResearchTool && deepResearchValidation !== null && !deepResearchValidation.ok);
+
   const onSave = async () => {
-    if (!ready || busy || toolUnavailable) return;
+    if (!ready || saveDisabled) return;
+    if (isDeepResearchTool && deepResearchValidation && !deepResearchValidation.ok) {
+      setError(
+        deepResearchValidation.code === "empty"
+          ? "Research request is required."
+          : "The combined research request is too long.",
+      );
+      return;
+    }
     setBusy(true);
     setError(null);
     try {
@@ -143,6 +203,9 @@ export function CalendarEventDialog({ mode, onClose, onEdit, ready }: CalendarEv
         localScheduledDate: form.localScheduledDate,
         localScheduledTime: form.localScheduledTime,
         timezone: form.timezone,
+        ...(isDeepResearchTool
+          ? { deepResearchReportRules: form.deepResearchReportRules }
+          : {}),
       };
       if (mode.kind === "create") {
         await createEvent(payload);
@@ -173,11 +236,12 @@ export function CalendarEventDialog({ mode, onClose, onEdit, ready }: CalendarEv
   };
 
   const viewToolDef = viewEvent ? getCalendarScheduledTool(viewEvent.requestedToolId) : null;
+  const viewIsDeepResearch = viewToolDef?.inputMode === "structured_deep_research";
 
   return (
     <div className="cal-dialog-backdrop" role="presentation" onClick={onClose}>
       <div
-        className="cal-dialog"
+        className="cal-dialog cal-dialog--deep-research"
         role="dialog"
         aria-modal="true"
         aria-labelledby="cal-dialog-title"
@@ -254,7 +318,31 @@ export function CalendarEventDialog({ mode, onClose, onEdit, ready }: CalendarEv
             {isNoInputTool && selectedToolMeta?.description ? (
               <p className="cal-dialog-hint">{selectedToolMeta.description}</p>
             ) : null}
-            {!isNoInputTool ? (
+            {isDeepResearchTool ? (
+              <DeepResearchRequestFields
+                idPrefix="cal-deep-research"
+                researchRequest={form.taskRequest}
+                onResearchRequestChange={(value) =>
+                  setForm((f) => ({ ...f, taskRequest: value }))
+                }
+                reportRules={form.deepResearchReportRules}
+                onReportRulesChange={(value) =>
+                  setForm((f) => ({ ...f, deepResearchReportRules: value }))
+                }
+                selectedModelId={selectedModelId}
+                onModelChange={(value) => {
+                  setSelectedModelId(value);
+                  saveSelectedModelId(value);
+                }}
+                models={modelCatalog}
+                modelCatalogLoading={modelCatalogLoading}
+                modelCatalogError={modelCatalogError}
+                disabled={busy}
+                researchRequestRows={6}
+                reportRulesRows={4}
+              />
+            ) : null}
+            {isTextRequestTool ? (
               <label className="cal-field">
                 <span>Task request</span>
                 <textarea
@@ -279,6 +367,7 @@ export function CalendarEventDialog({ mode, onClose, onEdit, ready }: CalendarEv
             <p className="cal-detail-status">
               Status: {calendarStatusLabel(viewEvent.scheduleStatus as CalendarEventStatus)}
               {viewEvent.lateDispatch ? " (ran late)" : ""}
+              {viewEvent.linkedTaskId ? " · Scheduled via Calendar" : ""}
             </p>
             <p>
               <strong>When:</strong> {viewEvent.localScheduledDate} {viewEvent.localScheduledTime}{" "}
@@ -293,6 +382,21 @@ export function CalendarEventDialog({ mode, onClose, onEdit, ready }: CalendarEv
               <p>
                 <strong>Action:</strong> {viewToolDef.description}
               </p>
+            ) : viewIsDeepResearch ? (
+              <>
+                <p>
+                  <strong>Research request:</strong>
+                </p>
+                <pre className="cal-detail-pre">{viewEvent.taskRequest}</pre>
+                {viewEvent.deepResearchReportRules ? (
+                  <>
+                    <p>
+                      <strong>Report rules:</strong>
+                    </p>
+                    <pre className="cal-detail-pre">{viewEvent.deepResearchReportRules}</pre>
+                  </>
+                ) : null}
+              </>
             ) : (
               <>
                 <p>
@@ -363,7 +467,7 @@ export function CalendarEventDialog({ mode, onClose, onEdit, ready }: CalendarEv
                 type="button"
                 className="cal-btn cal-btn-primary"
                 onClick={onSave}
-                disabled={busy || toolUnavailable}
+                disabled={saveDisabled}
               >
                 Save
               </button>

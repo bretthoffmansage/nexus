@@ -71,11 +71,15 @@ describe("P5 Nexus Chat workspace (approved reader)", () => {
 });
 
 describe("P5 Tasks workspace", () => {
-  it("announces persistence-available with execution pending", () => {
+  it("announces persistence-available queue notice without the old heading", () => {
     render(<TasksWorkspace canQuery={false} />);
-    expect(screen.getByText(/Saved · execution pending/i)).toBeInTheDocument();
+    expect(screen.queryByText(/Saved · execution pending/i)).not.toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "Your requests are saved and queued privately in Nexus. Execution waits for the Connector",
+      ),
+    ).toBeInTheDocument();
     expect(screen.getByText(/available to approved knowledge readers/i)).toBeInTheDocument();
-    // Preserves the legacy scheduled-prompt editor as a separate section.
     expect(screen.getByText(/Scheduled recurring prompts/i)).toBeInTheDocument();
   });
 });
@@ -84,6 +88,7 @@ describe("P5 availability banner", () => {
   it("explains the persistence vs execution split", () => {
     render(<ToolAvailabilityBanner availability="persistence_available" />);
     expect(screen.getByText(/saved and queued privately/i)).toBeInTheDocument();
-    expect(screen.getByText(/Claudia Connector/i)).toBeInTheDocument();
+    expect(screen.getByText(/Execution waits for the Connector/i)).toBeInTheDocument();
+    expect(screen.queryByText(/Claudia Connector, which is not configured yet/i)).not.toBeInTheDocument();
   });
 });

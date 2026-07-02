@@ -1,5 +1,6 @@
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx } from "../_generated/server";
+import { DEEP_RESEARCH_TASK_KIND } from "./deepResearchConfig";
 import { clampLength, P5_LIMITS } from "./p5config";
 import type { TaskStatus } from "./taskStatus";
 
@@ -26,6 +27,12 @@ function isMembershipFullSyncTask(
   );
 }
 
+function isDeepResearchTask(
+  task: Pick<Doc<"nexusTasks">, "taskKind" | "taskMetadata">,
+): boolean {
+  return task.taskKind === DEEP_RESEARCH_TASK_KIND || task.taskMetadata?.kind === DEEP_RESEARCH_TASK_KIND;
+}
+
 export function mapTaskStatusToCalendarEvent(
   taskStatus: TaskStatus,
   task?: Pick<Doc<"nexusTasks">, "errorCode" | "taskKind" | "taskMetadata">,
@@ -34,7 +41,7 @@ export function mapTaskStatusToCalendarEvent(
     taskStatus === "failed" &&
     task?.errorCode === MEMBERSHIP_UNCERTAIN_ERROR_CODE &&
     task &&
-    isMembershipFullSyncTask(task)
+    (isMembershipFullSyncTask(task) || isDeepResearchTask(task))
   ) {
     return "needs_review";
   }
