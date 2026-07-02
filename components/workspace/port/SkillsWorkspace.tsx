@@ -26,10 +26,33 @@ function SkillsToolCard({
 }) {
   return (
     <article className="skills-catalog-card" aria-labelledby={`skill-${tool.toolId}`}>
-      <header className="skills-catalog-card-header">
+      <div className="skills-catalog-card-body">
         <h3 id={`skill-${tool.toolId}`} className="skills-catalog-card-title">
           {tool.displayName}
         </h3>
+        <p className="skills-catalog-card-description">{tool.shortDescription}</p>
+        <dl className="skills-catalog-card-meta">
+          <div>
+            <dt>Tool</dt>
+            <dd className="skills-catalog-tool-id">{tool.toolId}</dd>
+          </div>
+          <div>
+            <dt>Surfaces</dt>
+            <dd>{tool.accessModes.map(accessModeLabel).join(" · ")}</dd>
+          </div>
+          <div>
+            <dt>Input</dt>
+            <dd>
+              {tool.inputType === "no_input_action"
+                ? "No-input scheduled action"
+                : tool.inputType === "library_upload"
+                  ? "Library document upload"
+                  : "Text request"}
+            </dd>
+          </div>
+        </dl>
+      </div>
+      <footer className="skills-catalog-card-footer">
         <span
           className={
             availabilityPending
@@ -39,28 +62,7 @@ function SkillsToolCard({
         >
           {availabilityPending ? SKILLS_CATALOG_PENDING_AVAILABILITY_LABEL : tool.availabilityLabel}
         </span>
-      </header>
-      <p className="skills-catalog-card-description">{tool.shortDescription}</p>
-      <dl className="skills-catalog-card-meta">
-        <div>
-          <dt>Tool</dt>
-          <dd className="skills-catalog-tool-id">{tool.toolId}</dd>
-        </div>
-        <div>
-          <dt>Surfaces</dt>
-          <dd>{tool.accessModes.map(accessModeLabel).join(" · ")}</dd>
-        </div>
-        <div>
-          <dt>Input</dt>
-          <dd>
-            {tool.inputType === "no_input_action"
-              ? "No-input scheduled action"
-              : tool.inputType === "library_upload"
-                ? "Library document upload"
-                : "Text request"}
-          </dd>
-        </div>
-      </dl>
+      </footer>
     </article>
   );
 }
@@ -107,8 +109,11 @@ export function SkillsWorkspace() {
           {sections.map((section) => (
             <section
               key={section.id}
-              className="skills-catalog-section"
+              className={`skills-catalog-section${
+                section.tools.length > 1 ? " skills-catalog-section--span-wide" : ""
+              }`}
               aria-labelledby={`skills-section-${section.id}`}
+              data-tool-count={section.tools.length}
             >
               <h2 id={`skills-section-${section.id}`} className="skills-catalog-section-title">
                 {section.label}
