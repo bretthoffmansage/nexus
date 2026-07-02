@@ -22,6 +22,8 @@
   --nexus-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
   --nexus-header-height: 56px;
   --nexus-content-max: 960px;
+  /** Centered monthly calendar column — wider than chat messages. */
+  --nexus-calendar-content-max: 72rem;
   --nexus-chat-history-width: 300px;
   --nexus-chat-history-gap: 1rem;
   /**
@@ -47,6 +49,7 @@
 @media (max-width: 720px) {
   :root {
     --nexus-content-max: 100%;
+    --nexus-calendar-content-max: 100%;
   }
 }
 

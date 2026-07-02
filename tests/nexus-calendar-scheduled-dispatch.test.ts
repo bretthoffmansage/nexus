@@ -89,6 +89,18 @@ describe("Nexus Calendar navigation and badge policy", () => {
     expect(cssSrc).not.toContain(".cal-view-toggle");
   });
 
+  it("Calendar content uses a centered bounded container in the main workspace", () => {
+    const cssSrc = readFileSync(path.join(ROOT, "styles/legacy-port.css"), "utf8");
+    const tokensSrc = readFileSync(path.join(ROOT, "styles/tokens.css"), "utf8");
+
+    expect(tokensSrc).toContain("--nexus-calendar-content-max");
+    expect(cssSrc).toMatch(/\.legacy-port-calendar[\s\S]*margin-inline:\s*auto/);
+    expect(cssSrc).toMatch(
+      /\.legacy-port-calendar[\s\S]*max-width:\s*min\(100%,\s*var\(--nexus-calendar-content-max\)\)/,
+    );
+    expect(cssSrc).toContain(".cal-month-grid");
+  });
+
   it("ToolNavigation hides Connector badge for available tools only", () => {
     const navSrc = readFileSync(path.join(ROOT, "components/layout/ToolNavigation.tsx"), "utf8");
     expect(navSrc).toContain('tool.availability !== "available"');
