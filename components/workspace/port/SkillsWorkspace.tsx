@@ -13,6 +13,50 @@ import { useNexusAuthReadiness } from "@/lib/nexus/useNexusAuthReadiness";
 
 export const SKILLS_CATALOG_PENDING_AVAILABILITY_LABEL = "Checking availability…";
 
+/** Presentation-only row layout for the Skills page (does not alter catalog metadata). */
+const SKILLS_CATALOG_ROW_LAYOUT = [
+  {
+    id: "row-knowledge-research",
+    heading: "Knowledge & Research",
+    toolIds: ["vault.agentic_retrieval", "membership_io.transcript_retrieve"],
+  },
+  {
+    id: "row-scheduled-maintenance",
+    heading: "Scheduled Maintenance",
+    toolIds: ["membership_io.catalog_refresh_and_vault_update", "vault.expansion_pass"],
+  },
+  {
+    id: "row-library-documents",
+    heading: "Library & Documents",
+    toolIds: ["obsidian.dropzone.process_document", "research.hermes_deep_research"],
+  },
+] as const;
+
+type SkillsCatalogRow = {
+  id: string;
+  heading: string;
+  tools: SkillsCatalogEntry[];
+};
+
+function buildSkillsCatalogRows(
+  sections: NonNullable<ReturnType<typeof buildSkillsCatalogSections>>,
+): SkillsCatalogRow[] {
+  const toolsById = new Map<string, SkillsCatalogEntry>();
+  for (const section of sections) {
+    for (const tool of section.tools) {
+      toolsById.set(tool.toolId, tool);
+    }
+  }
+
+  return SKILLS_CATALOG_ROW_LAYOUT.map((row) => ({
+    id: row.id,
+    heading: row.heading,
+    tools: row.toolIds
+      .map((toolId) => toolsById.get(toolId))
+      .filter((tool): tool is SkillsCatalogEntry => tool !== undefined),
+  })).filter((row) => row.tools.length > 0);
+}
+
 function availabilityClass(status: SkillsCurrentAvailability): string {
   return `skills-catalog-status skills-catalog-status--${status}`;
 }
@@ -105,21 +149,22 @@ function SkillsCatalogPanel({
   availabilityPending: boolean;
   sections: NonNullable<ReturnType<typeof buildSkillsCatalogSections>>;
 }) {
+  const rows = buildSkillsCatalogRows(sections);
+
   return (
-    <div className="skills-catalog-sections">
-      {sections.map((section) => (
+    <div className="skills-catalog-rows">
+      {rows.map((row) => (
         <section
-          key={section.id}
-          className="skills-catalog-section"
-          aria-labelledby={`skills-section-${section.id}`}
-          data-section-id={section.id}
-          data-tool-count={section.tools.length}
+          key={row.id}
+          className="skills-catalog-row"
+          aria-labelledby={`skills-row-${row.id}`}
+          data-row-id={row.id}
         >
-          <h2 id={`skills-section-${section.id}`} className="skills-catalog-section-title">
-            {section.label}
+          <h2 id={`skills-row-${row.id}`} className="skills-catalog-row-title">
+            {row.heading}
           </h2>
           <div className="skills-catalog-grid">
-            {section.tools.map((tool) => (
+            {row.tools.map((tool) => (
               <SkillsToolCard
                 key={tool.toolId}
                 tool={tool}

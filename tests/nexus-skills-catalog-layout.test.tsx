@@ -15,26 +15,59 @@ vi.mock("convex/react", async (importOriginal) => ({
 }));
 
 import { SkillsWorkspace } from "@/components/workspace/port/SkillsWorkspace";
-import { SKILLS_CATALOG_SECTIONS } from "@/convex/lib/nexusSkillsCatalog";
 
 const ROOT = path.resolve(import.meta.dirname, "..");
+
+const EXPECTED_ROW_HEADINGS = [
+  "Knowledge & Research",
+  "Scheduled Maintenance",
+  "Library & Documents",
+];
 
 beforeEach(() => {
   authState.isLoading = false;
   authState.isAuthenticated = true;
 });
 
-describe("Nexus Skills catalog layout normalization", () => {
-  it("renders all six skill cards", () => {
+describe("Nexus Skills catalog row layout", () => {
+  it("renders all six skill cards exactly once", () => {
     const { container } = render(<SkillsWorkspace />);
     const cards = container.querySelectorAll(".skills-catalog-card");
     expect(cards.length).toBe(6);
+    const titles = Array.from(cards).map(
+      (card) => card.querySelector(".skills-catalog-card-title")?.textContent,
+    );
+    expect(new Set(titles).size).toBe(6);
   });
 
-  it("renders all categories in canonical order", () => {
+  it("renders exactly three category headings with no Deep Research heading", () => {
     render(<SkillsWorkspace />);
     const headings = screen.getAllByRole("heading", { level: 2 }).map((el) => el.textContent);
-    expect(headings).toEqual(SKILLS_CATALOG_SECTIONS.map((section) => section.label));
+    expect(headings).toEqual(EXPECTED_ROW_HEADINGS);
+    expect(headings).not.toContain("Deep Research");
+  });
+
+  it("groups cards into three two-card rows", () => {
+    const { container } = render(<SkillsWorkspace />);
+    const rows = container.querySelectorAll(".skills-catalog-row");
+    expect(rows.length).toBe(3);
+
+    const rowCards = Array.from(rows).map((row) =>
+      Array.from(row.querySelectorAll(".skills-catalog-card-title")).map((el) => el.textContent),
+    );
+
+    expect(rowCards[0]).toEqual(["SAGE Knowledge Vault", "Transcript retrieval"]);
+    expect(rowCards[1]).toEqual(["Membership.io Full Sync", "Vault Expansion Pass"]);
+    expect(rowCards[2]).toEqual(["Library Dropzone Processing", "Deep Research"]);
+  });
+
+  it("shows one heading above each row grid, not per card column", () => {
+    const { container } = render(<SkillsWorkspace />);
+    const rows = container.querySelectorAll(".skills-catalog-row");
+    for (const row of rows) {
+      expect(row.querySelectorAll(".skills-catalog-row-title").length).toBe(1);
+      expect(row.querySelectorAll(".skills-catalog-grid").length).toBe(1);
+    }
   });
 
   it("places availability badges in card footers, not beside titles", () => {
@@ -49,40 +82,18 @@ describe("Nexus Skills catalog layout normalization", () => {
     }
   });
 
-  it("pairs single-card categories side by side via section grid order", () => {
-    const { container } = render(<SkillsWorkspace />);
-    const sections = container.querySelectorAll(".skills-catalog-section");
-    expect(sections.length).toBe(4);
-    for (const section of sections) {
-      expect(section.classList.contains("skills-catalog-section--span-wide")).toBe(false);
-      expect(section.getAttribute("data-section-id")).toBeTruthy();
-    }
-    const library = container.querySelector(
-      '.skills-catalog-section[data-section-id="library_documents"]',
-    );
-    const deepResearch = container.querySelector(
-      '.skills-catalog-section[data-section-id="deep_research"]',
-    );
-    expect(library).not.toBeNull();
-    expect(deepResearch).not.toBeNull();
-    expect(library?.getAttribute("data-tool-count")).toBe("1");
-    expect(deepResearch?.getAttribute("data-tool-count")).toBe("1");
-  });
-
-  it("uses two-column category grid with paired section order in CSS", () => {
+  it("uses row stack with two-column card grids in CSS", () => {
     const css = readFileSync(path.join(ROOT, "styles/legacy-port.css"), "utf8");
-    expect(css).toContain(".skills-catalog-sections");
-    expect(css).toMatch(/\.skills-catalog-sections[\s\S]*display:\s*grid/);
-    expect(css).toMatch(/\.skills-catalog-sections[\s\S]*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)/);
-    expect(css).toContain('[data-section-id="knowledge_research"]');
-    expect(css).toContain('[data-section-id="scheduled_maintenance"]');
-    expect(css).toContain('[data-section-id="library_documents"]');
-    expect(css).toContain('[data-section-id="deep_research"]');
-    expect(css).not.toContain(".skills-catalog-section--span-wide");
+    expect(css).toContain(".skills-catalog-rows");
+    expect(css).toMatch(/\.skills-catalog-rows[\s\S]*flex-direction:\s*column/);
+    expect(css).toContain(".skills-catalog-row");
+    expect(css).toMatch(/\.skills-catalog-grid[\s\S]*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)/);
+    expect(css).toMatch(/@media \(max-width: 640px\)[\s\S]*\.skills-catalog-grid[\s\S]*grid-template-columns:\s*1fr/);
     expect(css).toContain(".skills-catalog-card-footer");
     expect(css).toMatch(/\.skills-catalog-card-footer[\s\S]*margin-top:\s*auto/);
     expect(css).toMatch(/justify-content:\s*flex-end/);
     expect(css).not.toContain(".skills-catalog-card-header");
+    expect(css).not.toContain(".skills-catalog-section--span-wide");
   });
 
   it("does not add execution controls", () => {
