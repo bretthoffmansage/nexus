@@ -3,7 +3,6 @@
 import { useState, type ReactNode } from "react";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { Sidebar } from "@/components/layout/Sidebar";
-import { SetupBanner } from "@/components/status/SetupBanner";
 
 type AppShellProps = {
   children: ReactNode;
@@ -23,17 +22,12 @@ export function AppShell({
   isAdmin,
 }: AppShellProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [bannerDismissed, setBannerDismissed] = useState(false);
 
   return (
     <div className="nexus-app">
       <a className="nexus-skip-link" href="#nexus-main">
         Skip to main content
       </a>
-
-      {!bannerDismissed ? (
-        <SetupBanner onDismiss={() => setBannerDismissed(true)} />
-      ) : null}
 
       <div className="nexus-app-body">
         <Sidebar

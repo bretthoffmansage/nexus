@@ -71,10 +71,12 @@ Deletion removes conversation + messages only. Tasks, results, sources, and Task
 - Subtitle: “Private knowledge requests · queued for Claudia”
 - Composer help: “Requests are saved and queued. Execution waits for the Claudia Connector (not configured yet).”
 - Duplicate `ANSWER` panel and pending Answer/Sources placeholders
+- App-shell startup banner: “Nexus setup in progress. Read-only task connectivity through the Claudia Connector will be enabled in a later setup step. Claudia is not connected yet.” — removed from `AppShell` default render; the Connector is live. `TopAlertBanner` remains available for future real notices with dismiss support (`components/status/TopAlertBanner.tsx`).
 
 ## Tests
 
 - `tests/nexus-chat-response-rendering.test.tsx` — type-on, single answer, placeholders, labels, deletion UI
+- `tests/top-alert-banner.test.tsx` — obsolete setup banner absent; reusable banner + dismiss
 - Updated: `nexus-p4-4`, `nexus-p5-ui`, `nexus-p5-1`, `nexus-p6-1`, `chat-composer`, `nexus-p5-lifecycle`, `nexus-p5-privacy`
 
 ## Live verification
