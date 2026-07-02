@@ -34,5 +34,7 @@ export function markdownFileFromText(text: string, filename: string): File {
   if (bytes.byteLength > LIBRARY_MAX_UPLOAD_BYTES) {
     throw new Error("CREATE_DRAFT_TOO_LARGE");
   }
-  return new File([bytes], filename, { type: "text/markdown" });
+  const body = new Uint8Array(bytes.byteLength);
+  body.set(bytes);
+  return new File([body], filename, { type: "text/markdown" });
 }

@@ -125,7 +125,9 @@ export function NexusChatWorkspace() {
         idempotencyKey: newIdempotencyKey(),
         requestedToolId,
       });
-      session?.selectConversation(res.conversationId);
+      if (res.conversationId !== undefined) {
+        session?.selectConversation(res.conversationId);
+      }
     } catch (error) {
       setSubmitError(friendlyError(error));
       throw error;

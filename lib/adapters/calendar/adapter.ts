@@ -3,7 +3,7 @@ import type { AdapterReadResult, ToolAdapterMeta } from "@/lib/adapters/types";
 export const calendarAdapterMeta: ToolAdapterMeta = {
   toolId: "calendar",
   availability: "available",
-  authority: "nexus_convex",
+  authority: "convex",
   futureConvexCollection: "nexusScheduledEvents",
 };
 
