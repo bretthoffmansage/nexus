@@ -110,10 +110,9 @@ function SkillsCatalogPanel({
       {sections.map((section) => (
         <section
           key={section.id}
-          className={`skills-catalog-section${
-            section.tools.length > 1 ? " skills-catalog-section--span-wide" : ""
-          }`}
+          className="skills-catalog-section"
           aria-labelledby={`skills-section-${section.id}`}
+          data-section-id={section.id}
           data-tool-count={section.tools.length}
         >
           <h2 id={`skills-section-${section.id}`} className="skills-catalog-section-title">

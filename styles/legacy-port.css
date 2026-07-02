@@ -1350,7 +1350,7 @@
 
 .skills-catalog-sections {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.85rem;
   align-items: stretch;
 }
@@ -1370,7 +1370,7 @@
 
 .skills-catalog-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+  grid-template-columns: 1fr;
   gap: 0.65rem;
   flex: 1 1 auto;
   align-items: stretch;
@@ -1486,16 +1486,21 @@
 }
 
 @media (min-width: 56rem) {
-  .skills-catalog-sections {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  /* Pair categories into a 2×2 section grid for a 2×3 skill-card layout. */
+  .skills-catalog-section[data-section-id="knowledge_research"] {
+    order: 1;
   }
 
-  .skills-catalog-section--span-wide {
-    grid-column: 1 / -1;
+  .skills-catalog-section[data-section-id="scheduled_maintenance"] {
+    order: 2;
   }
 
-  .skills-catalog-section--span-wide .skills-catalog-grid {
-    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  .skills-catalog-section[data-section-id="library_documents"] {
+    order: 3;
+  }
+
+  .skills-catalog-section[data-section-id="deep_research"] {
+    order: 4;
   }
 }
 
@@ -1504,8 +1509,20 @@
     grid-template-columns: 1fr;
   }
 
-  .skills-catalog-grid {
-    grid-template-columns: 1fr;
+  .skills-catalog-section[data-section-id="knowledge_research"] {
+    order: 1;
+  }
+
+  .skills-catalog-section[data-section-id="scheduled_maintenance"] {
+    order: 2;
+  }
+
+  .skills-catalog-section[data-section-id="library_documents"] {
+    order: 3;
+  }
+
+  .skills-catalog-section[data-section-id="deep_research"] {
+    order: 4;
   }
 
   .skills-catalog-card {

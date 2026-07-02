@@ -25,6 +25,12 @@ beforeEach(() => {
 });
 
 describe("Nexus Skills catalog layout normalization", () => {
+  it("renders all six skill cards", () => {
+    const { container } = render(<SkillsWorkspace />);
+    const cards = container.querySelectorAll(".skills-catalog-card");
+    expect(cards.length).toBe(6);
+  });
+
   it("renders all categories in canonical order", () => {
     render(<SkillsWorkspace />);
     const headings = screen.getAllByRole("heading", { level: 2 }).map((el) => el.textContent);
@@ -43,22 +49,36 @@ describe("Nexus Skills catalog layout normalization", () => {
     }
   });
 
-  it("marks multi-tool categories for wide spanning without hardcoding category ids", () => {
+  it("pairs single-card categories side by side via section grid order", () => {
     const { container } = render(<SkillsWorkspace />);
-    const wideSections = container.querySelectorAll(".skills-catalog-section--span-wide");
-    expect(wideSections.length).toBe(1);
-    expect(wideSections[0]?.getAttribute("data-tool-count")).toBe("2");
-    const singleSections = container.querySelectorAll(
-      '.skills-catalog-section:not(.skills-catalog-section--span-wide)[data-tool-count="1"]',
+    const sections = container.querySelectorAll(".skills-catalog-section");
+    expect(sections.length).toBe(4);
+    for (const section of sections) {
+      expect(section.classList.contains("skills-catalog-section--span-wide")).toBe(false);
+      expect(section.getAttribute("data-section-id")).toBeTruthy();
+    }
+    const library = container.querySelector(
+      '.skills-catalog-section[data-section-id="library_documents"]',
     );
-    expect(singleSections.length).toBe(2);
+    const deepResearch = container.querySelector(
+      '.skills-catalog-section[data-section-id="deep_research"]',
+    );
+    expect(library).not.toBeNull();
+    expect(deepResearch).not.toBeNull();
+    expect(library?.getAttribute("data-tool-count")).toBe("1");
+    expect(deepResearch?.getAttribute("data-tool-count")).toBe("1");
   });
 
-  it("uses responsive category and card grid classes in CSS", () => {
+  it("uses two-column category grid with paired section order in CSS", () => {
     const css = readFileSync(path.join(ROOT, "styles/legacy-port.css"), "utf8");
     expect(css).toContain(".skills-catalog-sections");
     expect(css).toMatch(/\.skills-catalog-sections[\s\S]*display:\s*grid/);
-    expect(css).toContain(".skills-catalog-section--span-wide");
+    expect(css).toMatch(/\.skills-catalog-sections[\s\S]*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)/);
+    expect(css).toContain('[data-section-id="knowledge_research"]');
+    expect(css).toContain('[data-section-id="scheduled_maintenance"]');
+    expect(css).toContain('[data-section-id="library_documents"]');
+    expect(css).toContain('[data-section-id="deep_research"]');
+    expect(css).not.toContain(".skills-catalog-section--span-wide");
     expect(css).toContain(".skills-catalog-card-footer");
     expect(css).toMatch(/\.skills-catalog-card-footer[\s\S]*margin-top:\s*auto/);
     expect(css).toMatch(/justify-content:\s*flex-end/);
