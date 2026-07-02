@@ -137,9 +137,29 @@ export async function findActiveSingleFlightTask(
   return null;
 }
 
-export function membershipFullSyncMetadataIdempotencyKey(
+export function membershipFullSyncScheduledForUtcIso(scheduledForUtcMs: number): string {
+  return new Date(scheduledForUtcMs).toISOString();
+}
+
+export type MembershipFullSyncTaskMetadata = {
+  kind: typeof MEMBERSHIP_FULL_SYNC_TASK_KIND;
+  explicitUserAction: "sync";
+  scheduledEventId: Id<"nexusScheduledEvents">;
+  scheduledForUtc: string;
+  idempotencyKey: string;
+};
+
+/** Claudia contract payload — exactly five metadata keys, ISO UTC schedule instant. */
+export function buildMembershipFullSyncTaskMetadata(
   scheduledEventId: Id<"nexusScheduledEvents">,
-  scheduledForUtc: number,
-): string {
-  return `${scheduledEventId}:${new Date(scheduledForUtc).toISOString()}`;
+  scheduledForUtcMs: number,
+): MembershipFullSyncTaskMetadata {
+  const scheduledForUtc = membershipFullSyncScheduledForUtcIso(scheduledForUtcMs);
+  return {
+    kind: MEMBERSHIP_FULL_SYNC_TASK_KIND,
+    explicitUserAction: "sync",
+    scheduledEventId,
+    scheduledForUtc,
+    idempotencyKey: `${scheduledEventId}:${scheduledForUtc}`,
+  };
 }

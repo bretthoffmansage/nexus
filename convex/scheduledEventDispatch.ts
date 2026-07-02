@@ -8,10 +8,10 @@ import {
   scheduledEventIdempotencyKey,
 } from "./lib/calendarScheduleConfig";
 import {
+  buildMembershipFullSyncTaskMetadata,
   findActiveSingleFlightTask,
   getCalendarScheduledTool,
   isCalendarScheduledToolAvailable,
-  membershipFullSyncMetadataIdempotencyKey,
   MEMBERSHIP_FULL_SYNC_TASK_KIND,
   MEMBERSHIP_FULL_SYNC_UNAVAILABLE_REASON,
   MEMBERSHIP_FULL_SYNC_WAIT_MESSAGE,
@@ -183,17 +183,7 @@ async function dispatchOneEvent(
         ? await ctx.db.insert("nexusTasks", {
             ...taskInsertBase,
             taskKind: MEMBERSHIP_FULL_SYNC_TASK_KIND,
-            taskMetadata: {
-              kind: MEMBERSHIP_FULL_SYNC_TASK_KIND,
-              scheduledEventId: fresh._id,
-              scheduledForUtc: fresh.scheduledForUtc,
-              explicitUserAction: "sync",
-              idempotencyKey: membershipFullSyncMetadataIdempotencyKey(
-                fresh._id,
-                fresh.scheduledForUtc,
-              ),
-              lateDispatch: lateDispatch || undefined,
-            },
+            taskMetadata: buildMembershipFullSyncTaskMetadata(fresh._id, fresh.scheduledForUtc),
           })
         : await ctx.db.insert("nexusTasks", {
             ...taskInsertBase,

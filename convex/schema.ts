@@ -52,10 +52,9 @@ const scheduledTaskMetadataValidator = v.object({
 const membershipFullSyncTaskMetadataValidator = v.object({
   kind: v.literal("membership_full_sync"),
   scheduledEventId: v.id("nexusScheduledEvents"),
-  scheduledForUtc: v.number(),
+  scheduledForUtc: v.string(),
   explicitUserAction: v.literal("sync"),
   idempotencyKey: v.string(),
-  lateDispatch: v.optional(v.boolean()),
 });
 
 const calendarEventStatusValidator = v.union(
@@ -66,6 +65,7 @@ const calendarEventStatusValidator = v.union(
   v.literal("running"),
   v.literal("completed"),
   v.literal("failed"),
+  v.literal("needs_review"),
   v.literal("cancelled"),
   v.literal("deleted"),
 );

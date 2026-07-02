@@ -11,10 +11,33 @@ export type CalendarEventStatus =
   | "running"
   | "completed"
   | "failed"
+  | "needs_review"
   | "cancelled"
   | "deleted";
 
-export function mapTaskStatusToCalendarEvent(taskStatus: TaskStatus): CalendarEventStatus {
+const MEMBERSHIP_UNCERTAIN_ERROR_CODE = "execution_state_uncertain";
+
+function isMembershipFullSyncTask(
+  task: Pick<Doc<"nexusTasks">, "taskKind" | "taskMetadata">,
+): boolean {
+  return (
+    task.taskKind === "membership_full_sync" ||
+    task.taskMetadata?.kind === "membership_full_sync"
+  );
+}
+
+export function mapTaskStatusToCalendarEvent(
+  taskStatus: TaskStatus,
+  task?: Pick<Doc<"nexusTasks">, "errorCode" | "taskKind" | "taskMetadata">,
+): CalendarEventStatus {
+  if (
+    taskStatus === "failed" &&
+    task?.errorCode === MEMBERSHIP_UNCERTAIN_ERROR_CODE &&
+    task &&
+    isMembershipFullSyncTask(task)
+  ) {
+    return "needs_review";
+  }
   switch (taskStatus) {
     case "queued":
       return "queued";
@@ -42,7 +65,7 @@ export async function projectScheduledEventFromTask(
   if (event.linkedTaskId && event.linkedTaskId !== task._id) return;
 
   const now = Date.now();
-  const scheduleStatus = mapTaskStatusToCalendarEvent(task.status);
+  const scheduleStatus = mapTaskStatusToCalendarEvent(task.status, task);
   const patch: Partial<Doc<"nexusScheduledEvents">> = {
     scheduleStatus,
     updatedAt: now,

@@ -19,6 +19,7 @@ export type CalendarEventStatus =
   | "running"
   | "completed"
   | "failed"
+  | "needs_review"
   | "cancelled"
   | "deleted";
 
@@ -38,6 +39,8 @@ export function calendarStatusLabel(status: CalendarEventStatus): string {
       return "Completed";
     case "failed":
       return "Failed";
+    case "needs_review":
+      return "Needs Review";
     case "cancelled":
       return "Cancelled";
     case "deleted":
@@ -62,6 +65,8 @@ export function calendarStatusIcon(status: CalendarEventStatus): string {
       return "✓";
     case "failed":
       return "⚠";
+    case "needs_review":
+      return "◐";
     case "cancelled":
       return "⊘";
     default:
