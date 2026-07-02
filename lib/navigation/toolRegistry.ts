@@ -67,7 +67,7 @@ export const NEXUS_TOOL_REGISTRY: NexusToolDefinition[] = [
     group: "tools",
     legacyButtonId: "tool-research-btn",
     legacyModules: ["static/js/research/panel.js", "static/js/research/jobs.js"],
-    availability: "connector_required",
+    availability: "available",
   },
   {
     id: "gallery",

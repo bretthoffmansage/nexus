@@ -1,4 +1,5 @@
 import { LIBRARY_DROPZONE_TOOL_ID } from "./libraryDropzoneConfig";
+import { DEEP_RESEARCH_TOOL_ID } from "./deepResearchConfig";
 import { P5_LIMITS, P5_SUPPORTED_TOOL_IDS, type P5ToolId } from "./p5config";
 
 /** Canonical Claudia tool — full Membership.io parent workflow (Calendar-only in Nexus). */
@@ -99,6 +100,7 @@ const TOOL_EXECUTION_SAFETY: Record<string, ExecutionSafetyClass> = {
   "membership_io.transcript_retrieve": "read_only_idempotent",
   [LIBRARY_DROPZONE_TOOL_ID]: "write_requires_confirmation",
   [MEMBERSHIP_FULL_SYNC_TOOL_ID]: "write_requires_confirmation",
+  [DEEP_RESEARCH_TOOL_ID]: "read_only_idempotent",
 };
 
 export function executionSafetyForTool(toolId: string): ExecutionSafetyClass {
@@ -115,6 +117,7 @@ export const DEFAULT_CONNECTOR_TOOL_IDS: readonly string[] = [
 export const KNOWN_CONNECTOR_TOOL_IDS: readonly string[] = [
   ...DEFAULT_CONNECTOR_TOOL_IDS,
   MEMBERSHIP_FULL_SYNC_TOOL_ID,
+  DEEP_RESEARCH_TOOL_ID,
 ];
 
 /** Approved Connector progress "stage" values (bounded vocabulary; the

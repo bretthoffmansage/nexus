@@ -1,4 +1,5 @@
 import { LIBRARY_DROPZONE_TOOL_ID } from "./libraryDropzoneConfig";
+import { DEEP_RESEARCH_TOOL_ID } from "./deepResearchConfig";
 import {
   DEFAULT_CONNECTOR_TOOL_IDS,
   executionSafetyForTool,
@@ -12,9 +13,10 @@ import type { MutationCtx, QueryCtx } from "../_generated/server";
 export type SkillsCatalogCategory =
   | "knowledge_research"
   | "library_documents"
-  | "scheduled_maintenance";
+  | "scheduled_maintenance"
+  | "deep_research";
 
-export type SkillsAccessMode = "chat" | "calendar" | "library" | "connector";
+export type SkillsAccessMode = "chat" | "calendar" | "library" | "connector" | "deep_research";
 
 export type SkillsInputType = "text_request" | "no_input_action" | "library_upload";
 
@@ -48,6 +50,7 @@ export const SKILLS_CATALOG_SECTIONS: readonly {
   { id: "knowledge_research", label: "Knowledge & Research" },
   { id: "library_documents", label: "Library & Documents" },
   { id: "scheduled_maintenance", label: "Scheduled Maintenance" },
+  { id: "deep_research", label: "Deep Research" },
 ];
 
 /**
@@ -108,6 +111,19 @@ export const SKILLS_CATALOG_TOOL_DEFS: readonly SkillsCatalogToolDef[] = [
     requiresConnector: true,
     calendarRequiresExplicitCapability: true,
   },
+  {
+    toolId: DEEP_RESEARCH_TOOL_ID,
+    displayName: "Deep Research",
+    shortDescription:
+      "Runs governed, multi-source research across approved web, vault, and transcript sources through Claudia.",
+    category: "deep_research",
+    accessModes: ["deep_research", "connector"],
+    inputType: "text_request",
+    ordinaryChatAvailable: false,
+    calendarAvailable: false,
+    libraryAvailable: false,
+    requiresConnector: true,
+  },
 ] as const;
 
 /** All tool ids Nexus may surface in the Skills catalog. */
@@ -120,6 +136,7 @@ export function skillsCatalogToolIdsMatchAuthority(): boolean {
     ...P5_SUPPORTED_TOOL_IDS,
     LIBRARY_DROPZONE_TOOL_ID,
     MEMBERSHIP_FULL_SYNC_TOOL_ID,
+    DEEP_RESEARCH_TOOL_ID,
   ]);
   return (
     NEXUS_SKILLS_CATALOG_TOOL_IDS.length === expected.size &&
@@ -158,6 +175,8 @@ export function accessModeLabel(mode: SkillsAccessMode): string {
       return "Library";
     case "connector":
       return "Connector";
+    case "deep_research":
+      return "Deep Research";
   }
 }
 

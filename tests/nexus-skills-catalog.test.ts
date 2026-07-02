@@ -27,6 +27,7 @@ describe("Nexus Skills catalog", () => {
       "membership_io.transcript_retrieve",
       LIBRARY_DROPZONE_TOOL_ID,
       MEMBERSHIP_FULL_SYNC_TOOL_ID,
+      "research.hermes_deep_research",
     ]);
   });
 
@@ -39,11 +40,12 @@ describe("Nexus Skills catalog", () => {
     });
     const ids = sections.flatMap((s) => s.tools.map((t) => t.toolId));
     expect(ids).toHaveLength(new Set(ids).size);
-    expect(ids).toHaveLength(4);
+    expect(ids).toHaveLength(5);
     expect(sections.map((s) => s.label)).toEqual([
       "Knowledge & Research",
       "Library & Documents",
       "Scheduled Maintenance",
+      "Deep Research",
     ]);
   });
 
@@ -101,7 +103,7 @@ describe("Nexus Skills catalog", () => {
     const catalog = await t.withIdentity(IDENTITY_A).query(api.skillsCatalog.listSkillsCatalog, {});
     expect(catalog.sections.length).toBeGreaterThan(0);
     const tools = catalog.sections.flatMap((s) => s.tools);
-    expect(tools.length).toBe(4);
+    expect(tools.length).toBe(5);
     for (const tool of tools) {
       expect(tool.displayName).toBeTruthy();
       expect(tool.shortDescription).toBeTruthy();

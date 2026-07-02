@@ -2,9 +2,9 @@ import type { AdapterReadResult, ToolAdapterMeta } from "@/lib/adapters/types";
 
 export const researchAdapterMeta: ToolAdapterMeta = {
   toolId: "research",
-  availability: "connector_required",
+  availability: "available",
   authority: "claudia_connector",
-  futureClaudiaTaskKind: "research.job",
+  futureClaudiaTaskKind: "deep_research",
 };
 
 export type ResearchJob = {
