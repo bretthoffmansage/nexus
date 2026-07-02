@@ -12,15 +12,19 @@ import {
   loadActiveTaskId,
   loadOrCreateIdempotencyKey,
   loadOrCreateResearchRequestId,
+  loadReportRulesDraft,
   loadSelectedModelId,
   rememberActiveTaskId,
-  researchRequestValidationMessage,
+  resetReportRulesDraft,
   rotateIdempotencyKey,
   rotateResearchRequestSession,
+  saveReportRulesDraft,
   saveSelectedModelId,
-  selectedModelToEnvelopeField,
-  validateResearchRequestLength,
 } from "@/lib/nexus/deepResearchSession";
+import {
+  composedResearchRequestValidationMessage,
+  validateComposedDeepResearchRequest,
+} from "@/lib/nexus/deepResearchRequestCompose";
 import {
   CLAUDIA_DEFAULT_MODEL_VALUE,
   type NexusResearchModel,
@@ -52,6 +56,7 @@ export function ResearchWorkspace() {
   const [researchRequestId, setResearchRequestId] = useState("");
   const [idempotencyKey, setIdempotencyKey] = useState("");
   const [requestText, setRequestText] = useState("");
+  const [reportRules, setReportRules] = useState("");
   const [selectedTaskId, setSelectedTaskId] = useState<Id<"nexusTasks"> | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -64,6 +69,7 @@ export function ResearchWorkspace() {
     setResearchRequestId(loadOrCreateResearchRequestId());
     setIdempotencyKey(loadOrCreateIdempotencyKey());
     setSelectedModelId(loadSelectedModelId());
+    setReportRules(loadReportRulesDraft());
     const storedTaskId = loadActiveTaskId();
     if (storedTaskId) {
       setSelectedTaskId(storedTaskId as Id<"nexusTasks">);
@@ -103,12 +109,8 @@ export function ResearchWorkspace() {
     saveSelectedModelId(next);
   }, []);
 
-  // Block submission when a concrete saved model is no longer in the catalog.
-  const savedModelUnavailable = useMemo(() => {
-    if (selectedModelId === CLAUDIA_DEFAULT_MODEL_VALUE) return false;
-    if (modelCatalogLoading || modelCatalogError) return false;
-    return !modelCatalog.some((m) => m.id === selectedModelId);
-  }, [modelCatalog, modelCatalogError, modelCatalogLoading, selectedModelId]);
+  // Model selection is a UI preference only — the governed Claudia contract
+  // carries execution content exclusively in requestText (no model field).
 
   const tasksPage = useQuery(
     nexusDeepResearch.listMyDeepResearchTasks,
@@ -118,8 +120,12 @@ export function ResearchWorkspace() {
   const submitDeepResearch = useMutation(nexusDeepResearch.submitDeepResearch);
   const cancelTask = useMutation(nexusDeepResearch.cancelTask);
 
-  const validation = useMemo(() => validateResearchRequestLength(requestText), [requestText]);
-  const charCount = validation.length;
+  const validation = useMemo(
+    () => validateComposedDeepResearchRequest(requestText, reportRules),
+    [requestText, reportRules],
+  );
+  const composedCharCount = validation.length;
+  const requestOnlyCharCount = requestText.trim().length;
 
   const activeTask = useMemo(() => {
     const rows = tasksPage?.tasks ?? [];
@@ -168,7 +174,6 @@ export function ResearchWorkspace() {
     validation.ok &&
     !submitting &&
     !hasActiveExecution &&
-    !savedModelUnavailable &&
     !isLoading &&
     isAuthenticated;
 
@@ -181,9 +186,6 @@ export function ResearchWorkspace() {
         requestText: validation.trimmed,
         researchRequestId,
         idempotencyKey,
-        // Captured at submit time so the run is reproducible; undefined ⇒
-        // Claudia default. The selector preference is not the source of truth.
-        requestedModelId: selectedModelToEnvelopeField(selectedModelId),
       });
       setSelectedTaskId(result.taskId);
       rememberActiveTaskId(result.taskId);
@@ -196,7 +198,6 @@ export function ResearchWorkspace() {
     canSubmit,
     idempotencyKey,
     researchRequestId,
-    selectedModelId,
     submitDeepResearch,
     validation,
   ]);
@@ -206,6 +207,7 @@ export function ResearchWorkspace() {
     setResearchRequestId(session.researchRequestId);
     setIdempotencyKey(session.idempotencyKey);
     setRequestText("");
+    setReportRules(resetReportRulesDraft());
     setSelectedTaskId(null);
     clearActiveTaskId();
     setSubmitError(null);
@@ -254,7 +256,7 @@ export function ResearchWorkspace() {
       ) : null}
 
       <div className="research-panel-layout">
-        <aside className="research-settings" aria-label="Research request">
+        <aside className="research-settings" aria-label="Research settings">
           <form
             className="research-form"
             onSubmit={(event) => {
@@ -276,14 +278,34 @@ export function ResearchWorkspace() {
             </label>
             <div className="research-request-meta" aria-live="polite">
               <span>
-                {charCount.toLocaleString()} / {DEEP_RESEARCH_MAX_REQUEST_LENGTH.toLocaleString()}
+                {composedCharCount.toLocaleString()} /{" "}
+                {DEEP_RESEARCH_MAX_REQUEST_LENGTH.toLocaleString()} submitted characters
+              </span>
+              <span className="research-request-meta-secondary">
+                Request field: {requestOnlyCharCount.toLocaleString()}
               </span>
               {!validation.ok && validation.code === "too_large" ? (
                 <span className="research-validation-error">
-                  {researchRequestValidationMessage("too_large")}
+                  {composedResearchRequestValidationMessage("too_large")}
                 </span>
               ) : null}
             </div>
+
+            <label htmlFor="research-report-rules">
+              Report rules
+              <textarea
+                id="research-report-rules"
+                className="research-report-rules-input"
+                rows={4}
+                value={reportRules}
+                placeholder="Optional rules for the final report…"
+                disabled={submitting || hasActiveExecution}
+                onChange={(event) => {
+                  setReportRules(event.target.value);
+                  saveReportRulesDraft(event.target.value);
+                }}
+              />
+            </label>
 
             <ResearchModelSelector
               value={selectedModelId}

@@ -958,12 +958,15 @@
   border-radius: 8px;
   padding: 0.75rem;
   background: var(--nexus-panel);
+  min-width: 0;
 }
 
 .research-form {
   display: flex;
   flex-direction: column;
   gap: 0.65rem;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .research-form label {
@@ -975,6 +978,8 @@
 
 .research-request-input {
   width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
   min-height: 10rem;
   resize: vertical;
   border: 1px solid var(--nexus-border);
@@ -986,6 +991,21 @@
   line-height: 1.45;
 }
 
+.research-report-rules-input {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  min-height: 5rem;
+  resize: vertical;
+  border: 1px solid var(--nexus-border);
+  border-radius: 6px;
+  padding: 0.5rem 0.65rem;
+  background: var(--nexus-bg);
+  color: var(--nexus-fg);
+  font: inherit;
+  line-height: 1.4;
+}
+
 .research-request-meta {
   display: flex;
   flex-wrap: wrap;
@@ -994,12 +1014,49 @@
   opacity: 0.8;
 }
 
+.research-request-meta-secondary {
+  opacity: 0.75;
+}
+
 .research-validation-error {
   color: var(--nexus-danger, #c0392b);
 }
 
 .research-model-field {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
   opacity: 0.85;
+}
+
+.research-model-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 0;
+  max-width: 100%;
+  width: 100%;
+}
+
+.research-model-search {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.research-model-status,
+.research-model-hint {
+  font-size: 0.78rem;
+  margin: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.research-model-hint code {
+  overflow-wrap: anywhere;
 }
 
 .research-form-actions {

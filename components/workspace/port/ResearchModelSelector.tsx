@@ -116,7 +116,7 @@ export function ResearchModelSelector({
             Exact model: <code>{selectedModel.id}</code>
           </span>
         ) : (
-          <span>Claudia selects and validates the model for each run.</span>
+          <span>Claudia selects and validates the model for each run. This preference is not sent in the task envelope.</span>
         )}
       </p>
     </div>

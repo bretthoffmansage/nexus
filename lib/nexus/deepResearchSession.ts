@@ -4,11 +4,13 @@ import {
   isValidDeepResearchModelId,
 } from "@/convex/lib/deepResearchConfig";
 import { CLAUDIA_DEFAULT_MODEL_VALUE } from "@/lib/nexus/deepResearchModelCatalog";
+import { DEFAULT_DEEP_RESEARCH_REPORT_RULES } from "@/lib/nexus/deepResearchRequestCompose";
 
 const STORAGE_REQUEST_ID = "nexus.deepResearch.researchRequestId";
 const STORAGE_IDEMPOTENCY_KEY = "nexus.deepResearch.idempotencyKey";
 const STORAGE_ACTIVE_TASK_ID = "nexus.deepResearch.activeTaskId";
 const STORAGE_SELECTED_MODEL = "nexus.deepResearch.selectedModelId";
+const STORAGE_REPORT_RULES_DRAFT = "nexus.deepResearch.reportRulesDraft";
 
 function randomIdentifier(prefix: string): string {
   const uuid =
@@ -98,6 +100,24 @@ export function loadActiveTaskId(): string | null {
 
 export function clearActiveTaskId(): void {
   removeStored(STORAGE_ACTIVE_TASK_ID);
+}
+
+/** Load persisted report-rules draft or the canonical default for a new request. */
+export function loadReportRulesDraft(): string {
+  const stored = readStored(STORAGE_REPORT_RULES_DRAFT);
+  if (stored !== null) return stored;
+  return DEFAULT_DEEP_RESEARCH_REPORT_RULES;
+}
+
+/** Persist in-progress report rules without submitting a task. */
+export function saveReportRulesDraft(value: string): void {
+  writeStored(STORAGE_REPORT_RULES_DRAFT, value);
+}
+
+/** Reset report rules to the default (e.g. intentional New request). */
+export function resetReportRulesDraft(): string {
+  writeStored(STORAGE_REPORT_RULES_DRAFT, DEFAULT_DEEP_RESEARCH_REPORT_RULES);
+  return DEFAULT_DEEP_RESEARCH_REPORT_RULES;
 }
 
 /**

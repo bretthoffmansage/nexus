@@ -3,6 +3,7 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { beforeEach, afterEach, describe, expect, it, vi } from "vitest";
 import { ResearchWorkspace } from "@/components/workspace/port/ResearchWorkspace";
 import { nexusDeepResearch } from "@/lib/nexus/deepResearchClient";
+import { composeDeepResearchRequestText } from "@/lib/nexus/deepResearchRequestCompose";
 
 const authState = vi.hoisted(() => ({ isLoading: false, isAuthenticated: true, isRefreshing: false }));
 const queryResults = vi.hoisted(() => new Map<unknown, unknown>());
@@ -64,14 +65,14 @@ describe("Deep Research model submission wiring", () => {
     expect(mutationFn).not.toHaveBeenCalled();
   });
 
-  it("includes the selected model id in a new task submission", async () => {
+  it("never includes requestedModelId in task submission", async () => {
     render(<ResearchWorkspace />);
-    // Wait for the catalog option to arrive.
     await screen.findByRole("option", { name: /Claude Sonnet 4.6/ });
 
-    fireEvent.change(screen.getByRole("textbox"), {
+    fireEvent.change(screen.getByLabelText("Research request"), {
       target: { value: "What drives member retention?" },
     });
+    fireEvent.change(screen.getByLabelText("Report rules"), { target: { value: "" } });
     fireEvent.change(screen.getByRole("combobox"), {
       target: { value: "anthropic/claude-sonnet-4.6" },
     });
@@ -80,24 +81,27 @@ describe("Deep Research model submission wiring", () => {
     await waitFor(() => expect(mutationFn).toHaveBeenCalledTimes(1));
     const args = mutationFn.mock.calls[0][0];
     expect(args.requestText).toBe("What drives member retention?");
-    expect(args.requestedModelId).toBe("anthropic/claude-sonnet-4.6");
+    expect(args.requestedModelId).toBeUndefined();
   });
 
-  it("omits requestedModelId when the Claudia default stays selected", async () => {
+  it("submits composed requestText when report rules are present", async () => {
     render(<ResearchWorkspace />);
     await screen.findByRole("option", { name: /Claude Sonnet 4.6/ });
 
-    fireEvent.change(screen.getByRole("textbox"), {
+    fireEvent.change(screen.getByLabelText("Research request"), {
       target: { value: "Default model run" },
     });
     fireEvent.click(screen.getByRole("button", { name: "Research" }));
 
     await waitFor(() => expect(mutationFn).toHaveBeenCalledTimes(1));
     const args = mutationFn.mock.calls[0][0];
+    expect(args.requestText).toBe(
+      composeDeepResearchRequestText("Default model run", screen.getByLabelText("Report rules").textContent ?? ""),
+    );
     expect(args.requestedModelId).toBeUndefined();
   });
 
-  it("persists the selection so a later render restores it", async () => {
+  it("persists the model selection without submitting", async () => {
     const { unmount } = render(<ResearchWorkspace />);
     await screen.findByRole("option", { name: /Claude Sonnet 4.6/ });
     fireEvent.change(screen.getByRole("combobox"), {
@@ -109,7 +113,6 @@ describe("Deep Research model submission wiring", () => {
     await screen.findByRole("option", { name: /Claude Sonnet 4.6/ });
     const select = screen.getByRole("combobox") as HTMLSelectElement;
     expect(select.value).toBe("anthropic/claude-sonnet-4.6");
-    // Restoring a selection must not submit anything.
     expect(mutationFn).not.toHaveBeenCalled();
   });
 });
