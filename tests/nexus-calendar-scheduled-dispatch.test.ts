@@ -38,10 +38,17 @@ describe("Nexus Calendar navigation and badge policy", () => {
   it("Library still has no Connector badge", () => {
     const library = NEXUS_TOOL_REGISTRY.find((t) => t.id === "documents");
     expect(library?.availability).toBe("available");
+    expect(library?.label).toBe("Vault Library");
+  });
+
+  it("Tasks has no Connector badge (availability is available)", () => {
+    const tasks = NEXUS_TOOL_REGISTRY.find((t) => t.id === "tasks");
+    expect(tasks?.availability).toBe("available");
+    expect(tasks?.href).toBe("/tasks");
   });
 
   it("unrelated legacy tools retain Connector badges", () => {
-    for (const id of ["email", "memory", "research", "tasks"] as const) {
+    for (const id of ["email", "memory", "research"] as const) {
       const tool = NEXUS_TOOL_REGISTRY.find((t) => t.id === id);
       expect(tool?.availability).toBe("connector_required");
     }

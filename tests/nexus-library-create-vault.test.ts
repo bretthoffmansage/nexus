@@ -44,9 +44,11 @@ describe("Library Create to Vault helpers", () => {
 });
 
 describe("Library navigation metadata", () => {
-  it("Library is available without Connector badge", () => {
+  it("Library is available without Connector badge and shows Vault Library label", () => {
     const library = NEXUS_TOOL_REGISTRY.find((t) => t.id === "documents");
+    expect(library?.label).toBe("Vault Library");
     expect(library?.availability).toBe("available");
+    expect(library?.href).toBe("/documents");
     const email = NEXUS_TOOL_REGISTRY.find((t) => t.id === "email");
     expect(email?.availability).toBe("connector_required");
   });

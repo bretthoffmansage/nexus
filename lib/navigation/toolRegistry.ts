@@ -78,7 +78,7 @@ export const NEXUS_TOOL_REGISTRY: NexusToolDefinition[] = [
   },
   {
     id: "documents",
-    label: "Library",
+    label: "Vault Library",
     href: "/documents",
     group: "tools",
     legacyButtonId: "tool-library-btn",
@@ -101,7 +101,7 @@ export const NEXUS_TOOL_REGISTRY: NexusToolDefinition[] = [
     group: "tools",
     legacyButtonId: "tool-tasks-btn",
     legacyModules: ["static/js/tasks.js"],
-    availability: "connector_required",
+    availability: "available",
   },
   {
     id: "knowledge",

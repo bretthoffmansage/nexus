@@ -137,8 +137,10 @@ describe("Nexus Skills page and navigation", () => {
     expect(navSrc).toContain('"—"');
   });
 
-  it("Calendar and Library sidebar presentation remains unchanged", () => {
+  it("Calendar and Vault Library sidebar presentation remains unchanged", () => {
     expect(NEXUS_TOOL_REGISTRY.find((t) => t.id === "calendar")?.availability).toBe("available");
-    expect(NEXUS_TOOL_REGISTRY.find((t) => t.id === "documents")?.availability).toBe("available");
+    const library = NEXUS_TOOL_REGISTRY.find((t) => t.id === "documents");
+    expect(library?.availability).toBe("available");
+    expect(library?.label).toBe("Vault Library");
   });
 });
