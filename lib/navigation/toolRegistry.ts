@@ -118,7 +118,7 @@ export const NEXUS_TOOL_REGISTRY: NexusToolDefinition[] = [
     href: "/skills",
     group: "tools",
     legacyModules: ["static/js/skills.js"],
-    availability: "local_only",
+    availability: "available",
   },
   {
     id: "settings",

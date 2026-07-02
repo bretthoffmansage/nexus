@@ -24,6 +24,7 @@ import type * as lib_auth from "../lib/auth.js";
 import type * as lib_bootstrap from "../lib/bootstrap.js";
 import type * as lib_calendarProjection from "../lib/calendarProjection.js";
 import type * as lib_calendarScheduleConfig from "../lib/calendarScheduleConfig.js";
+import type * as lib_calendarScheduledTools from "../lib/calendarScheduledTools.js";
 import type * as lib_calendarTimezone from "../lib/calendarTimezone.js";
 import type * as lib_connectorAuth from "../lib/connectorAuth.js";
 import type * as lib_conversationContext from "../lib/conversationContext.js";
@@ -34,6 +35,7 @@ import type * as lib_libraryDropzoneConfig from "../lib/libraryDropzoneConfig.js
 import type * as lib_libraryFilename from "../lib/libraryFilename.js";
 import type * as lib_libraryProjection from "../lib/libraryProjection.js";
 import type * as lib_librarySha256 from "../lib/librarySha256.js";
+import type * as lib_nexusSkillsCatalog from "../lib/nexusSkillsCatalog.js";
 import type * as lib_ownership from "../lib/ownership.js";
 import type * as lib_p5config from "../lib/p5config.js";
 import type * as lib_p5writes from "../lib/p5writes.js";
@@ -49,6 +51,7 @@ import type * as messages from "../messages.js";
 import type * as roles from "../roles.js";
 import type * as scheduledEventDispatch from "../scheduledEventDispatch.js";
 import type * as scheduledEvents from "../scheduledEvents.js";
+import type * as skillsCatalog from "../skillsCatalog.js";
 import type * as taskProgress from "../taskProgress.js";
 import type * as taskResults from "../taskResults.js";
 import type * as taskSources from "../taskSources.js";
@@ -79,6 +82,7 @@ declare const fullApi: ApiFromModules<{
   "lib/bootstrap": typeof lib_bootstrap;
   "lib/calendarProjection": typeof lib_calendarProjection;
   "lib/calendarScheduleConfig": typeof lib_calendarScheduleConfig;
+  "lib/calendarScheduledTools": typeof lib_calendarScheduledTools;
   "lib/calendarTimezone": typeof lib_calendarTimezone;
   "lib/connectorAuth": typeof lib_connectorAuth;
   "lib/conversationContext": typeof lib_conversationContext;
@@ -89,6 +93,7 @@ declare const fullApi: ApiFromModules<{
   "lib/libraryFilename": typeof lib_libraryFilename;
   "lib/libraryProjection": typeof lib_libraryProjection;
   "lib/librarySha256": typeof lib_librarySha256;
+  "lib/nexusSkillsCatalog": typeof lib_nexusSkillsCatalog;
   "lib/ownership": typeof lib_ownership;
   "lib/p5config": typeof lib_p5config;
   "lib/p5writes": typeof lib_p5writes;
@@ -104,6 +109,7 @@ declare const fullApi: ApiFromModules<{
   roles: typeof roles;
   scheduledEventDispatch: typeof scheduledEventDispatch;
   scheduledEvents: typeof scheduledEvents;
+  skillsCatalog: typeof skillsCatalog;
   taskProgress: typeof taskProgress;
   taskResults: typeof taskResults;
   taskSources: typeof taskSources;

@@ -890,8 +890,135 @@
   background: var(--nexus-panel);
 }
 
-/* Skills / knowledge splits */
-.skills-split {
+/* Skills catalog (read-only Nexus tools surface) */
+.skills-catalog-workspace {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: 0.25rem 0 1.5rem;
+  max-width: 56rem;
+}
+
+.skills-catalog-header h1 {
+  margin: 0 0 0.35rem;
+  font-size: 1.5rem;
+}
+
+.skills-catalog-subtitle {
+  margin: 0;
+  color: var(--nexus-muted, #5c6670);
+  font-size: 0.95rem;
+}
+
+.skills-catalog-intro {
+  margin: 0.5rem 0 0;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  color: var(--nexus-muted, #5c6670);
+}
+
+.skills-catalog-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.skills-catalog-section-title {
+  margin: 0 0 0.75rem;
+  font-size: 1.05rem;
+}
+
+.skills-catalog-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+  gap: 0.75rem;
+}
+
+.skills-catalog-card {
+  border: 1px solid var(--nexus-border);
+  border-radius: 8px;
+  padding: 0.85rem 1rem;
+  background: var(--nexus-panel);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.skills-catalog-card-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.skills-catalog-card-title {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.skills-catalog-card-description {
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.45;
+}
+
+.skills-catalog-card-meta {
+  margin: 0;
+  display: grid;
+  gap: 0.35rem;
+  font-size: 0.8rem;
+}
+
+.skills-catalog-card-meta dt {
+  font-weight: 600;
+  color: var(--nexus-muted, #5c6670);
+}
+
+.skills-catalog-card-meta dd {
+  margin: 0;
+}
+
+.skills-catalog-tool-id {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  word-break: break-all;
+}
+
+.skills-catalog-status {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.15rem 0.45rem;
+  border-radius: 4px;
+  border: 1px solid var(--nexus-border);
+  white-space: nowrap;
+}
+
+.skills-catalog-status--available,
+.skills-catalog-status--library_only,
+.skills-catalog-status--scheduled_only {
+  color: #0f6e3f;
+  border-color: color-mix(in srgb, #0f6e3f 35%, var(--nexus-border));
+}
+
+.skills-catalog-status--connector_required,
+.skills-catalog-status--connector_offline,
+.skills-catalog-status--unavailable {
+  color: #8a4b00;
+  border-color: color-mix(in srgb, #8a4b00 35%, var(--nexus-border));
+}
+
+.skills-catalog-loading,
+.skills-catalog-empty {
+  color: var(--nexus-muted, #5c6670);
+  font-size: 0.9rem;
+}
+
+@media (max-width: 640px) {
+  .skills-catalog-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 0.75rem;
@@ -918,7 +1045,8 @@
   .research-panel-layout,
   .tasks-layout,
   .settings-layout,
-  .skills-split {
+  /* Legacy skills editor split (unused by hosted catalog) */
+.skills-split {
     grid-template-columns: 1fr;
   }
 
