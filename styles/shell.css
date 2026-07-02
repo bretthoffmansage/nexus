@@ -91,6 +91,14 @@
   align-items: center;
   gap: 0.55rem;
   font-weight: 600;
+  min-width: 0;
+}
+
+.nexus-sidebar-identity-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .nexus-sidebar-close {

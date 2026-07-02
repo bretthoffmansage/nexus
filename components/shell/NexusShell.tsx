@@ -6,6 +6,7 @@ import { NexusChatWorkspace } from "@/components/chat/NexusChatWorkspace";
 
 type NexusShellProps = {
   userLabel?: string;
+  sidebarIdentityLabel?: string;
   convexConnected: boolean;
   clerkEnabled: boolean;
   isAdmin?: boolean;
@@ -15,6 +16,7 @@ type NexusShellProps = {
 
 export function NexusShell({
   userLabel,
+  sidebarIdentityLabel,
   convexConnected,
   clerkEnabled,
   isAdmin,
@@ -26,6 +28,7 @@ export function NexusShell({
         clerkEnabled={clerkEnabled}
         convexConnected={convexConnected}
         userLabel={userLabel}
+        sidebarIdentityLabel={sidebarIdentityLabel}
         isAdmin={isAdmin}
       >
         <NexusChatWorkspace />

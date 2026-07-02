@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation";
+import { getClerkDisplayNameHints } from "@/lib/auth/clerkDisplayNameHints";
 import { getNexusAccess } from "@/lib/auth/getNexusAccess";
 import { nexusAccessRedirectPath } from "@/lib/auth/nexusAccessRouting";
+import { resolveNexusDisplayName } from "@/lib/auth/nexusDisplayName";
 import { NexusShell } from "@/components/shell/NexusShell";
 import { isClerkConfigured, isConvexConfigured } from "@/lib/env";
 
@@ -27,7 +29,13 @@ export default async function HomePage() {
     redirect(redirectPath);
   }
 
-  const label = access.displayName ?? access.primaryEmail ?? access.clerkUserId ?? "Nexus user";
+  const clerkHints = await getClerkDisplayNameHints();
+  const sidebarIdentityLabel = resolveNexusDisplayName({
+    displayName: access.displayName,
+    clerkFirstName: clerkHints.clerkFirstName,
+    clerkUsername: clerkHints.clerkUsername,
+    primaryEmail: access.primaryEmail,
+  });
   const canSubmit =
     access.state === "approved" && (access.roles ?? []).includes("knowledge_reader");
 
@@ -35,7 +43,8 @@ export default async function HomePage() {
     <NexusShell
       convexConnected={isConvexConfigured()}
       clerkEnabled={isClerkConfigured()}
-      userLabel={label}
+      userLabel={sidebarIdentityLabel}
+      sidebarIdentityLabel={sidebarIdentityLabel}
       isAdmin={access.roles?.includes("nexus_admin")}
       canSubmit={canSubmit}
     />

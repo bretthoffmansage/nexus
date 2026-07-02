@@ -18,7 +18,7 @@ export type NexusToolDefinition = {
 
 export const NEXUS_CHAT_TOOL: NexusToolDefinition = {
   id: "nexus-chat",
-  label: "Nexus Chat",
+  label: "Chat",
   href: "/",
   group: "chat",
   legacyButtonId: "sidebar-new-chat-btn",

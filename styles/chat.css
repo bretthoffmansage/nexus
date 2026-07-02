@@ -34,10 +34,10 @@
 
 .nexus-chat-workspace-head {
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
+  align-items: center;
+  justify-content: flex-end;
   gap: 1rem;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.5rem;
   flex-shrink: 0;
 }
 

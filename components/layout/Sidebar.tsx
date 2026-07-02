@@ -2,6 +2,7 @@
 
 import { UserButton } from "@clerk/nextjs";
 import { ToolNavigation } from "@/components/layout/ToolNavigation";
+import { SIDEBAR_IDENTITY_LOADING_LABEL } from "@/lib/auth/nexusDisplayName";
 import { NexusIcon } from "@/components/ui/NexusIcon";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
 
@@ -11,6 +12,7 @@ type SidebarProps = {
   onClose: () => void;
   clerkEnabled: boolean;
   userLabel?: string;
+  sidebarIdentityLabel?: string;
   isAdmin?: boolean;
 };
 
@@ -20,8 +22,11 @@ export function Sidebar({
   onClose,
   clerkEnabled,
   userLabel,
+  sidebarIdentityLabel,
   isAdmin,
 }: SidebarProps) {
+  const identityLabel = sidebarIdentityLabel ?? SIDEBAR_IDENTITY_LOADING_LABEL;
+
   return (
     <aside
       id={id}
@@ -31,7 +36,9 @@ export function Sidebar({
       <div className="nexus-sidebar-top">
         <div className="nexus-sidebar-brand">
           <NexusIcon className="nexus-brand-mark" />
-          <span>Nexus</span>
+          <span className="nexus-sidebar-identity-label" title={identityLabel}>
+            {identityLabel}
+          </span>
         </div>
         <button
           type="button"

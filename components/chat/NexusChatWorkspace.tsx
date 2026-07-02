@@ -153,15 +153,10 @@ export function NexusChatWorkspace() {
   const showFailedStatus = latestTask?.status === "failed";
 
   return (
-    <section className="nexus-chat-workspace" aria-labelledby="nexus-chat-heading">
+    <section className="nexus-chat-workspace" aria-label="Chat">
       <div className="nexus-chat-stage">
         <div className="nexus-chat-main">
           <header className="nexus-chat-workspace-head">
-            <div>
-              <h1 className="nexus-chat-heading" id="nexus-chat-heading">
-                Nexus Chat
-              </h1>
-            </div>
             <div className="nexus-chat-head-actions">
               <button
                 type="button"

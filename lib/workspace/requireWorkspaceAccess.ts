@@ -1,11 +1,14 @@
 import { redirect } from "next/navigation";
+import { getClerkDisplayNameHints } from "@/lib/auth/clerkDisplayNameHints";
 import { getNexusAccess } from "@/lib/auth/getNexusAccess";
 import { nexusAccessRedirectPath } from "@/lib/auth/nexusAccessRouting";
+import { resolveNexusDisplayName } from "@/lib/auth/nexusDisplayName";
 import type { NexusAccessResult } from "@/lib/auth/getNexusAccess";
 
 export type WorkspaceAccessContext = {
   access: NexusAccessResult;
   userLabel: string;
+  sidebarIdentityLabel: string;
 };
 
 export async function requireWorkspaceAccess(options?: {
@@ -23,8 +26,13 @@ export async function requireWorkspaceAccess(options?: {
     }
   }
 
-  const userLabel =
-    access.displayName ?? access.primaryEmail ?? access.clerkUserId ?? "Nexus user";
+  const clerkHints = await getClerkDisplayNameHints();
+  const sidebarIdentityLabel = resolveNexusDisplayName({
+    displayName: access.displayName,
+    clerkFirstName: clerkHints.clerkFirstName,
+    clerkUsername: clerkHints.clerkUsername,
+    primaryEmail: access.primaryEmail,
+  });
 
-  return { access, userLabel };
+  return { access, userLabel: sidebarIdentityLabel, sidebarIdentityLabel };
 }

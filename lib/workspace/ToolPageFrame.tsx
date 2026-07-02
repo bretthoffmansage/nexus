@@ -9,11 +9,12 @@ type ToolPageFrameProps = {
 };
 
 export async function ToolPageFrame({ children, requiredRole }: ToolPageFrameProps) {
-  const { access, userLabel } = await requireWorkspaceAccess({ requiredRole });
+  const { access, userLabel, sidebarIdentityLabel } = await requireWorkspaceAccess({ requiredRole });
 
   return (
     <WorkspacePageShell
       userLabel={userLabel}
+      sidebarIdentityLabel={sidebarIdentityLabel}
       convexConnected={isConvexConfigured()}
       clerkEnabled={isClerkConfigured()}
       isAdmin={access.roles?.includes("nexus_admin")}
