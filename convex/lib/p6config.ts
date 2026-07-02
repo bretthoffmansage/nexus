@@ -5,6 +5,9 @@ import { P5_LIMITS, P5_SUPPORTED_TOOL_IDS, type P5ToolId } from "./p5config";
 /** Canonical Claudia tool — full Membership.io parent workflow (Calendar-only in Nexus). */
 export const MEMBERSHIP_FULL_SYNC_TOOL_ID = "membership_io.catalog_refresh_and_vault_update";
 
+/** Canonical Claudia tool — no-input governed Vault Expansion Pass (Calendar-only in Nexus). */
+export const VAULT_EXPANSION_PASS_TOOL_ID = "vault.expansion_pass";
+
 /**
  * P6 — Trusted Connector queue protocol.
  *
@@ -100,6 +103,7 @@ const TOOL_EXECUTION_SAFETY: Record<string, ExecutionSafetyClass> = {
   "membership_io.transcript_retrieve": "read_only_idempotent",
   [LIBRARY_DROPZONE_TOOL_ID]: "write_requires_confirmation",
   [MEMBERSHIP_FULL_SYNC_TOOL_ID]: "write_requires_confirmation",
+  [VAULT_EXPANSION_PASS_TOOL_ID]: "write_requires_confirmation",
   [DEEP_RESEARCH_TOOL_ID]: "read_only_idempotent",
 };
 
@@ -117,6 +121,7 @@ export const DEFAULT_CONNECTOR_TOOL_IDS: readonly string[] = [
 export const KNOWN_CONNECTOR_TOOL_IDS: readonly string[] = [
   ...DEFAULT_CONNECTOR_TOOL_IDS,
   MEMBERSHIP_FULL_SYNC_TOOL_ID,
+  VAULT_EXPANSION_PASS_TOOL_ID,
   DEEP_RESEARCH_TOOL_ID,
 ];
 

@@ -4,6 +4,7 @@ import {
   DEFAULT_CONNECTOR_TOOL_IDS,
   executionSafetyForTool,
   MEMBERSHIP_FULL_SYNC_TOOL_ID,
+  VAULT_EXPANSION_PASS_TOOL_ID,
   type ExecutionSafetyClass,
 } from "./p6config";
 import { P5_SUPPORTED_TOOL_IDS, P5_TOOL_DISPLAY_TITLES } from "./p5config";
@@ -112,6 +113,23 @@ export const SKILLS_CATALOG_TOOL_DEFS: readonly SkillsCatalogToolDef[] = [
     calendarRequiresExplicitCapability: true,
   },
   {
+    // Same "scheduled_maintenance" section as Membership full sync; kept adjacent
+    // so the canonical DEF order matches the section-flattened catalog order.
+    toolId: VAULT_EXPANSION_PASS_TOOL_ID,
+    displayName: "Vault Expansion Pass",
+    shortDescription:
+      "Write-capable governed maintenance pass that runs the current vault-owned Expansion Pass " +
+      "instructions to create and update Markdown notes across the Sage Knowledge Vault. Scheduled via Calendar.",
+    category: "scheduled_maintenance",
+    accessModes: ["calendar", "connector"],
+    inputType: "no_input_action",
+    ordinaryChatAvailable: false,
+    calendarAvailable: true,
+    libraryAvailable: false,
+    requiresConnector: true,
+    calendarRequiresExplicitCapability: true,
+  },
+  {
     toolId: DEEP_RESEARCH_TOOL_ID,
     displayName: "Deep Research",
     shortDescription:
@@ -138,6 +156,7 @@ export function skillsCatalogToolIdsMatchAuthority(): boolean {
     LIBRARY_DROPZONE_TOOL_ID,
     MEMBERSHIP_FULL_SYNC_TOOL_ID,
     DEEP_RESEARCH_TOOL_ID,
+    VAULT_EXPANSION_PASS_TOOL_ID,
   ]);
   return (
     NEXUS_SKILLS_CATALOG_TOOL_IDS.length === expected.size &&

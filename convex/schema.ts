@@ -27,6 +27,7 @@ const taskKindValidator = v.union(
   v.literal("scheduled_task"),
   v.literal("membership_full_sync"),
   v.literal("deep_research"),
+  v.literal("vault_expansion_pass"),
 );
 
 const libraryTaskMetadataValidator = v.object({
@@ -64,6 +65,15 @@ const deepResearchTaskMetadataValidator = v.object({
   sourcePage: v.literal("nexus_deep_research"),
   explicitUserAction: v.literal("research"),
   researchRequestId: v.string(),
+  idempotencyKey: v.string(),
+});
+
+const vaultExpansionPassTaskMetadataValidator = v.object({
+  kind: v.literal("vault_expansion_pass"),
+  sourcePage: v.literal("nexus_calendar"),
+  explicitUserAction: v.literal("run"),
+  scheduledEventId: v.id("nexusScheduledEvents"),
+  scheduledForUtc: v.string(),
   idempotencyKey: v.string(),
 });
 
@@ -235,6 +245,7 @@ export default defineSchema({
         scheduledTaskMetadataValidator,
         membershipFullSyncTaskMetadataValidator,
         deepResearchTaskMetadataValidator,
+        vaultExpansionPassTaskMetadataValidator,
       ),
     ),
     requestedToolId: v.string(),

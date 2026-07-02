@@ -8,6 +8,7 @@ import {
 } from "./lib/calendarScheduleConfig";
 import {
   buildMembershipFullSyncTaskMetadata,
+  buildVaultExpansionPassTaskMetadata,
   buildCalendarDeepResearchRequestId,
   calendarScheduledToolUnavailableReason,
   findActiveSingleFlightTask,
@@ -17,6 +18,7 @@ import {
   DEEP_RESEARCH_TASK_KIND,
   MEMBERSHIP_FULL_SYNC_TASK_KIND,
   MEMBERSHIP_FULL_SYNC_WAIT_MESSAGE,
+  VAULT_EXPANSION_PASS_TASK_KIND,
 } from "./lib/calendarScheduledTools";
 import { composeDeepResearchRequestText } from "./lib/deepResearchRequestCompose";
 import {
@@ -201,6 +203,14 @@ async function dispatchOneEvent(
           ...taskInsertBase,
           taskKind: MEMBERSHIP_FULL_SYNC_TASK_KIND,
           taskMetadata: buildMembershipFullSyncTaskMetadata(fresh._id, fresh.scheduledForUtc),
+        });
+      }
+
+      if (toolDef.taskKind === VAULT_EXPANSION_PASS_TASK_KIND) {
+        return await ctx.db.insert("nexusTasks", {
+          ...taskInsertBase,
+          taskKind: VAULT_EXPANSION_PASS_TASK_KIND,
+          taskMetadata: buildVaultExpansionPassTaskMetadata(fresh._id, fresh.scheduledForUtc),
         });
       }
 

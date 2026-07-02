@@ -5,13 +5,28 @@ import {
   DEEP_RESEARCH_TASK_KIND,
   DEEP_RESEARCH_TOOL_ID,
 } from "./deepResearchConfig";
-import { DEFAULT_CONNECTOR_TOOL_IDS, MEMBERSHIP_FULL_SYNC_TOOL_ID } from "./p6config";
+import {
+  DEFAULT_CONNECTOR_TOOL_IDS,
+  MEMBERSHIP_FULL_SYNC_TOOL_ID,
+  VAULT_EXPANSION_PASS_TOOL_ID,
+} from "./p6config";
 import { P5_SUPPORTED_TOOL_IDS, P5_TOOL_DISPLAY_TITLES } from "./p5config";
 import type { TaskStatus } from "./taskStatus";
 
 /** Re-export for Calendar registry consumers. */
-export { MEMBERSHIP_FULL_SYNC_TOOL_ID } from "./p6config";
+export { MEMBERSHIP_FULL_SYNC_TOOL_ID, VAULT_EXPANSION_PASS_TOOL_ID } from "./p6config";
 export { DEEP_RESEARCH_TASK_KIND, DEEP_RESEARCH_TOOL_ID } from "./deepResearchConfig";
+
+export const VAULT_EXPANSION_PASS_TASK_KIND = "vault_expansion_pass";
+export const VAULT_EXPANSION_PASS_REQUEST_TEXT = "Run Vault Expansion Pass";
+export const VAULT_EXPANSION_PASS_DESCRIPTION =
+  "Runs the current vault-owned Expansion Pass instructions through Claudia using a governed " +
+  "write-capable worker. The pass may create and update Markdown notes across the active Sage Knowledge Vault.";
+export const VAULT_EXPANSION_PASS_UNAVAILABLE_REASON =
+  "Unavailable — Vault Expansion Pass requires Connector capability";
+export const VAULT_EXPANSION_PASS_WAIT_MESSAGE = "Waiting for existing Vault Expansion Pass";
+/** Claudia registry guidance — enforced on Claudia side; documented for operators. */
+export const VAULT_EXPANSION_PASS_EXECUTION_TIMEOUT_SECONDS = 1800;
 
 export const MEMBERSHIP_FULL_SYNC_TASK_KIND = "membership_full_sync";
 export const MEMBERSHIP_FULL_SYNC_REQUEST_TEXT = "Run Membership.io full synchronization";
@@ -34,6 +49,7 @@ export type CalendarScheduledInputMode =
 export type CalendarScheduledTaskKind =
   | "scheduled_task"
   | typeof MEMBERSHIP_FULL_SYNC_TASK_KIND
+  | typeof VAULT_EXPANSION_PASS_TASK_KIND
   | typeof DEEP_RESEARCH_TASK_KIND;
 
 export type CalendarScheduledToolDefinition = {
@@ -91,11 +107,26 @@ export const MEMBERSHIP_FULL_SYNC_SCHEDULED_TOOL: CalendarScheduledToolDefinitio
   executionTimeoutSeconds: MEMBERSHIP_FULL_SYNC_EXECUTION_TIMEOUT_SECONDS,
 };
 
+export const VAULT_EXPANSION_PASS_SCHEDULED_TOOL: CalendarScheduledToolDefinition = {
+  requestedToolId: VAULT_EXPANSION_PASS_TOOL_ID,
+  displayLabel: "Vault Expansion Pass",
+  taskKind: VAULT_EXPANSION_PASS_TASK_KIND,
+  inputMode: "no_input_action",
+  description: VAULT_EXPANSION_PASS_DESCRIPTION,
+  fixedRequestText: VAULT_EXPANSION_PASS_REQUEST_TEXT,
+  writeCapable: true,
+  chatAvailable: false,
+  requiresConnectorCapability: true,
+  singleFlightKey: VAULT_EXPANSION_PASS_TOOL_ID,
+  executionTimeoutSeconds: VAULT_EXPANSION_PASS_EXECUTION_TIMEOUT_SECONDS,
+};
+
 /** Single registry for Nexus Calendar scheduled tools. */
 export const CALENDAR_SCHEDULED_TOOLS: readonly CalendarScheduledToolDefinition[] = [
   ...TEXT_SCHEDULED_TOOLS,
   DEEP_RESEARCH_SCHEDULED_TOOL,
   MEMBERSHIP_FULL_SYNC_SCHEDULED_TOOL,
+  VAULT_EXPANSION_PASS_SCHEDULED_TOOL,
 ];
 
 export const CALENDAR_SCHEDULED_TOOL_IDS = CALENDAR_SCHEDULED_TOOLS.map(
@@ -198,6 +229,9 @@ export function calendarScheduledToolUnavailableReason(toolId: string): string {
   if (toolId === MEMBERSHIP_FULL_SYNC_TOOL_ID) {
     return MEMBERSHIP_FULL_SYNC_UNAVAILABLE_REASON;
   }
+  if (toolId === VAULT_EXPANSION_PASS_TOOL_ID) {
+    return VAULT_EXPANSION_PASS_UNAVAILABLE_REASON;
+  }
   return MEMBERSHIP_FULL_SYNC_UNAVAILABLE_REASON;
 }
 
@@ -218,6 +252,31 @@ export function buildMembershipFullSyncTaskMetadata(
   return {
     kind: MEMBERSHIP_FULL_SYNC_TASK_KIND,
     explicitUserAction: "sync",
+    scheduledEventId,
+    scheduledForUtc,
+    idempotencyKey: `${scheduledEventId}:${scheduledForUtc}`,
+  };
+}
+
+export type VaultExpansionPassTaskMetadata = {
+  kind: typeof VAULT_EXPANSION_PASS_TASK_KIND;
+  sourcePage: "nexus_calendar";
+  explicitUserAction: "run";
+  scheduledEventId: Id<"nexusScheduledEvents">;
+  scheduledForUtc: string;
+  idempotencyKey: string;
+};
+
+/** Claudia contract payload — no-input Vault Expansion Pass, ISO UTC schedule instant. */
+export function buildVaultExpansionPassTaskMetadata(
+  scheduledEventId: Id<"nexusScheduledEvents">,
+  scheduledForUtcMs: number,
+): VaultExpansionPassTaskMetadata {
+  const scheduledForUtc = membershipFullSyncScheduledForUtcIso(scheduledForUtcMs);
+  return {
+    kind: VAULT_EXPANSION_PASS_TASK_KIND,
+    sourcePage: "nexus_calendar",
+    explicitUserAction: "run",
     scheduledEventId,
     scheduledForUtc,
     idempotencyKey: `${scheduledEventId}:${scheduledForUtc}`,

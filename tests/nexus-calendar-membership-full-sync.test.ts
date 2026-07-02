@@ -69,12 +69,13 @@ describe("Membership.io full sync Calendar option", () => {
       "scheduledForUtc",
     ]);
   });
-  it("registry includes all three scheduled tools with correct input modes", () => {
+  it("registry includes all scheduled tools with correct input modes", () => {
     expect(CALENDAR_SCHEDULED_TOOLS.map((t) => t.requestedToolId)).toEqual([
       "vault.agentic_retrieval",
       "membership_io.transcript_retrieve",
       "research.hermes_deep_research",
       MEMBERSHIP_FULL_SYNC_TOOL_ID,
+      "vault.expansion_pass",
     ]);
     const fullSync = CALENDAR_SCHEDULED_TOOLS.find(
       (t) => t.requestedToolId === MEMBERSHIP_FULL_SYNC_TOOL_ID,
@@ -104,10 +105,13 @@ describe("Membership.io full sync Calendar option", () => {
     const t = p5Test();
     await seedApprovedReader(t, IDENTITY_A);
     const tools = await t.withIdentity(IDENTITY_A).query(api.scheduledEvents.listAllowedScheduledTools, {});
-    expect(tools).toHaveLength(4);
+    expect(tools).toHaveLength(5);
     const fullSync = tools.find((tool) => tool.id === MEMBERSHIP_FULL_SYNC_TOOL_ID);
     expect(fullSync?.available).toBe(false);
     expect(fullSync?.inputMode).toBe("no_input_action");
+    const expansion = tools.find((tool) => tool.id === "vault.expansion_pass");
+    expect(expansion?.available).toBe(false);
+    expect(expansion?.inputMode).toBe("no_input_action");
   });
 
   it("rejects server-side save when Connector capability is absent", async () => {
