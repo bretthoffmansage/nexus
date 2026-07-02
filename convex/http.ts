@@ -395,6 +395,7 @@ function normalizeDropzoneResult(value: unknown) {
 
 const attachmentHandler = httpAction(async (ctx, request) => {
   const requestId = newRequestId();
+  const startedAt = Date.now();
   if (request.headers.get("range")) {
     return errorResponse(
       NEXUS_ERROR_CODES.INVALID_REQUEST,
@@ -404,7 +405,18 @@ const attachmentHandler = httpAction(async (ctx, request) => {
   }
 
   const auth = await authenticate(ctx, request);
-  if (!auth.ok) return errorResponse(auth.code, auth.message, requestId);
+  if (!auth.ok) {
+    const { logAttachmentDownloadDiagnostic } = await import("./connectorAttachments");
+    logAttachmentDownloadDiagnostic({
+      requestId,
+      stage: "auth_rejected",
+      connectorId: request.headers.get("x-nexus-connector-id") ?? undefined,
+      errorCode: auth.code,
+      httpStatus: HTTP_STATUS_BY_CODE[auth.code] ?? 400,
+      durationMs: Date.now() - startedAt,
+    });
+    return errorResponse(auth.code, auth.message, requestId);
+  }
 
   const action = str(auth.payload.action);
   if (action !== "download") {
@@ -421,8 +433,11 @@ const attachmentHandler = httpAction(async (ctx, request) => {
     );
   }
 
+  const { attachmentSuccessHeaders, logAttachmentDownloadDiagnostic } = await import(
+    "./connectorAttachments"
+  );
+
   try {
-    const { attachmentSuccessHeaders } = await import("./connectorAttachments");
     const info = await ctx.runQuery(internal.connectorAttachments.authorizeAttachmentDownload, {
       connectorId: auth.connectorId,
       taskId: taskId as import("./_generated/dataModel").Id<"nexusTasks">,
@@ -430,22 +445,57 @@ const attachmentHandler = httpAction(async (ctx, request) => {
       attachmentId,
       now: Date.now(),
     });
+
+    logAttachmentDownloadDiagnostic({
+      requestId,
+      stage: "authorized",
+      taskId,
+      attachmentId,
+      connectorId: auth.connectorId,
+      expectedByteLength: info.byteLength,
+    });
+
     const blob = await ctx.storage.get(info.storageId);
     if (!blob) {
+      logAttachmentDownloadDiagnostic({
+        requestId,
+        stage: "storage_blob_missing",
+        taskId,
+        attachmentId,
+        connectorId: auth.connectorId,
+        errorCode: NEXUS_ERROR_CODES.ATTACHMENT_STORAGE_UNAVAILABLE,
+        httpStatus: HTTP_STATUS_BY_CODE[NEXUS_ERROR_CODES.ATTACHMENT_STORAGE_UNAVAILABLE],
+        expectedByteLength: info.byteLength,
+        durationMs: Date.now() - startedAt,
+      });
       return errorResponse(
         NEXUS_ERROR_CODES.ATTACHMENT_STORAGE_UNAVAILABLE,
         "Stored attachment is unavailable",
         requestId,
       );
     }
+
     const bytes = await blob.arrayBuffer();
     if (bytes.byteLength !== info.byteLength) {
+      logAttachmentDownloadDiagnostic({
+        requestId,
+        stage: "storage_blob_size_mismatch",
+        taskId,
+        attachmentId,
+        connectorId: auth.connectorId,
+        errorCode: NEXUS_ERROR_CODES.ATTACHMENT_METADATA_MISMATCH,
+        httpStatus: HTTP_STATUS_BY_CODE[NEXUS_ERROR_CODES.ATTACHMENT_METADATA_MISMATCH],
+        expectedByteLength: info.byteLength,
+        bytesSent: bytes.byteLength,
+        durationMs: Date.now() - startedAt,
+      });
       return errorResponse(
         NEXUS_ERROR_CODES.ATTACHMENT_METADATA_MISMATCH,
         "Attachment byte length mismatch",
         requestId,
       );
     }
+
     const headers = attachmentSuccessHeaders({
       attachmentId: info.attachmentId,
       documentVersionId: info.documentVersionId,
@@ -455,9 +505,32 @@ const attachmentHandler = httpAction(async (ctx, request) => {
       sha256: info.sha256,
       requestId,
     });
+
+    logAttachmentDownloadDiagnostic({
+      requestId,
+      stage: "response_sent",
+      taskId,
+      attachmentId,
+      connectorId: auth.connectorId,
+      httpStatus: 200,
+      expectedByteLength: info.byteLength,
+      bytesSent: bytes.byteLength,
+      durationMs: Date.now() - startedAt,
+    });
+
     return new Response(bytes, { status: 200, headers });
   } catch (error) {
     const stable = toStableError(error);
+    logAttachmentDownloadDiagnostic({
+      requestId,
+      stage: "handler_error",
+      taskId,
+      attachmentId,
+      connectorId: auth.connectorId,
+      errorCode: stable.code,
+      httpStatus: HTTP_STATUS_BY_CODE[stable.code] ?? 400,
+      durationMs: Date.now() - startedAt,
+    });
     return errorResponse(stable.code, stable.message, requestId);
   }
 });

@@ -1,13 +1,12 @@
 import { v } from "convex/values";
-import { internalMutation, internalQuery } from "./_generated/server";
-import type { Doc, Id } from "./_generated/dataModel";
+import { internalQuery } from "./_generated/server";
+import type { Id } from "./_generated/dataModel";
 import { NEXUS_ERROR_CODES, nexusError } from "./lib/errors";
 import {
   contentDispositionAttachment,
   sanitizeDisplayFilename,
 } from "./lib/libraryFilename";
 import {
-  LIBRARY_ATTACHMENT_DOWNLOAD_PATH,
   LIBRARY_ATTACHMENT_PROTOCOL_VERSION,
   LIBRARY_MAX_UPLOAD_BYTES,
 } from "./lib/libraryDropzoneConfig";
@@ -16,6 +15,22 @@ import type { TaskStatus } from "./lib/taskStatus";
 
 const ACTIVE_DOWNLOAD_STATUSES: readonly TaskStatus[] = ["claimed", "running", "cancel_requested"];
 
+export type AttachmentDownloadAuthResult = {
+  storageId: Id<"_storage">;
+  attachmentId: string;
+  documentVersionId: Id<"nexusLibraryDocumentVersions">;
+  contentType: string;
+  displayFilename: string;
+  byteLength: number;
+  sha256: string;
+  ownerClerkUserId: string;
+};
+
+/**
+ * Lease/task/attachment binding checks only — no Convex storage reads.
+ * Storage metadata and blob retrieval run in the HTTP action isolate where
+ * storage I/O is authoritative (see `convex/http.ts` attachment handler).
+ */
 export const authorizeAttachmentDownload = internalQuery({
   args: {
     connectorId: v.string(),
@@ -24,7 +39,7 @@ export const authorizeAttachmentDownload = internalQuery({
     attachmentId: v.string(),
     now: v.number(),
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx, args): Promise<AttachmentDownloadAuthResult> => {
     await requireActiveConnector(ctx, args.connectorId);
     const task = await ctx.db.get(args.taskId);
     if (!task) nexusError(NEXUS_ERROR_CODES.TASK_NOT_FOUND, "Task not found");
@@ -66,14 +81,6 @@ export const authorizeAttachmentDownload = internalQuery({
       nexusError(NEXUS_ERROR_CODES.ATTACHMENT_TOO_LARGE, "Attachment exceeds the maximum size");
     }
 
-    const metadata = await ctx.storage.getMetadata(attachment.storageId);
-    if (!metadata) {
-      nexusError(NEXUS_ERROR_CODES.ATTACHMENT_STORAGE_UNAVAILABLE, "Stored attachment is unavailable");
-    }
-    if (metadata.size !== attachment.byteLength) {
-      nexusError(NEXUS_ERROR_CODES.ATTACHMENT_METADATA_MISMATCH, "Attachment metadata mismatch");
-    }
-
     return {
       storageId: attachment.storageId,
       attachmentId: attachment.attachmentId,
@@ -82,11 +89,32 @@ export const authorizeAttachmentDownload = internalQuery({
       displayFilename: attachment.displayFilename,
       byteLength: attachment.byteLength,
       sha256: attachment.sha256,
-      downloadPath: LIBRARY_ATTACHMENT_DOWNLOAD_PATH,
-      protocolVersion: LIBRARY_ATTACHMENT_PROTOCOL_VERSION,
+      ownerClerkUserId: attachment.ownerClerkUserId,
     };
   },
 });
+
+/** Privacy-safe attachment route diagnostics (Convex log stream only). */
+export function logAttachmentDownloadDiagnostic(event: {
+  requestId: string;
+  stage: string;
+  taskId?: string;
+  attachmentId?: string;
+  connectorId?: string;
+  httpStatus?: number;
+  errorCode?: string;
+  expectedByteLength?: number;
+  storageMetadataSize?: number;
+  bytesSent?: number;
+  durationMs?: number;
+}): void {
+  console.log(
+    JSON.stringify({
+      kind: "nexus_attachment_download",
+      ...event,
+    }),
+  );
+}
 
 export function attachmentSuccessHeaders(
   info: {
