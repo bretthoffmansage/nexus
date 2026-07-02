@@ -1,12 +1,13 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
-import { CALENDAR_SCHEDULE, isAllowedScheduledToolId } from "./lib/calendarScheduleConfig";
+import { CALENDAR_SCHEDULE } from "./lib/calendarScheduleConfig";
 import {
   CALENDAR_SCHEDULED_TOOLS,
   buildCalendarDeepResearchRequestId,
   calendarScheduledToolUnavailableReason,
   getCalendarScheduledTool,
   isCalendarScheduledToolAvailable,
+  isCalendarScheduledToolId,
 } from "./lib/calendarScheduledTools";
 import { validateComposedDeepResearchRequest } from "./lib/deepResearchRequestCompose";
 import {
@@ -103,7 +104,7 @@ async function validateScheduleInputAsync(
   if (!title) {
     nexusError(NEXUS_ERROR_CODES.INVALID_INPUT, "Event title is required");
   }
-  if (!isAllowedScheduledToolId(args.requestedToolId)) {
+  if (!isCalendarScheduledToolId(args.requestedToolId)) {
     nexusError(NEXUS_ERROR_CODES.INVALID_TOOL, "Tool is not available for scheduled tasks");
   }
   const tool = getCalendarScheduledTool(args.requestedToolId);

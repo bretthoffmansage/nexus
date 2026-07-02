@@ -1,6 +1,5 @@
 import type { Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
-import { scheduledEventIdempotencyKey } from "./calendarScheduleConfig";
 import {
   buildDeepResearchTaskMetadata,
   DEEP_RESEARCH_TASK_KIND,
@@ -180,7 +179,7 @@ export function buildCalendarDeepResearchRequestId(
 export function buildCalendarDeepResearchIdempotencyKey(
   scheduledEventId: Id<"nexusScheduledEvents">,
 ): string {
-  return scheduledEventIdempotencyKey(scheduledEventId);
+  return `schedule:${scheduledEventId}`;
 }
 
 /** Claudia contract metadata for a Calendar-dispatched Deep Research task. */

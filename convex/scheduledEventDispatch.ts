@@ -4,7 +4,6 @@ import type { Doc, Id } from "./_generated/dataModel";
 import { internalMutation } from "./_generated/server";
 import {
   CALENDAR_SCHEDULE,
-  isAllowedScheduledToolId,
   scheduledEventIdempotencyKey,
 } from "./lib/calendarScheduleConfig";
 import {
@@ -14,6 +13,7 @@ import {
   findActiveSingleFlightTask,
   getCalendarScheduledTool,
   isCalendarScheduledToolAvailable,
+  isCalendarScheduledToolId,
   DEEP_RESEARCH_TASK_KIND,
   MEMBERSHIP_FULL_SYNC_TASK_KIND,
   MEMBERSHIP_FULL_SYNC_WAIT_MESSAGE,
@@ -98,7 +98,7 @@ async function dispatchOneEvent(
   if (event.scheduledForUtc > now) return "skipped";
   if (!["scheduled", "due"].includes(event.scheduleStatus)) return "skipped";
   if (event.dispatchState === "dispatched") return "skipped";
-  if (!isAllowedScheduledToolId(event.requestedToolId)) return "failed";
+  if (!isCalendarScheduledToolId(event.requestedToolId)) return "failed";
 
   const toolDef = getCalendarScheduledTool(event.requestedToolId);
   if (!toolDef) return "failed";
