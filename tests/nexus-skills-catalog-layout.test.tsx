@@ -70,28 +70,34 @@ describe("Nexus Skills catalog row layout", () => {
     }
   });
 
-  it("places availability badges in card footers, not beside titles", () => {
+  it("aligns availability badges with the final input value row", () => {
     const { container } = render(<SkillsWorkspace />);
     const cards = container.querySelectorAll(".skills-catalog-card");
     expect(cards.length).toBeGreaterThan(0);
     for (const card of cards) {
       expect(card.querySelector(".skills-catalog-card-header")).toBeNull();
-      const footer = card.querySelector(".skills-catalog-card-footer");
-      expect(footer).not.toBeNull();
-      expect(within(footer as HTMLElement).getByText(/Checking availability|Connector required/i)).toBeTruthy();
+      expect(card.querySelector(".skills-catalog-card-footer")).toBeNull();
+      const inputRow = card.querySelector(".skills-catalog-card-input-row");
+      expect(inputRow).not.toBeNull();
+      expect(inputRow?.querySelector(".skills-catalog-card-input-value")).not.toBeNull();
+      expect(
+        within(inputRow as HTMLElement).getByText(/Checking availability|Connector required/i),
+      ).toBeTruthy();
     }
   });
 
-  it("uses row stack with two-column card grids in CSS", () => {
+  it("uses compact input-row status layout in CSS", () => {
     const css = readFileSync(path.join(ROOT, "styles/legacy-port.css"), "utf8");
     expect(css).toContain(".skills-catalog-rows");
     expect(css).toMatch(/\.skills-catalog-rows[\s\S]*flex-direction:\s*column/);
     expect(css).toContain(".skills-catalog-row");
     expect(css).toMatch(/\.skills-catalog-grid[\s\S]*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)/);
     expect(css).toMatch(/@media \(max-width: 640px\)[\s\S]*\.skills-catalog-grid[\s\S]*grid-template-columns:\s*1fr/);
-    expect(css).toContain(".skills-catalog-card-footer");
-    expect(css).toMatch(/\.skills-catalog-card-footer[\s\S]*margin-top:\s*auto/);
-    expect(css).toMatch(/justify-content:\s*flex-end/);
+    expect(css).toContain(".skills-catalog-card-input-row");
+    expect(css).toMatch(/\.skills-catalog-card-input-row[\s\S]*display:\s*flex/);
+    expect(css).toMatch(/\.skills-catalog-card-input-row \.skills-catalog-status[\s\S]*flex:\s*0 0 auto/);
+    expect(css).not.toContain(".skills-catalog-card-footer");
+    expect(css).not.toContain("min-height: 11.5rem");
     expect(css).not.toContain(".skills-catalog-card-header");
     expect(css).not.toContain(".skills-catalog-section--span-wide");
   });

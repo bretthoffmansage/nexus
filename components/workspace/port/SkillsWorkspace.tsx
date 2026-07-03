@@ -84,29 +84,31 @@ function SkillsToolCard({
             <dt>Surfaces</dt>
             <dd>{tool.accessModes.map(accessModeLabel).join(" · ")}</dd>
           </div>
-          <div>
+          <div className="skills-catalog-card-meta-item skills-catalog-card-meta-item--input">
             <dt>Input</dt>
-            <dd>
-              {tool.inputType === "no_input_action"
-                ? "No-input scheduled action"
-                : tool.inputType === "library_upload"
-                  ? "Library document upload"
-                  : "Text request"}
+            <dd className="skills-catalog-card-input-row">
+              <span className="skills-catalog-card-input-value">
+                {tool.inputType === "no_input_action"
+                  ? "No-input scheduled action"
+                  : tool.inputType === "library_upload"
+                    ? "Library document upload"
+                    : "Text request"}
+              </span>
+              <span
+                className={
+                  availabilityPending
+                    ? "skills-catalog-status skills-catalog-status--connector_required"
+                    : availabilityClass(tool.currentAvailability)
+                }
+              >
+                {availabilityPending
+                  ? SKILLS_CATALOG_PENDING_AVAILABILITY_LABEL
+                  : tool.availabilityLabel}
+              </span>
             </dd>
           </div>
         </dl>
       </div>
-      <footer className="skills-catalog-card-footer">
-        <span
-          className={
-            availabilityPending
-              ? "skills-catalog-status skills-catalog-status--connector_required"
-              : availabilityClass(tool.currentAvailability)
-          }
-        >
-          {availabilityPending ? SKILLS_CATALOG_PENDING_AVAILABILITY_LABEL : tool.availabilityLabel}
-        </span>
-      </footer>
     </article>
   );
 }
