@@ -116,6 +116,10 @@ export async function applyDropzoneTerminalResult(
   const status = mapDispositionToLibraryStatus(result.processingDisposition);
   await ctx.db.patch(version._id, {
     processingStatus: status,
+    // The in-flight progress line is superseded by the terminal outcome;
+    // leaving it set keeps the card painted at its last stage (e.g.
+    // "Analyzing document") even though the run already ended.
+    progressMessage: undefined,
     terminalSummary: clampLength(result.userSafeMessage, P5_LIMITS.maxResultSummaryLength),
     notesCreatedCount: result.notesCreated,
     vaultLocatorCount: result.vaultLocatorCount,

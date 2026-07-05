@@ -340,6 +340,9 @@ export function DocumentsWorkspace() {
                 {v.progressMessage && <p className="doclib-version-progress">{v.progressMessage}</p>}
                 {v.terminalSummary && <p className="doclib-version-summary">{v.terminalSummary}</p>}
                 {v.unsupportedReason && <p className="doclib-version-warn">{v.unsupportedReason}</p>}
+                {v.terminalWarnings && v.terminalWarnings.length > 0 && (
+                  <p className="doclib-version-warn">{v.terminalWarnings.join(" · ")}</p>
+                )}
                 {(v.notesCreatedCount !== undefined || v.vaultLocatorCount !== undefined) && (
                   <p className="doclib-version-meta">
                     Notes: {v.notesCreatedCount ?? 0} · Locators: {v.vaultLocatorCount ?? 0}
@@ -366,16 +369,17 @@ export function DocumentsWorkspace() {
                       Processing
                     </button>
                   )}
-                  {v.processingStatus === "failed" && v.terminalRetryable && (
-                    <button
-                      type="button"
-                      className="legacy-port-btn"
-                      disabled={processBusy === v.documentVersionId}
-                      onClick={() => void onProcess(v.documentVersionId)}
-                    >
-                      Retry
-                    </button>
-                  )}
+                  {(v.processingStatus === "failed" || v.processingStatus === "needs_review") &&
+                    v.terminalRetryable && (
+                      <button
+                        type="button"
+                        className="legacy-port-btn"
+                        disabled={processBusy === v.documentVersionId}
+                        onClick={() => void onProcess(v.documentVersionId)}
+                      >
+                        Retry
+                      </button>
+                    )}
                 </div>
               </article>
             ))}

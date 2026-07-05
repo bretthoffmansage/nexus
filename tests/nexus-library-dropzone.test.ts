@@ -263,3 +263,185 @@ describe("Nexus Library Dropzone upload and attachment protocol", () => {
     expect(counter?.value).toBeGreaterThan(0);
   });
 });
+
+describe("Nexus Library status projection lifecycle", () => {
+  async function runToProcessing(t: P5Test) {
+    await seedApprovedReader(t, IDENTITY_A);
+    await seedConnector(t, { allowedToolIds: [LIBRARY_DROPZONE_TOOL_ID] });
+    const uploaded = await seedLibraryVersion(
+      t,
+      IDENTITY_A,
+      "lifecycle.md",
+      new TextEncoder().encode("# lifecycle"),
+      "text/markdown",
+    );
+    const proc = await processVersion(t, IDENTITY_A, uploaded.documentVersionId);
+
+    const queued = await t.run(async (ctx) => ctx.db.get(uploaded.documentVersionId));
+    expect(queued?.processingStatus).toBe("queued");
+    expect(queued?.progressMessage).toBe("Queued for Dropzone processing.");
+
+    const claim = await t.mutation(internal.connectorTasks.claimNextTask, {
+      connectorId: TEST_CONNECTOR_ID,
+    });
+    const leaseId = claim.task!.leaseId!;
+    await t.mutation(internal.connectorTasks.startTask, {
+      connectorId: TEST_CONNECTOR_ID,
+      taskId: proc.taskId,
+      leaseId,
+    });
+    const running = await t.run(async (ctx) => ctx.db.get(uploaded.documentVersionId));
+    expect(running?.processingStatus).toBe("processing");
+    expect(running?.progressMessage).toBe("Processing document.");
+
+    await t.mutation(internal.connectorTasks.appendConnectorProgress, {
+      connectorId: TEST_CONNECTOR_ID,
+      taskId: proc.taskId,
+      leaseId,
+      stage: "analyzing",
+      message: "Analyzing document",
+    });
+    const analyzing = await t.run(async (ctx) => ctx.db.get(uploaded.documentVersionId));
+    expect(analyzing?.progressMessage).toBe("Analyzing document");
+    expect(analyzing?.processingStatus).toBe("processing");
+
+    return { uploaded, proc, leaseId };
+  }
+
+  it("advances progress lines and clears them when processing succeeds", async () => {
+    const t = p5Test();
+    const { uploaded, proc, leaseId } = await runToProcessing(t);
+
+    await t.mutation(internal.connectorTasks.completeTask, {
+      connectorId: TEST_CONNECTOR_ID,
+      taskId: proc.taskId,
+      leaseId,
+      answerText: "Document processed into the vault.",
+      dropzoneResult: {
+        processingDisposition: "processed",
+        userSafeMessage: "Document processed into the vault.",
+        notesCreated: 3,
+        vaultLocatorCount: 3,
+        warnings: ["placement_verified"],
+      },
+    });
+
+    const done = await t.run(async (ctx) => ctx.db.get(uploaded.documentVersionId));
+    expect(done?.processingStatus).toBe("processed");
+    expect(done?.progressMessage).toBeUndefined();
+    expect(done?.terminalSummary).toBe("Document processed into the vault.");
+    expect(done?.terminalDisposition).toBe("processed");
+    expect(done?.notesCreatedCount).toBe(3);
+    expect(done?.vaultLocatorCount).toBe(3);
+  });
+
+  it("projects a blocked run as needs_review with the cause, not a stale progress line", async () => {
+    const t = p5Test();
+    const { uploaded, proc, leaseId } = await runToProcessing(t);
+
+    await t.mutation(internal.connectorTasks.completeTask, {
+      connectorId: TEST_CONNECTOR_ID,
+      taskId: proc.taskId,
+      leaseId,
+      answerText: "Document processing stopped before vault placement.",
+      dropzoneResult: {
+        processingDisposition: "blocked",
+        userSafeMessage: "Document processing stopped before vault placement.",
+        notesCreated: 0,
+        vaultLocatorCount: 0,
+        warnings: ["dropzone_root_refused_as_execution_root"],
+        retryable: true,
+      },
+    });
+
+    const done = await t.run(async (ctx) => ctx.db.get(uploaded.documentVersionId));
+    expect(done?.processingStatus).toBe("needs_review");
+    expect(done?.progressMessage).toBeUndefined();
+    expect(done?.terminalSummary).toBe(
+      "Document processing stopped before vault placement.",
+    );
+    expect(done?.terminalWarnings).toContain("dropzone_root_refused_as_execution_root");
+    expect(done?.terminalRetryable).toBe(true);
+    expect(done?.notesCreatedCount).toBe(0);
+
+    const rows = await t
+      .withIdentity(IDENTITY_A)
+      .query(api.libraryDocuments.listMyLibraryVersions, {});
+    const row = rows.find((r) => r.documentVersionId === uploaded.documentVersionId);
+    expect(row?.terminalWarnings).toContain("dropzone_root_refused_as_execution_root");
+    expect(row?.progressMessage).toBeUndefined();
+  });
+});
+
+describe("Nexus Library retry of blocked runs", () => {
+  it("allows reprocessing a needs_review version whose stop was retryable", async () => {
+    const t = p5Test();
+    await seedApprovedReader(t, IDENTITY_A);
+    await seedConnector(t, { allowedToolIds: [LIBRARY_DROPZONE_TOOL_ID] });
+    const uploaded = await seedLibraryVersion(
+      t,
+      IDENTITY_A,
+      "retry.md",
+      new TextEncoder().encode("# retry me"),
+      "text/markdown",
+    );
+    const proc = await processVersion(t, IDENTITY_A, uploaded.documentVersionId);
+    const claim = await t.mutation(internal.connectorTasks.claimNextTask, {
+      connectorId: TEST_CONNECTOR_ID,
+    });
+    const leaseId = claim.task!.leaseId!;
+    await t.mutation(internal.connectorTasks.startTask, {
+      connectorId: TEST_CONNECTOR_ID,
+      taskId: proc.taskId,
+      leaseId,
+    });
+    await t.mutation(internal.connectorTasks.completeTask, {
+      connectorId: TEST_CONNECTOR_ID,
+      taskId: proc.taskId,
+      leaseId,
+      answerText: "Document processing stopped before vault placement.",
+      dropzoneResult: {
+        processingDisposition: "blocked",
+        userSafeMessage: "Document processing stopped before vault placement.",
+        retryable: true,
+      },
+    });
+
+    const blocked = await t.run(async (ctx) => ctx.db.get(uploaded.documentVersionId));
+    expect(blocked?.processingStatus).toBe("needs_review");
+    expect(blocked?.terminalRetryable).toBe(true);
+
+    const retry = await processVersion(t, IDENTITY_A, uploaded.documentVersionId);
+    expect(retry.taskId).toBeDefined();
+    const requeued = await t.run(async (ctx) => ctx.db.get(uploaded.documentVersionId));
+    expect(requeued?.processingStatus).toBe("queued");
+  });
+
+  it("still rejects reprocessing for processed and non-retryable needs_review versions", async () => {
+    const t = p5Test();
+    await seedApprovedReader(t, IDENTITY_A);
+    const uploaded = await seedLibraryVersion(
+      t,
+      IDENTITY_A,
+      "locked.md",
+      new TextEncoder().encode("# locked"),
+      "text/markdown",
+    );
+    await t.run(async (ctx) => {
+      await ctx.db.patch(uploaded.documentVersionId, {
+        processingStatus: "needs_review",
+        terminalRetryable: false,
+      });
+    });
+    await expect(
+      processVersion(t, IDENTITY_A, uploaded.documentVersionId),
+    ).rejects.toMatchObject({ data: { code: "library_process_not_allowed" } });
+
+    await t.run(async (ctx) => {
+      await ctx.db.patch(uploaded.documentVersionId, { processingStatus: "processed" });
+    });
+    await expect(
+      processVersion(t, IDENTITY_A, uploaded.documentVersionId),
+    ).rejects.toMatchObject({ data: { code: "library_process_not_allowed" } });
+  });
+});

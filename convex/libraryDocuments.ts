@@ -215,6 +215,7 @@ function projectVersionForUi(version: Doc<"nexusLibraryDocumentVersions">) {
     vaultLocatorCount: version.vaultLocatorCount,
     unsupportedReason: version.unsupportedReason,
     terminalRetryable: version.terminalRetryable,
+    terminalWarnings: version.terminalWarnings,
   };
 }
 
@@ -248,7 +249,13 @@ export const processMyDocumentVersion = mutation({
     if (version.processingStatus === "unsupported") {
       nexusError(NEXUS_ERROR_CODES.LIBRARY_UNSUPPORTED_FORMAT, "Format is not supported");
     }
-    if (version.processingStatus === "processed" || version.processingStatus === "needs_review") {
+    // needs_review + terminalRetryable is a retryable stop (disposition
+    // "blocked"), not a human-review outcome; without this carve-out those
+    // versions are unreachable dead ends in the UI.
+    if (
+      version.processingStatus === "processed" ||
+      (version.processingStatus === "needs_review" && !version.terminalRetryable)
+    ) {
       nexusError(NEXUS_ERROR_CODES.LIBRARY_PROCESS_NOT_ALLOWED, "Version is already processed");
     }
     if (version.processingStatus === "failed" && !version.terminalRetryable) {
