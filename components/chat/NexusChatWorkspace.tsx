@@ -80,42 +80,98 @@ export function NexusChatWorkspace() {
   const baselineConversationRef = useRef<string | null>(null);
   const baselineSeededRef = useRef(false);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const userPinnedRef = useRef(false);
+  // When "pinned" we keep the newest content in view; any user scroll-up releases it
+  // so the transcript can be read freely — including mid typing animation.
+  const pinnedRef = useRef(true);
+  // Guards our own programmatic scrolls so they are never read as user intent.
+  const programmaticRef = useRef(false);
 
   if (activeConversationId !== baselineConversationRef.current) {
     baselineConversationRef.current = activeConversationId;
     baselineIdsRef.current = new Set();
     baselineSeededRef.current = false;
-    userPinnedRef.current = false;
   }
+
+  // Re-pin on conversation change so opening a thread lands at its latest message.
+  useEffect(() => {
+    pinnedRef.current = true;
+  }, [activeConversationId]);
 
   if (activeConversationId && transcript?.messages && !baselineSeededRef.current) {
     baselineIdsRef.current = new Set(transcript.messages.map((m) => String(m.id)));
     baselineSeededRef.current = true;
   }
 
-  const followGrowth = useCallback(() => {
+  const scrollToBottom = useCallback(() => {
     const el = scrollRef.current;
-    if (!el || userPinnedRef.current) return;
-    const distance = el.scrollHeight - el.scrollTop - el.clientHeight;
-    if (distance < 120) {
-      el.scrollTop = el.scrollHeight;
-    }
+    if (!el) return;
+    const target = el.scrollHeight - el.clientHeight;
+    // Already at the bottom — skip, so we never leave the programmatic guard stuck
+    // (a no-op scrollTop assignment fires no scroll event to clear it).
+    if (target - el.scrollTop < 1) return;
+    programmaticRef.current = true;
+    el.scrollTop = target;
   }, []);
 
+  // Follow growing content (new messages, typing animation, sources) only while the
+  // user is pinned to the bottom. Once they scroll up, this becomes a no-op.
+  const followGrowth = useCallback(() => {
+    if (pinnedRef.current) scrollToBottom();
+  }, [scrollToBottom]);
+
+  // Keep following as the transcript and sources grow, but never fight the user:
+  // any upward scroll (wheel, keys, or dragging the bar up) releases the pin, and it
+  // re-engages only when they return to the bottom on their own.
   useEffect(() => {
     const el = scrollRef.current;
     if (!el) return;
+    let lastTop = el.scrollTop;
+
     const onScroll = () => {
-      const distance = el.scrollHeight - el.scrollTop - el.clientHeight;
-      userPinnedRef.current = distance > 160;
+      if (programmaticRef.current) {
+        // This event is the echo of our own scroll — record position, ignore intent.
+        programmaticRef.current = false;
+        lastTop = el.scrollTop;
+        return;
+      }
+      const top = el.scrollTop;
+      const distance = el.scrollHeight - top - el.clientHeight;
+      if (top < lastTop - 1) {
+        pinnedRef.current = false; // user scrolled up → stop following
+      } else if (distance <= 32) {
+        pinnedRef.current = true; // user returned to the bottom → follow again
+      }
+      lastTop = top;
     };
+    const onWheel = (event: WheelEvent) => {
+      if (event.deltaY < 0) pinnedRef.current = false;
+    };
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "ArrowUp" || event.key === "PageUp" || event.key === "Home") {
+        pinnedRef.current = false;
+      }
+    };
+
     el.addEventListener("scroll", onScroll, { passive: true });
-    return () => el.removeEventListener("scroll", onScroll);
-  }, [activeConversationId]);
+    el.addEventListener("wheel", onWheel, { passive: true });
+    el.addEventListener("keydown", onKeyDown);
+    return () => {
+      el.removeEventListener("scroll", onScroll);
+      el.removeEventListener("wheel", onWheel);
+      el.removeEventListener("keydown", onKeyDown);
+    };
+  }, []);
+
+  // Snap to the latest content when the thread first loads and whenever new
+  // messages/sources/status arrive — but only if the user is still pinned to the bottom.
+  useEffect(() => {
+    followGrowth();
+  }, [transcript?.messages, sourceRows, latestTask?.status, followGrowth]);
 
   async function handleSubmit(text: string, requestedToolId: P5ToolId) {
     if (!canSubmit || !ready) return;
+    // Sending a message re-pins to the bottom so the new turn scrolls into view.
+    pinnedRef.current = true;
     setPending(true);
     setSubmitError(null);
     try {

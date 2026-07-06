@@ -5,6 +5,10 @@ type SourceCardProps = {
 };
 
 export function SourceCard({ source }: SourceCardProps) {
+  // The provenance label is intentionally not rendered — it typically duplicates
+  // the raw document id already shown in Location, adding a redundant line.
+  const hasFooter = Boolean(source.toolId || source.retrievedAt || source.href);
+
   return (
     <article className="nexus-source-card">
       <header className="nexus-source-card-head">
@@ -19,16 +23,17 @@ export function SourceCard({ source }: SourceCardProps) {
         </p>
       ) : null}
       {source.excerpt ? <p className="nexus-source-excerpt">{source.excerpt}</p> : null}
-      <footer className="nexus-source-footer">
-        {source.toolId ? <span>Tool: {source.toolId}</span> : null}
-        {source.retrievedAt ? <span>Retrieved: {source.retrievedAt}</span> : null}
-        {source.provenanceLabel ? <span>{source.provenanceLabel}</span> : null}
-        {source.href ? (
-          <a href={source.href} className="nexus-source-link">
-            Reference
-          </a>
-        ) : null}
-      </footer>
+      {hasFooter ? (
+        <footer className="nexus-source-footer">
+          {source.toolId ? <span>Tool: {source.toolId}</span> : null}
+          {source.retrievedAt ? <span>Retrieved: {source.retrievedAt}</span> : null}
+          {source.href ? (
+            <a href={source.href} className="nexus-source-link">
+              Reference
+            </a>
+          ) : null}
+        </footer>
+      ) : null}
     </article>
   );
 }

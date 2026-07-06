@@ -3,6 +3,7 @@
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import Link from "next/link";
+import { useNexusAuthReadiness } from "@/lib/nexus/useNexusAuthReadiness";
 
 function UserRow({
   user,
@@ -90,9 +91,23 @@ function UserRow({
 }
 
 export function AccessAdminPanel() {
-  const pending = useQuery(api.admin.listUsersByStatus, { status: "pending" });
-  const active = useQuery(api.admin.listUsersByStatus, { status: "active" });
-  const suspended = useQuery(api.admin.listUsersByStatus, { status: "suspended" });
+  // Gate these owner-scoped admin queries on Convex auth readiness. On a hard
+  // refresh, Clerk reports "signed in" before the Convex client has exchanged
+  // its session token; issuing the role-protected query in that gap triggers an
+  // `unauthenticated` rejection that would otherwise crash the whole page.
+  const { readyForPrivateQueries: ready } = useNexusAuthReadiness();
+  const pending = useQuery(
+    api.admin.listUsersByStatus,
+    ready ? { status: "pending" } : "skip",
+  );
+  const active = useQuery(
+    api.admin.listUsersByStatus,
+    ready ? { status: "active" } : "skip",
+  );
+  const suspended = useQuery(
+    api.admin.listUsersByStatus,
+    ready ? { status: "suspended" } : "skip",
+  );
 
   const approveUser = useMutation(api.admin.approveUser);
   const suspendUser = useMutation(api.admin.suspendUser);

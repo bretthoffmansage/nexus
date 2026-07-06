@@ -21,7 +21,8 @@ describe("SourceCard", () => {
 
     expect(screen.getByText("Knowledge base article")).toBeInTheDocument();
     expect(screen.getByText(/vault\.agentic_retrieval/)).toBeInTheDocument();
-    expect(screen.getByText(/Retrieved through Claudia/i)).toBeInTheDocument();
+    // Provenance label is no longer surfaced — it duplicated the doc id in Location.
+    expect(screen.queryByText(/Retrieved through Claudia/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/\/Users\//)).not.toBeInTheDocument();
   });
 });
