@@ -134,21 +134,29 @@ describe("Deep Research layout — right-panel scroll containment", () => {
 });
 
 describe("Deep Research layout — CSS scroll invariants", () => {
-  it("binds the workspace section to the available viewport height", () => {
-    expect(CSS).toMatch(/\.legacy-port-research\s*\{[^}]*flex:\s*1/);
-    expect(CSS).toMatch(/\.legacy-port-research\s*\{[^}]*min-height:\s*0/);
+  const researchRootRule =
+    CSS.match(/\.legacy-port-research\.legacy-port-workspace\s*\{[\s\S]*?\n\}/)?.[0] ?? "";
+
+  it("binds the page root to the available AppShell viewport height", () => {
+    expect(researchRootRule).toMatch(/flex:\s*1/);
+    expect(researchRootRule).toMatch(/min-height:\s*0/);
+    expect(researchRootRule).toMatch(/height:\s*100%/);
+    expect(researchRootRule).toMatch(/display:\s*flex/);
+    expect(researchRootRule).toMatch(/flex-direction:\s*column/);
+    expect(researchRootRule).toMatch(/overflow:\s*hidden/);
+  });
+
+  it("hands height from nexus-tool-page to the research workspace root", () => {
+    expect(researchRootRule).toMatch(/height:\s*100%/);
+    expect(CSS).toMatch(/\.nexus-tool-page\s*\{[\s\S]*?overflow:\s*hidden/);
   });
 
   it("gives the right research panel an independent desktop scroll", () => {
     const desktop = CSS.match(/@media\s*\(min-width:\s*901px\)\s*\{[\s\S]*?\n\}/);
     expect(desktop).not.toBeNull();
     const block = desktop![0];
-    // Outer workspace hands scrolling to the right panel on desktop.
-    expect(block).toMatch(/\.legacy-port-research\s*\{[^}]*overflow:\s*hidden/);
-    // The panel-layout grid row is bounded so the columns can scroll internally.
     expect(block).toMatch(/\.research-panel-layout\s*\{[^}]*min-height:\s*0/);
     expect(block).toMatch(/grid-template-rows:\s*minmax\(0,\s*1fr\)/);
-    // Right panel scrolls; left panel only scrolls as a fallback.
     expect(block).toMatch(/\.research-jobs\s*\{[^}]*overflow-y:\s*auto/);
     expect(block).toMatch(/\.research-settings\s*\{[^}]*overflow-y:\s*auto/);
   });
@@ -162,13 +170,11 @@ describe("Deep Research layout — CSS scroll invariants", () => {
     expect(reportBody![0]).toMatch(/overflow-wrap:\s*anywhere/);
   });
 
-  it("collapses to a single column and does not trap nested scroll on narrow screens", () => {
+  it("collapses to a single column and uses one section scroll on narrow screens", () => {
     const narrow = CSS.match(/@media\s*\(max-width:\s*900px\)\s*\{[\s\S]*?\n\}/);
     expect(narrow).not.toBeNull();
     expect(narrow![0]).toMatch(/\.research-panel-layout/);
     expect(narrow![0]).toMatch(/grid-template-columns:\s*1fr/);
-    // The desktop-only right-panel scroll is scoped to min-width; the narrow
-    // layout falls back to the single bounded workspace scroll on the section.
-    expect(CSS).toMatch(/\.legacy-port-research\s*\{[^}]*overflow-y:\s*auto/);
+    expect(narrow![0]).toMatch(/\.legacy-port-research\.legacy-port-workspace[\s\S]*overflow-y:\s*auto/);
   });
 });

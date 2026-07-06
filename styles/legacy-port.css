@@ -947,23 +947,31 @@
 }
 
 /*
- * Deep Research borrows the Chat viewport pattern: the workspace section fills
- * the bounded main-content height instead of growing the document. On narrow
- * screens the whole section is a single scroll region; the desktop two-pane
- * split (stationary left request panel + independently scrolling right panel)
- * is layered on in the `min-width: 901px` media query below, so mobile is never
- * trapped in nested scroll areas.
+ * Deep Research mirrors the Chat viewport chain: the page root fills the bounded
+ * AppShell main region (flex:1 + min-height:0 + height:100%) instead of growing
+ * with report content. On desktop the header stays natural height and the
+ * two-column grid consumes remaining height; the right panel owns overflow-y:auto.
+ * On narrow screens the whole section becomes one bounded scroll region.
  */
-.legacy-port-research {
+.legacy-port-research.legacy-port-workspace {
   flex: 1;
   min-height: 0;
-  overflow-y: auto;
+  height: 100%;
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 1rem 1.25rem 0;
+  gap: 0.65rem;
+  max-width: none;
 }
 
 .research-panel-layout {
   display: grid;
   grid-template-columns: minmax(240px, 30%) 1fr;
   gap: 0.75rem;
+  min-height: 0;
+  min-width: 0;
 }
 
 .research-settings,
@@ -1630,6 +1638,10 @@
     grid-template-columns: 1fr;
   }
 
+  .legacy-port-research.legacy-port-workspace {
+    overflow-y: auto;
+  }
+
   .cal-day-cell {
     min-height: 3rem;
   }
@@ -1642,11 +1654,6 @@
  * the nested scroll actually engages instead of growing the workspace.
  */
 @media (min-width: 901px) {
-  .legacy-port-research {
-    /* Outer workspace stops scrolling; it hands scrolling to the right panel. */
-    overflow: hidden;
-  }
-
   .legacy-port-research > .legacy-port-head,
   .legacy-port-research > .research-availability-note {
     flex-shrink: 0;
@@ -1655,22 +1662,28 @@
   .research-panel-layout {
     flex: 1;
     min-height: 0;
+    overflow: hidden;
     /* Bind the single grid row to the container height so each column can host
        its own bounded scroll rather than growing past the viewport. */
     grid-template-rows: minmax(0, 1fr);
+    align-content: stretch;
   }
 
   /* Left request panel stays stationary; it scrolls only as a fallback when the
      form genuinely exceeds the available height at a short viewport. */
   .research-settings {
     min-height: 0;
+    max-height: 100%;
     overflow-y: auto;
+    align-self: stretch;
   }
 
   /* Right research panel is the primary scroll region — Current research and
      Recent research remain reachable in one continuous scroll. */
   .research-jobs {
     min-height: 0;
+    max-height: 100%;
     overflow-y: auto;
+    align-self: stretch;
   }
 }
