@@ -295,8 +295,6 @@ export function ResearchWorkspace() {
         </aside>
 
         <div className="research-jobs">
-          <h2 className="research-section-title">Current research</h2>
-
           {detailTask ? (
             <div className="research-request-block">
               <button

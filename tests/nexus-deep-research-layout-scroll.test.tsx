@@ -42,6 +42,19 @@ const LONG_REQUEST = `${"Investigate ".repeat(400)}please.`;
 
 const COMPLETED_TASK_ID = "task_long_report" as never;
 
+function rightPanelFirstBorderedChild(container: ParentNode): Element | null {
+  const jobs = container.querySelector(".research-jobs");
+  if (!jobs) return null;
+  for (const child of jobs.children) {
+    if (child.matches(".research-request-block, .research-request-card, .research-response-panel")) {
+      return child.matches(".research-request-block")
+        ? child.querySelector(".research-request-card")
+        : child;
+    }
+  }
+  return null;
+}
+
 function seedCompletedLongReport() {
   queryResults.set(nexusDeepResearch.listMyDeepResearchTasks, {
     tasks: [
@@ -114,12 +127,29 @@ describe("Deep Research layout — right-panel scroll containment", () => {
     const { container } = render(<ResearchWorkspace />);
 
     const rightPanel = container.querySelector<HTMLElement>(".research-jobs");
-    expect(rightPanel?.textContent).toContain("Current research");
+    expect(rightPanel?.textContent).not.toMatch(/current research/i);
+    expect(rightPanel?.querySelector(".research-section-title")).toBeNull();
     expect(rightPanel?.querySelector(".research-current-panel")).not.toBeNull();
     // Recent Research moved into the History drawer; the inline list is gone
     // from the right result panel (no duplicate list, scroll containment intact).
     expect(rightPanel?.textContent).not.toContain("Recent research");
     expect(rightPanel?.querySelector(".research-job-list")).toBeNull();
+  });
+
+  it("starts the right column with the request card aligned to the left form card", () => {
+    seedCompletedLongReport();
+    const { container } = render(<ResearchWorkspace />);
+
+    const grid = container.querySelector<HTMLElement>(".research-panel-layout");
+    const leftCard = container.querySelector<HTMLElement>(".research-settings");
+    const requestCard = container.querySelector<HTMLElement>(".research-request-card");
+    expect(grid).not.toBeNull();
+    expect(leftCard).not.toBeNull();
+    expect(requestCard).not.toBeNull();
+    expect(container.querySelector(".research-section-title")).toBeNull();
+    // Request card is the first visible bordered element in the right column.
+    expect(rightPanelFirstBorderedChild(container)).toBe(requestCard);
+    expect(leftCard?.offsetTop).toBe(requestCard?.offsetTop);
   });
 
   it("keeps the report out of the stationary left request panel", () => {
@@ -182,5 +212,14 @@ describe("Deep Research layout — CSS scroll invariants", () => {
     expect(narrow![0]).toMatch(/\.research-panel-layout/);
     expect(narrow![0]).toMatch(/grid-template-columns:\s*1fr/);
     expect(narrow![0]).toMatch(/\.legacy-port-research\.legacy-port-workspace[\s\S]*overflow-y:\s*auto/);
+  });
+
+  it("adds a subtle equal bottom gap inside the bounded workspace", () => {
+    expect(researchRootRule).toMatch(/padding:[^;]*0\.5rem/);
+    const desktop = CSS.match(/@media\s*\(min-width:\s*901px\)\s*\{[\s\S]*?\n\}/);
+    expect(desktop).not.toBeNull();
+    expect(desktop![0]).toMatch(/\.research-panel-layout\s*\{[^}]*align-content:\s*stretch/);
+    expect(desktop![0]).toMatch(/\.research-settings\s*\{[^}]*align-self:\s*stretch/);
+    expect(desktop![0]).toMatch(/\.research-jobs\s*\{[^}]*align-self:\s*stretch/);
   });
 });
