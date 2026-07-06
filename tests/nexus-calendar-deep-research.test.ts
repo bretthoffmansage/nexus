@@ -185,6 +185,27 @@ describe("Calendar Deep Research scheduling", () => {
       expect(validation.ok).toBe(true);
     });
 
+    it("stores raw request and rules at creation without pre-composing taskRequest", async () => {
+      const t = p5Test();
+      await seedApprovedReader(t, IDENTITY_A);
+      await seedConnector(t, {
+        allowedToolIds: [...P5_SUPPORTED_TOOL_IDS, DEEP_RESEARCH_TOOL_ID],
+      });
+      const { eventId } = await t.withIdentity(IDENTITY_A).mutation(api.scheduledEvents.createMyScheduledEvent, {
+        title: "Research",
+        taskRequest: "Primary question",
+        deepResearchReportRules: "No employee names",
+        localScheduledDate: "2031-05-04",
+        localScheduledTime: "09:00",
+        timezone: "UTC",
+        requestedToolId: DEEP_RESEARCH_TOOL_ID,
+      });
+      const event = await t.run(async (ctx) => ctx.db.get(eventId));
+      expect(event?.taskRequest).toBe("Primary question");
+      expect(event?.taskRequest).not.toContain("RULES FOR REPORT:");
+      expect(event?.deepResearchReportRules).toBe("No employee names");
+    });
+
     it("rejects scheduling when Connector capability is absent", async () => {
       const t = p5Test();
       await seedApprovedReader(t, IDENTITY_A);
@@ -271,6 +292,7 @@ describe("Calendar Deep Research scheduling", () => {
       expect(task.requestText).toBe(
         composeDeepResearchRequestText("What changed in vault policy?", "No employee names"),
       );
+      expect(task.requestText.split("RULES FOR REPORT:").length - 1).toBe(1);
       expect(task.taskMetadata?.kind).toBe(DEEP_RESEARCH_TASK_KIND);
       if (task.taskMetadata?.kind === DEEP_RESEARCH_TASK_KIND) {
         expect(task.taskMetadata.scheduledEventId).toBeUndefined();

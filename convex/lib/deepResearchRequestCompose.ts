@@ -13,30 +13,47 @@ export const DEEP_RESEARCH_RULES_HEADING = "RULES FOR REPORT:";
  */
 export const DEEP_RESEARCH_RULES_MARKER = `${DEEP_RESEARCH_RULES_DIVIDER}\n${DEEP_RESEARCH_RULES_HEADING}`;
 
+/** Canonical trailing block: `\n-------\nRULES FOR REPORT:\n<rules>` at end of request. */
+const CANONICAL_TRAILING_RULES_BLOCK =
+  /\n-------\nRULES FOR REPORT:\n[\s\S]*$/;
+
+/** Normalize user input to `\n` line endings before compose / idempotency checks. */
+export function normalizeDeepResearchRequestLineEndings(text: string): string {
+  return text.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+}
+
+/**
+ * True when the request already ends with the governed Report-rules block.
+ * Only the canonical trailing structure counts — incidental `RULES FOR REPORT:`
+ * phrases earlier in the body are ignored.
+ */
+export function hasCanonicalTrailingReportRulesBlock(researchRequest: string): boolean {
+  const normalized = normalizeDeepResearchRequestLineEndings(researchRequest.trim());
+  return CANONICAL_TRAILING_RULES_BLOCK.test(normalized);
+}
+
 /**
  * Compose the final governed `requestText` from the primary research request
  * and optional report rules. Rules are folded into requestText only — never
  * taskMetadata.
  *
- * Idempotent: if `researchRequest` already contains a composed Report-rules
- * block (e.g. a retried/re-submitted request whose stored text is already the
- * composed payload, or Calendar dispatch re-composing a stored request), the
- * rules are NOT appended a second time. This guarantees `RULES FOR REPORT:`
- * appears exactly once in the submitted request.
+ * Idempotent: if `researchRequest` already ends with the canonical Report-rules
+ * block (e.g. retry re-submitting stored requestText, Calendar re-dispatch, or
+ * copy/paste of a prior composed request), the rules are NOT appended again.
  */
 export function composeDeepResearchRequestText(
   researchRequest: string,
   reportRules: string,
 ): string {
-  const trimmedRequest = researchRequest.trim();
+  const normalizedRequest = normalizeDeepResearchRequestLineEndings(researchRequest.trim());
   const trimmedRules = reportRules.trim();
   if (!trimmedRules) {
-    return trimmedRequest;
+    return normalizedRequest;
   }
-  if (trimmedRequest.includes(DEEP_RESEARCH_RULES_MARKER)) {
-    return trimmedRequest;
+  if (hasCanonicalTrailingReportRulesBlock(normalizedRequest)) {
+    return normalizedRequest;
   }
-  return `${trimmedRequest}\n${DEEP_RESEARCH_RULES_DIVIDER}\n${DEEP_RESEARCH_RULES_HEADING}\n${trimmedRules}`;
+  return `${normalizedRequest}\n${DEEP_RESEARCH_RULES_DIVIDER}\n${DEEP_RESEARCH_RULES_HEADING}\n${trimmedRules}`;
 }
 
 export type ComposedResearchRequestValidation =

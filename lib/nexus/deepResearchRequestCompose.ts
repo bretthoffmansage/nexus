@@ -5,6 +5,9 @@ export {
   DEFAULT_DEEP_RESEARCH_REPORT_RULES,
   DEEP_RESEARCH_RULES_DIVIDER,
   DEEP_RESEARCH_RULES_HEADING,
+  DEEP_RESEARCH_RULES_MARKER,
+  hasCanonicalTrailingReportRulesBlock,
+  normalizeDeepResearchRequestLineEndings,
   validateComposedDeepResearchRequest,
   type ComposedResearchRequestValidation,
 } from "@/convex/lib/deepResearchRequestCompose";

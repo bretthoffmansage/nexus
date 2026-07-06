@@ -183,6 +183,34 @@ describe("Deep Research report rules and model UI cleanup", () => {
       const dispatched = composeDeepResearchRequestText(stored, "No employee names");
       expect(countRulesBlocks(dispatched)).toBe(1);
     });
+
+    it("does not duplicate when the request already uses CRLF line endings", () => {
+      const rules = DEFAULT_DEEP_RESEARCH_REPORT_RULES;
+      const crlfComposed =
+        `Improve retention\r\n${DEEP_RESEARCH_RULES_DIVIDER}\r\n${DEEP_RESEARCH_RULES_HEADING}\r\n${rules}`;
+      const recomposed = composeDeepResearchRequestText(crlfComposed, rules);
+      expect(countRulesBlocks(recomposed)).toBe(1);
+      expect(recomposed).toBe(
+        `Improve retention\n${DEEP_RESEARCH_RULES_DIVIDER}\n${DEEP_RESEARCH_RULES_HEADING}\n${rules}`,
+      );
+    });
+
+    it("still appends rules when RULES FOR REPORT appears only in the body", () => {
+      const body =
+        "Review the RULES FOR REPORT: appendix in the brief.\n\nWhat changed in retention?";
+      const composed = composeDeepResearchRequestText(body, "No employee names");
+      expect(body).toContain("RULES FOR REPORT:");
+      expect(countRulesBlocks(composed)).toBe(1);
+      expect(composed.endsWith("No employee names")).toBe(true);
+    });
+
+    it("leaves historical duplicated trailing blocks unchanged", () => {
+      const once = composeDeepResearchRequestText("Improve retention", "No employee names");
+      const duplicated = `${once}\n${DEEP_RESEARCH_RULES_DIVIDER}\n${DEEP_RESEARCH_RULES_HEADING}\nNo employee names`;
+      const guarded = composeDeepResearchRequestText(duplicated, "No employee names");
+      expect(guarded).toBe(duplicated.replace(/\r\n/g, "\n").replace(/\r/g, "\n"));
+      expect(countRulesBlocks(guarded)).toBe(2);
+    });
   });
 
   describe("source provenance rendering", () => {

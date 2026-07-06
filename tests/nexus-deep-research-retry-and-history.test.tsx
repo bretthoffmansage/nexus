@@ -233,6 +233,7 @@ describe("Deep Research — retry", () => {
     const args = mutationFn.mock.calls[0][0] as Record<string, string>;
     // Same request content (composed request + report rules) preserved verbatim.
     expect(args.requestText).toBe(failedText);
+    expect(args.requestText.split("RULES FOR REPORT:").length - 1).toBe(1);
     // Brand-new execution identity — never reuses the failed run's identifiers.
     expect(args.researchRequestId).not.toBe("nexus-research_failed");
     expect(args.idempotencyKey).not.toBe("nexus-research-run_failed");

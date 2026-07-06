@@ -152,6 +152,20 @@ describe("Deep Research — collapsed Request panel", () => {
     const { container } = render(<ResearchWorkspace />);
     expect(container.querySelector(".research-request-card-preview")?.textContent).toBe("Short question.");
   });
+
+  it("displays a historical task with duplicated rules exactly as stored", () => {
+    const once = compose("Improve retention", "No secrets");
+    const duplicated = `${once}\n-------\nRULES FOR REPORT:\nNo secrets`;
+    const done = taskRow({ requestText: duplicated });
+    seedList([done]);
+    seedDetail(done, COMPLETED_RESULT);
+    const { container } = render(<ResearchWorkspace />);
+    expect(container.querySelector(".research-request-card-preview")?.textContent).toBe(duplicated);
+    fireEvent.click(requestCard(container));
+    expect(screen.getByRole("dialog").querySelector(".research-request-modal-pre")?.textContent).toBe(
+      duplicated,
+    );
+  });
 });
 
 describe("Deep Research — windowless metadata row", () => {
