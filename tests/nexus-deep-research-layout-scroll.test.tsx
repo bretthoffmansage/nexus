@@ -158,7 +158,12 @@ describe("Deep Research layout — CSS scroll invariants", () => {
     const block = desktop![0];
     expect(block).toMatch(/\.research-panel-layout\s*\{[^}]*min-height:\s*0/);
     expect(block).toMatch(/grid-template-rows:\s*minmax\(0,\s*1fr\)/);
-    expect(block).toMatch(/\.research-jobs\s*\{[^}]*overflow-y:\s*auto/);
+    // The scroll now lives on the lower response panel; the right column is a
+    // bounded flex stack so the Request card + metadata row stay fixed on top.
+    expect(block).toMatch(/\.research-response-panel\s*\{[^}]*overflow-y:\s*auto/);
+    expect(block).toMatch(/\.research-response-panel\s*\{[^}]*flex:\s*1/);
+    expect(block).toMatch(/\.research-response-panel\s*\{[^}]*min-height:\s*0/);
+    expect(block).toMatch(/\.research-jobs\s*\{[^}]*overflow:\s*hidden/);
     expect(block).toMatch(/\.research-settings\s*\{[^}]*overflow-y:\s*auto/);
   });
 

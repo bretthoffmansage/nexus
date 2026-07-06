@@ -974,12 +974,23 @@
   min-width: 0;
 }
 
-.research-settings,
-.research-jobs {
+.research-settings {
   border: 1px solid var(--nexus-border);
   border-radius: 8px;
   padding: 0.75rem;
   background: var(--nexus-panel);
+  min-width: 0;
+}
+
+/*
+ * The right research column is a transparent flex stack — NOT a card itself. A
+ * compact Request card and a windowless metadata row stay fixed at the top,
+ * above the response panel which carries the card treatment and owns the scroll.
+ */
+.research-jobs {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
   min-width: 0;
 }
 
@@ -1112,6 +1123,161 @@
 .research-status-detail {
   font-size: 0.82rem;
   opacity: 0.8;
+}
+
+/* --- Collapsed Request panel + windowless metadata row (right column top) --- */
+.research-request-block {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex-shrink: 0;
+}
+
+.research-request-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  width: 100%;
+  text-align: left;
+  border: 1px solid var(--nexus-border);
+  border-radius: 8px;
+  padding: 0.5rem 0.7rem;
+  background: var(--nexus-panel);
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.research-request-card:hover,
+.research-request-card:focus-visible {
+  border-color: var(--nexus-accent);
+  outline: none;
+}
+
+.research-request-card-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--nexus-muted);
+}
+
+/* Bounded ~3-line preview: clamps by lines, never shows a scrollbar, and never
+   grows with request length. Short requests naturally use fewer lines. */
+.research-request-card-preview {
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+/* Windowless metadata row attached to the Request card's underside: no border,
+   no background, no radius, no shadow — normal page background only. */
+.research-request-metabar {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 0.2rem 1rem;
+  padding: 0.4rem 0.2rem 0.1rem;
+  margin: 0;
+}
+
+.research-request-meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.research-request-meta-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--nexus-muted);
+}
+
+.research-request-meta-value {
+  font-size: 0.82rem;
+  overflow-wrap: anywhere;
+}
+
+/* Lower response panel — primary scrollable research area (carries the card). */
+.research-response-panel {
+  border: 1px solid var(--nexus-border);
+  border-radius: 8px;
+  padding: 0.75rem;
+  background: var(--nexus-panel);
+  min-width: 0;
+}
+
+/* --- Request detail modal (mirrors the Nexus dialog/background treatment) --- */
+.research-request-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 60;
+  padding: 1rem;
+}
+
+.research-request-modal {
+  width: min(40rem, 100%);
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--nexus-panel);
+  border: 1px solid var(--nexus-border);
+  border-radius: 10px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+}
+
+.research-request-modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--nexus-border);
+  flex-shrink: 0;
+}
+
+.research-request-modal-head h2 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.research-request-modal-close {
+  border: none;
+  background: transparent;
+  font-size: 1.35rem;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--nexus-fg);
+  padding: 0 0.25rem;
+}
+
+/* Independently scrollable content — unaffected by the lower response panel. */
+.research-request-modal-body {
+  padding: 1rem;
+  overflow-y: auto;
+  min-height: 0;
+  flex: 1;
+}
+
+.research-request-modal-pre {
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font: inherit;
+  font-size: 0.9rem;
+  line-height: 1.5;
 }
 
 .research-request-preview {
@@ -1678,12 +1844,18 @@
     align-self: stretch;
   }
 
-  /* Right research panel is the primary scroll region — Current research and
-     Recent research remain reachable in one continuous scroll. */
+  /* Right column is a bounded flex stack: the Request card + metadata row stay
+     fixed at the top; the response panel below owns the independent scroll. */
   .research-jobs {
     min-height: 0;
     max-height: 100%;
-    overflow-y: auto;
+    overflow: hidden;
     align-self: stretch;
+  }
+
+  .research-response-panel {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
   }
 }

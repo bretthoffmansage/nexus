@@ -8,6 +8,7 @@ import { SafeMarkdown } from "@/components/nexus/SafeMarkdown";
 import { nexusDeepResearch } from "@/lib/nexus/deepResearchClient";
 import { DeepResearchRequestFields } from "@/components/workspace/DeepResearchRequestFields";
 import { ResearchHistoryPanel } from "@/components/workspace/port/ResearchHistoryPanel";
+import { RequestDetailModal } from "@/components/workspace/port/RequestDetailModal";
 import {
   clearActiveTaskId,
   loadActiveTaskId,
@@ -50,6 +51,10 @@ export function ResearchWorkspace() {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [selectedModelId, setSelectedModelId] = useState<string>(CLAUDIA_DEFAULT_MODEL_VALUE);
+  // The Request modal is collapsed by default and never auto-opens; it opens
+  // only when the user clicks the Request panel.
+  const [requestModalOpen, setRequestModalOpen] = useState(false);
+  const requestPanelRef = useRef<HTMLButtonElement>(null);
   // Synchronous re-entry guard so a fast double-click cannot create two runs.
   const submitInFlightRef = useRef(false);
 
@@ -121,6 +126,12 @@ export function ResearchWorkspace() {
       clearActiveTaskId();
     }
   }, [detailTaskId, ready, tasksPage]);
+
+  // The Request panel always begins collapsed for a newly selected task — a
+  // fresh submission or a History selection never auto-opens the Request modal.
+  useEffect(() => {
+    setRequestModalOpen(false);
+  }, [detailTaskId]);
 
   const lifecycle = deriveDeepResearchLifecycle({
     taskStatus: detailTask?.status,
@@ -285,7 +296,46 @@ export function ResearchWorkspace() {
 
         <div className="research-jobs">
           <h2 className="research-section-title">Current research</h2>
-          <div className="research-current-panel">
+
+          {detailTask ? (
+            <div className="research-request-block">
+              <button
+                type="button"
+                ref={requestPanelRef}
+                className="research-request-card"
+                aria-haspopup="dialog"
+                aria-label="Open the full submitted request"
+                onClick={() => setRequestModalOpen(true)}
+              >
+                <span className="research-request-card-label">Request</span>
+                <p className="research-request-card-preview">{detailTask.requestText}</p>
+              </button>
+              <div className="research-request-metabar">
+                <div className="research-request-meta-item">
+                  <span className="research-request-meta-label">Submitted</span>
+                  <span className="research-request-meta-value">
+                    {formatTime(detailTask.createdAt)}
+                  </span>
+                </div>
+                {detailResult?.model ? (
+                  <div className="research-request-meta-item">
+                    <span className="research-request-meta-label">Model</span>
+                    <span className="research-request-meta-value">{detailResult.model}</span>
+                  </div>
+                ) : null}
+                {formatResearchDuration(detailResult?.durationMs) ? (
+                  <div className="research-request-meta-item">
+                    <span className="research-request-meta-label">Duration</span>
+                    <span className="research-request-meta-value">
+                      {formatResearchDuration(detailResult?.durationMs)}
+                    </span>
+                  </div>
+                ) : null}
+              </div>
+            </div>
+          ) : null}
+
+          <div className="research-current-panel research-response-panel">
             {authInitializing || tasksLoading ? (
               <p className="legacy-port-empty">Loading research state…</p>
             ) : !isAuthenticated ? (
@@ -306,25 +356,6 @@ export function ResearchWorkspace() {
                     {taskStatusLabel(detailTask.status)} · {taskExecutionNote(detailTask.status)}
                   </span>
                 </div>
-                <p className="research-request-preview">{detailTask.requestText}</p>
-                <dl className="nexus-task-meta research-task-meta">
-                  <div>
-                    <dt>Submitted</dt>
-                    <dd>{formatTime(detailTask.createdAt)}</dd>
-                  </div>
-                  {detailResult?.model ? (
-                    <div>
-                      <dt>Model</dt>
-                      <dd>{detailResult.model}</dd>
-                    </div>
-                  ) : null}
-                  {formatResearchDuration(detailResult?.durationMs) ? (
-                    <div>
-                      <dt>Duration</dt>
-                      <dd>{formatResearchDuration(detailResult?.durationMs)}</dd>
-                    </div>
-                  ) : null}
-                </dl>
 
                 {lifecycle === "blocked" ? (
                   <div className="research-blocked-panel" role="alert">
@@ -442,6 +473,13 @@ export function ResearchWorkspace() {
             )}
           </div>
 
+          {requestModalOpen && detailTask ? (
+            <RequestDetailModal
+              requestText={detailTask.requestText}
+              onClose={() => setRequestModalOpen(false)}
+              returnFocusRef={requestPanelRef}
+            />
+          ) : null}
         </div>
       </div>
 
