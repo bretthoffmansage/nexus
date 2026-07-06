@@ -31,6 +31,7 @@ import {
   deriveDeepResearchLifecycle,
   formatResearchDuration,
   isDeepResearchTaskActive,
+  isSuccessfullyCompletedResearchTask,
 } from "@/lib/nexus/deepResearchView";
 import { isSafeHttpUrl } from "@/lib/nexus/safeHttpUrl";
 import { taskExecutionNote, taskStatusLabel } from "@/lib/nexus/p5Client";
@@ -122,6 +123,15 @@ export function ResearchWorkspace() {
   }, [detailTaskId, ready, tasksPage]);
 
   const lifecycle = deriveDeepResearchLifecycle({
+    taskStatus: detailTask?.status,
+    errorCode: detailTask?.errorCode,
+  });
+
+  // Presentation-only: once a run is definitively successful, the Progress
+  // checkpoint block is noise beneath a finished report. Derived from the
+  // canonical task status (not from a task_completed event), so active,
+  // incomplete, failed, blocked, and cancelled runs keep showing Progress.
+  const researchSucceeded = isSuccessfullyCompletedResearchTask({
     taskStatus: detailTask?.status,
     errorCode: detailTask?.errorCode,
   });
@@ -409,7 +419,7 @@ export function ResearchWorkspace() {
                   </div>
                 ) : null}
 
-                {detailProgress && detailProgress.length > 0 ? (
+                {!researchSucceeded && detailProgress && detailProgress.length > 0 ? (
                   <>
                     <h3 className="research-report-title">Progress</h3>
                     <ul className="nexus-progress-list">

@@ -68,6 +68,23 @@ export function deriveDeepResearchLifecycle(input: {
   }
 }
 
+/**
+ * Canonical "definitively successful" predicate for a Deep Research task.
+ *
+ * True only when the derived lifecycle is `completed` — i.e. the task status is
+ * terminal `completed` with no blocked/failed/cancelled outcome. This is derived
+ * from the canonical task status/errorCode, NOT from the presence of a
+ * `task_completed` progress checkpoint, so a stray/early event can never flip it.
+ * Use this (instead of ad-hoc string checks) wherever the UI must distinguish a
+ * genuinely successful run — e.g. hiding the Progress checkpoint block.
+ */
+export function isSuccessfullyCompletedResearchTask(input: {
+  taskStatus?: TaskStatus | null;
+  errorCode?: string | null;
+}): boolean {
+  return deriveDeepResearchLifecycle(input) === "completed";
+}
+
 export function blockedResearchMessage(
   errorCode: string | null | undefined,
   errorMessage: string | null | undefined,
