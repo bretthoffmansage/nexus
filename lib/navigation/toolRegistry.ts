@@ -50,6 +50,7 @@ export const NEXUS_TOOL_REGISTRY: NexusToolDefinition[] = [
     legacyButtonId: "tool-memory-btn",
     legacyModules: ["static/js/memory.js"],
     availability: "connector_required",
+    hiddenFromNavigation: true,
   },
   {
     id: "calendar",
