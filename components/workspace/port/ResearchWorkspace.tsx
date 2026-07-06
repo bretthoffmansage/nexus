@@ -366,7 +366,11 @@ export function ResearchWorkspace() {
 
                 {detailSources && detailSources.length > 0 ? (
                   <>
-                    <h3 className="research-report-title">Sources</h3>
+                    <h3 className="research-report-title">Sources retrieved this run</h3>
+                    <p className="research-source-note">
+                      Sources retrieved by the research tools during this run. Not
+                      every source is necessarily cited in the report above.
+                    </p>
                     <ul className="nexus-source-list research-source-list">
                       {detailSources.map((source) => {
                         const href =

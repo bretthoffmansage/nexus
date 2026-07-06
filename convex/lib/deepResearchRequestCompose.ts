@@ -8,9 +8,21 @@ export const DEEP_RESEARCH_RULES_DIVIDER = "-------";
 export const DEEP_RESEARCH_RULES_HEADING = "RULES FOR REPORT:";
 
 /**
+ * Marker proving a request already carries a composed Report-rules block. Used
+ * to keep composition idempotent across the direct, retry, and Calendar paths.
+ */
+export const DEEP_RESEARCH_RULES_MARKER = `${DEEP_RESEARCH_RULES_DIVIDER}\n${DEEP_RESEARCH_RULES_HEADING}`;
+
+/**
  * Compose the final governed `requestText` from the primary research request
  * and optional report rules. Rules are folded into requestText only — never
  * taskMetadata.
+ *
+ * Idempotent: if `researchRequest` already contains a composed Report-rules
+ * block (e.g. a retried/re-submitted request whose stored text is already the
+ * composed payload, or Calendar dispatch re-composing a stored request), the
+ * rules are NOT appended a second time. This guarantees `RULES FOR REPORT:`
+ * appears exactly once in the submitted request.
  */
 export function composeDeepResearchRequestText(
   researchRequest: string,
@@ -19,6 +31,9 @@ export function composeDeepResearchRequestText(
   const trimmedRequest = researchRequest.trim();
   const trimmedRules = reportRules.trim();
   if (!trimmedRules) {
+    return trimmedRequest;
+  }
+  if (trimmedRequest.includes(DEEP_RESEARCH_RULES_MARKER)) {
     return trimmedRequest;
   }
   return `${trimmedRequest}\n${DEEP_RESEARCH_RULES_DIVIDER}\n${DEEP_RESEARCH_RULES_HEADING}\n${trimmedRules}`;

@@ -151,6 +151,62 @@ describe("Deep Research report rules and model UI cleanup", () => {
     });
   });
 
+  describe("report rules idempotency (exactly one RULES block)", () => {
+    const countRulesBlocks = (text: string): number =>
+      text.split(`${DEEP_RESEARCH_RULES_DIVIDER}\n${DEEP_RESEARCH_RULES_HEADING}`).length - 1;
+
+    it("emits RULES FOR REPORT exactly once for a raw request", () => {
+      const composed = composeDeepResearchRequestText("Improve retention", "No employee names");
+      expect(countRulesBlocks(composed)).toBe(1);
+    });
+
+    it("does not recompose an already-composed request (direct/retry re-submit)", () => {
+      const once = composeDeepResearchRequestText("Improve retention", "No employee names");
+      // Retry submits the stored composed requestText; composing again with the
+      // same rules must not append a second block.
+      const twice = composeDeepResearchRequestText(once, "No employee names");
+      expect(twice).toBe(once);
+      expect(countRulesBlocks(twice)).toBe(1);
+    });
+
+    it("does not append a second block even with different rules text", () => {
+      const once = composeDeepResearchRequestText("Improve retention", "No employee names");
+      const recomposed = composeDeepResearchRequestText(once, "Completely different rules");
+      expect(countRulesBlocks(recomposed)).toBe(1);
+      expect(recomposed).toBe(once);
+    });
+
+    it("Calendar-style re-dispatch of a stored composed request stays single-block", () => {
+      // scheduledEventDispatch composes fresh.taskRequest + rules at dispatch; if
+      // taskRequest were ever already-composed, the block must not duplicate.
+      const stored = composeDeepResearchRequestText("Improve retention", "No employee names");
+      const dispatched = composeDeepResearchRequestText(stored, "No employee names");
+      expect(countRulesBlocks(dispatched)).toBe(1);
+    });
+  });
+
+  describe("source provenance rendering", () => {
+    it("scopes task sources to a single task in the schema and query", () => {
+      const schema = readFileSync(path.join(ROOT, "convex/schema.ts"), "utf8");
+      expect(schema).toContain("nexusTaskSources");
+      expect(schema).toContain('taskId: v.id("nexusTasks")');
+      expect(schema).toContain('.index("by_task_and_ordinal", ["taskId", "ordinal"])');
+      const query = readFileSync(path.join(ROOT, "convex/taskSources.ts"), "utf8");
+      // Sources are fetched by the task's own id — never cross-task/stale.
+      expect(query).toContain("by_task");
+    });
+
+    it("labels the Sources block as retrieved (not necessarily cited)", () => {
+      const src = readFileSync(
+        path.join(ROOT, "components/workspace/port/ResearchWorkspace.tsx"),
+        "utf8",
+      );
+      expect(src).toContain("Sources retrieved this run");
+      expect(src).toContain("Not");
+      expect(src).toContain("necessarily cited");
+    });
+  });
+
   describe("composed length validation", () => {
     it("accepts exactly 8000 composed characters", () => {
       const rules = "x".repeat(100);
