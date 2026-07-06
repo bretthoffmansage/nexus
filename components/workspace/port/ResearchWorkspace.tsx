@@ -1,22 +1,19 @@
 "use client";
 
 import { useMutation, useQuery } from "convex/react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Id } from "@/convex/_generated/dataModel";
 import { SafeExternalLink } from "@/components/nexus/SafeExternalLink";
 import { SafeMarkdown } from "@/components/nexus/SafeMarkdown";
 import { nexusDeepResearch } from "@/lib/nexus/deepResearchClient";
 import { DeepResearchRequestFields } from "@/components/workspace/DeepResearchRequestFields";
+import { ResearchHistoryPanel } from "@/components/workspace/port/ResearchHistoryPanel";
 import {
   clearActiveTaskId,
   loadActiveTaskId,
-  loadOrCreateIdempotencyKey,
-  loadOrCreateResearchRequestId,
   loadReportRulesDraft,
   loadSelectedModelId,
   rememberActiveTaskId,
-  resetReportRulesDraft,
-  rotateIdempotencyKey,
   rotateResearchRequestSession,
   saveReportRulesDraft,
   saveSelectedModelId,
@@ -43,29 +40,22 @@ function formatTime(timestamp: number): string {
   return new Date(timestamp).toLocaleString();
 }
 
-function requestPreview(text: string, max = 120): string {
-  const normalized = text.replace(/\s+/g, " ").trim();
-  if (normalized.length <= max) return normalized;
-  return `${normalized.slice(0, max).trimEnd()}…`;
-}
-
 export function ResearchWorkspace() {
   const { isLoading, isAuthenticated, readyForPrivateQueries: ready } = useNexusAuthReadiness();
-  const [researchRequestId, setResearchRequestId] = useState("");
-  const [idempotencyKey, setIdempotencyKey] = useState("");
   const [requestText, setRequestText] = useState("");
   const [reportRules, setReportRules] = useState("");
   const [selectedTaskId, setSelectedTaskId] = useState<Id<"nexusTasks"> | null>(null);
+  const [historyOpen, setHistoryOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [selectedModelId, setSelectedModelId] = useState<string>(CLAUDIA_DEFAULT_MODEL_VALUE);
+  // Synchronous re-entry guard so a fast double-click cannot create two runs.
+  const submitInFlightRef = useRef(false);
 
   const { models: modelCatalog, loading: modelCatalogLoading, error: modelCatalogError } =
     useDeepResearchModelCatalog();
 
   useEffect(() => {
-    setResearchRequestId(loadOrCreateResearchRequestId());
-    setIdempotencyKey(loadOrCreateIdempotencyKey());
     setSelectedModelId(loadSelectedModelId());
     setReportRules(loadReportRulesDraft());
     const storedTaskId = loadActiveTaskId();
@@ -145,49 +135,53 @@ export function ResearchWorkspace() {
     !isLoading &&
     isAuthenticated;
 
-  const handleSubmit = useCallback(async () => {
+  // Every standalone run — a fresh Research submission or a Try again — mints a
+  // brand-new execution identity (researchRequestId + idempotencyKey), creates
+  // exactly one new task, clears any historical selection, closes History, and
+  // shows the new run as Current Research. It never mutates, reuses, appends to,
+  // or continues a previous task.
+  const startStandaloneRun = useCallback(
+    async (composedRequestText: string) => {
+      if (submitInFlightRef.current) return;
+      submitInFlightRef.current = true;
+      setSubmitError(null);
+      setSubmitting(true);
+      setHistoryOpen(false);
+      const session = rotateResearchRequestSession();
+      try {
+        const result = await submitDeepResearch({
+          requestText: composedRequestText,
+          researchRequestId: session.researchRequestId,
+          idempotencyKey: session.idempotencyKey,
+        });
+        setSelectedTaskId(result.taskId);
+        rememberActiveTaskId(result.taskId);
+      } catch (error) {
+        setSubmitError(error instanceof Error ? error.message : "Submission failed");
+      } finally {
+        setSubmitting(false);
+        submitInFlightRef.current = false;
+      }
+    },
+    [submitDeepResearch],
+  );
+
+  const handleSubmit = useCallback(() => {
     if (!canSubmit || !validation.ok) return;
-    setSubmitError(null);
-    setSubmitting(true);
-    try {
-      const result = await submitDeepResearch({
-        requestText: validation.trimmed,
-        researchRequestId,
-        idempotencyKey,
-      });
-      setSelectedTaskId(result.taskId);
-      rememberActiveTaskId(result.taskId);
-    } catch (error) {
-      setSubmitError(error instanceof Error ? error.message : "Submission failed");
-    } finally {
-      setSubmitting(false);
-    }
-  }, [
-    canSubmit,
-    idempotencyKey,
-    researchRequestId,
-    submitDeepResearch,
-    validation,
-  ]);
+    void startStandaloneRun(validation.trimmed);
+  }, [canSubmit, startStandaloneRun, validation]);
 
-  const handleNewRequest = useCallback(() => {
-    const session = rotateResearchRequestSession();
-    setResearchRequestId(session.researchRequestId);
-    setIdempotencyKey(session.idempotencyKey);
-    setRequestText("");
-    setReportRules(resetReportRulesDraft());
-    setSelectedTaskId(null);
-    clearActiveTaskId();
-    setSubmitError(null);
-  }, []);
-
-  const handleNewRun = useCallback(() => {
-    const nextKey = rotateIdempotencyKey();
-    setIdempotencyKey(nextKey);
-    setSelectedTaskId(null);
-    clearActiveTaskId();
-    setSubmitError(null);
-  }, []);
+  // Re-run a terminal failed task as a NEW standalone execution using the failed
+  // task's canonical stored request content. The failed task is never mutated,
+  // reopened, or deduplicated — freshly minted identifiers guarantee a distinct
+  // run, and the failed run stays immutable in History.
+  const handleTryAgain = useCallback(
+    (failedRequestText: string) => {
+      if (submitting) return;
+      void startStandaloneRun(failedRequestText);
+    },
+    [startStandaloneRun, submitting],
+  );
 
   const connectorNote =
     connectorStatus?.state === "not_configured"
@@ -210,11 +204,22 @@ export function ResearchWorkspace() {
       className="legacy-port-workspace legacy-port-research legacy-port-research-centered"
       aria-labelledby="research-heading"
     >
-      <header className="legacy-port-head">
-        <h1 id="research-heading">Deep Research</h1>
-        <p className="legacy-port-subhead">
-          Hermes agent + Web, Transcript, Knowledge Vault runtime
-        </p>
+      <header className="legacy-port-head legacy-port-head--split">
+        <div>
+          <h1 id="research-heading">Deep Research</h1>
+          <p className="legacy-port-subhead">
+            Hermes agent + Web, Transcript, Knowledge Vault runtime
+          </p>
+        </div>
+        <button
+          type="button"
+          className="nexus-btn nexus-btn-ghost research-history-toggle"
+          aria-expanded={historyOpen}
+          aria-controls="research-history-panel"
+          onClick={() => setHistoryOpen((open) => !open)}
+        >
+          History
+        </button>
       </header>
 
       {connectorNote ? (
@@ -257,14 +262,6 @@ export function ResearchWorkspace() {
                 disabled={!canSubmit}
               >
                 {submitting ? "Submitting…" : "Research"}
-              </button>
-              <button
-                type="button"
-                className="legacy-port-btn"
-                onClick={handleNewRequest}
-                disabled={submitting}
-              >
-                New request
               </button>
             </div>
 
@@ -323,13 +320,6 @@ export function ResearchWorkspace() {
                   <div className="research-blocked-panel" role="alert">
                     <strong>Research unavailable</strong>
                     <p>{blockedMessage}</p>
-                    <button
-                      type="button"
-                      className="legacy-port-btn"
-                      onClick={handleNewRun}
-                    >
-                      Start new run
-                    </button>
                   </div>
                 ) : null}
 
@@ -340,9 +330,10 @@ export function ResearchWorkspace() {
                     <button
                       type="button"
                       className="legacy-port-btn"
-                      onClick={handleNewRun}
+                      onClick={() => handleTryAgain(detailTask.requestText)}
+                      disabled={submitting}
                     >
-                      Start new run
+                      {submitting ? "Retrying…" : "Try again"}
                     </button>
                   </div>
                 ) : null}
@@ -437,44 +428,31 @@ export function ResearchWorkspace() {
             )}
           </div>
 
-          <h2 className="research-section-title">Recent research</h2>
-          <div className="research-job-list">
-            {authInitializing || tasksLoading ? (
-              <p className="legacy-port-empty">Loading research history…</p>
-            ) : !isAuthenticated ? (
-              <p className="legacy-port-empty">Sign in to view research history.</p>
-            ) : pastTasks.length === 0 ? (
-              <p className="legacy-port-empty">No research runs yet.</p>
-            ) : (
-              <ul className="research-history-list">
-                {pastTasks.map((task) => (
-                  <li key={task.id}>
-                    <button
-                      type="button"
-                      className={`research-history-item${
-                        detailTaskId === task.id ? " research-history-item--active" : ""
-                      }`}
-                      onClick={() => setSelectedTaskId(task.id)}
-                    >
-                      <span className="research-history-title">
-                        {requestPreview(task.requestText)}
-                      </span>
-                      <span className="research-history-meta">
-                        {deepResearchLifecycleLabel(
-                          deriveDeepResearchLifecycle({
-                            taskStatus: task.status,
-                            errorCode: task.errorCode,
-                          }),
-                        )}{" "}
-                        · {formatTime(task.createdAt)}
-                      </span>
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
         </div>
+      </div>
+
+      <div
+        id="research-history-panel"
+        className={`nexus-chat-history-shell${historyOpen ? " is-open" : ""}`}
+      >
+        {historyOpen ? (
+          <button
+            type="button"
+            className="nexus-chat-history-backdrop"
+            aria-label="Close research history"
+            onClick={() => setHistoryOpen(false)}
+          />
+        ) : null}
+        <ResearchHistoryPanel
+          tasks={pastTasks}
+          selectedTaskId={detailTaskId}
+          loading={authInitializing || tasksLoading}
+          authenticated={isAuthenticated}
+          onSelect={(taskId) => {
+            setSelectedTaskId(taskId);
+            setHistoryOpen(false);
+          }}
+        />
       </div>
     </section>
   );

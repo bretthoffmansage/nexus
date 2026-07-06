@@ -109,16 +109,17 @@ describe("Deep Research layout — right-panel scroll containment", () => {
     expect(rightPanel?.querySelector(".research-report-body")).not.toBeNull();
   });
 
-  it("keeps Current research and Recent research in one continuous right-side region", () => {
+  it("keeps the current research run in the scrollable right-side region", () => {
     seedCompletedLongReport();
     const { container } = render(<ResearchWorkspace />);
 
     const rightPanel = container.querySelector<HTMLElement>(".research-jobs");
     expect(rightPanel?.textContent).toContain("Current research");
-    expect(rightPanel?.textContent).toContain("Recent research");
-    // Both live-content bodies are children of the single scroll region.
     expect(rightPanel?.querySelector(".research-current-panel")).not.toBeNull();
-    expect(rightPanel?.querySelector(".research-job-list")).not.toBeNull();
+    // Recent Research moved into the History drawer; the inline list is gone
+    // from the right result panel (no duplicate list, scroll containment intact).
+    expect(rightPanel?.textContent).not.toContain("Recent research");
+    expect(rightPanel?.querySelector(".research-job-list")).toBeNull();
   });
 
   it("keeps the report out of the stationary left request panel", () => {

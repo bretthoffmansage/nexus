@@ -44,6 +44,10 @@ function projectDeepResearchTask(doc: Doc<"nexusTasks">) {
     researchRequestId: metadata?.researchRequestId ?? null,
     requestedModelId: doc.requestedModelId ?? null,
     idempotencyKey: doc.idempotencyKey,
+    // Read-only derived marker: direct page submissions never carry a
+    // scheduledEventId; Calendar-dispatched research tasks do. Used only for an
+    // optional History source badge — no metadata/contract/write change.
+    fromCalendar: doc.scheduledEventId != null,
   };
 }
 

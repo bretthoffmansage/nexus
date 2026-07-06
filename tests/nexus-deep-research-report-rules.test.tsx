@@ -85,14 +85,6 @@ describe("Deep Research report rules and model UI cleanup", () => {
       expect(field).toHaveValue("");
     });
 
-    it("restores the default on New request", async () => {
-      render(<ResearchWorkspace />);
-      const field = screen.getByLabelText("Report rules");
-      fireEvent.change(field, { target: { value: "Temporary" } });
-      fireEvent.click(screen.getByRole("button", { name: "New request" }));
-      expect(field).toHaveValue(DEFAULT_DEEP_RESEARCH_REPORT_RULES);
-    });
-
     it("preserves edited rules across rerender via draft storage", () => {
       saveReportRulesDraft("Persisted rules");
       const { unmount } = render(<ResearchWorkspace />);
