@@ -310,8 +310,9 @@ export const getClaudiaSystemStatusForPage = query({
             nexus_connector: components.nexus_connector ?? null,
             viktor_retrieval: components.viktor_retrieval ?? null,
             sage_knowledge_base: components.sage_knowledge_base ?? null,
-            claude_cli: components.claude_cli ?? null,
+            cursor_cli: components.cursor_cli ?? null,
             codex_cli: components.codex_cli ?? null,
+            claude_cli: components.claude_cli ?? null,
             cleanup_storage: components.cleanup_storage ?? null,
           }
         : null,

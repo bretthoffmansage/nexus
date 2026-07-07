@@ -35,13 +35,14 @@ const CARD_TITLES = [
   "Nexus Connector",
   "Viktor Retrieval",
   "Sage Knowledge Base",
-  "Claude CLI",
+  "Cursor CLI",
   "Codex CLI",
+  "Claude CLI",
   "Cleanup & Storage",
 ];
 
 describe("Claudia system status page", () => {
-  it("renders the updated subtitle and seven cards without the legacy banner", () => {
+  it("renders the updated subtitle and eight cards without the legacy banner", () => {
     render(<StatusWorkspace />);
     expect(screen.getByRole("heading", { name: "Status" })).toBeInTheDocument();
     expect(screen.getByText("Claudia system connectivity and service health")).toBeInTheDocument();
@@ -53,12 +54,27 @@ describe("Claudia system status page", () => {
     for (const title of CARD_TITLES) {
       expect(screen.getByRole("heading", { name: title })).toBeInTheDocument();
     }
+    expect(document.querySelectorAll(".claudia-system-status-card").length).toBe(8);
+  });
+
+  it("renders the Cursor CLI card with the same style as Claude and Codex", () => {
+    render(<StatusWorkspace />);
+    const cursorHeading = screen.getByRole("heading", { name: "Cursor CLI" });
+    const cursorCard = cursorHeading.closest(".claudia-system-status-card");
+    const claudeCard = screen
+      .getByRole("heading", { name: "Claude CLI" })
+      .closest(".claudia-system-status-card");
+    expect(cursorCard).not.toBeNull();
+    expect(cursorCard?.className).toBe(claudeCard?.className);
+    expect(
+      screen.getByText("Cursor command-line runtime used by governed Claudia workflows."),
+    ).toBeInTheDocument();
   });
 
   it("shows green indicators only for live cards and omits yellow connector copy", () => {
     render(<StatusWorkspace />);
     expect(screen.queryByText(/Claudia online/i)).not.toBeInTheDocument();
-    expect(document.querySelectorAll(".claudia-system-status-dot--live").length).toBe(7);
+    expect(document.querySelectorAll(".claudia-system-status-dot--live").length).toBe(8);
     expect(document.querySelector(".nexus-presence-dot")).toBeNull();
   });
 

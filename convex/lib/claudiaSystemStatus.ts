@@ -19,19 +19,24 @@ export const claudiaSystemStatusRecordValidator = v.object({
     nexus_connector: v.optional(claudiaSystemComponentRecordValidator),
     viktor_retrieval: v.optional(claudiaSystemComponentRecordValidator),
     sage_knowledge_base: v.optional(claudiaSystemComponentRecordValidator),
-    claude_cli: v.optional(claudiaSystemComponentRecordValidator),
+    cursor_cli: v.optional(claudiaSystemComponentRecordValidator),
     codex_cli: v.optional(claudiaSystemComponentRecordValidator),
+    claude_cli: v.optional(claudiaSystemComponentRecordValidator),
     cleanup_storage: v.optional(claudiaSystemComponentRecordValidator),
   }),
 });
 
+// Card render order. Worker CLIs are grouped Cursor → Codex → Claude so the
+// first-priority read-only worker leads; `cursor_cli` is the additive eighth
+// component key (see claudia_nexus_system_status_handoff_v1).
 export const CLAUDIA_SYSTEM_COMPONENT_KEYS = [
   "core_api",
   "nexus_connector",
   "viktor_retrieval",
   "sage_knowledge_base",
-  "claude_cli",
+  "cursor_cli",
   "codex_cli",
+  "claude_cli",
   "cleanup_storage",
 ] as const;
 
@@ -51,7 +56,7 @@ export type StoredClaudiaSystemStatus = {
 };
 
 export const P6_SYSTEM_STATUS = {
-  /** Claude/Codex CLI observation freshness (24h). */
+  /** Cursor/Claude/Codex CLI observation freshness (24h). */
   cliObservationTtlMs: 86_400_000,
   maxSnapshotIdLength: 256,
   maxSessionIdLength: 128,
@@ -63,8 +68,15 @@ export function systemStatusSnapshotTtlMs(): number {
   return P6_LEASE.connectorOfflineThresholdMs;
 }
 
+/** The command-line worker runtimes that share the centralized CLI TTL. */
+export const CLAUDIA_CLI_WORKER_KEYS = ["cursor_cli", "codex_cli", "claude_cli"] as const;
+
+export function isCliWorkerComponent(key: ClaudiaSystemComponentKey): boolean {
+  return (CLAUDIA_CLI_WORKER_KEYS as readonly string[]).includes(key);
+}
+
 export function componentObservationTtlMs(key: ClaudiaSystemComponentKey): number {
-  return key === "claude_cli" || key === "codex_cli"
+  return isCliWorkerComponent(key)
     ? P6_SYSTEM_STATUS.cliObservationTtlMs
     : P6_LEASE.connectorOfflineThresholdMs;
 }

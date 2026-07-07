@@ -3,6 +3,7 @@ import {
   CLAUDIA_SYSTEM_COMPONENT_KEYS,
   type ClaudiaSystemComponentKey,
   componentObservationTtlMs,
+  isCliWorkerComponent,
   systemStatusSnapshotTtlMs,
 } from "@/convex/lib/claudiaSystemStatus";
 import { P6_LEASE } from "@/convex/lib/p6config";
@@ -57,15 +58,21 @@ const CARD_COPY: Record<
     liveStatus: "Connected",
     inactiveStatus: "Unavailable",
   },
-  claude_cli: {
-    title: "Claude CLI",
-    description: "Claude command-line runtime used by governed Claudia workflows.",
+  cursor_cli: {
+    title: "Cursor CLI",
+    description: "Cursor command-line runtime used by governed Claudia workflows.",
     liveStatus: "Connected",
     inactiveStatus: "Not recently verified",
   },
   codex_cli: {
     title: "Codex CLI",
     description: "Codex command-line runtime used by governed Claudia workflows.",
+    liveStatus: "Connected",
+    inactiveStatus: "Not recently verified",
+  },
+  claude_cli: {
+    title: "Claude CLI",
+    description: "Claude command-line runtime used by governed Claudia workflows.",
     liveStatus: "Connected",
     inactiveStatus: "Not recently verified",
   },
@@ -166,7 +173,7 @@ function statusTextForCard(
   }
 
   if (!live) {
-    if (key === "claude_cli" || key === "codex_cli") {
+    if (isCliWorkerComponent(key)) {
       const component = input.components?.[key];
       if (!component) return "Unavailable";
       if (!component.active) return "Disconnected";
@@ -201,7 +208,7 @@ function secondaryDetailForCard(
     return parts.length ? parts.join(" · ") : undefined;
   }
 
-  if (key === "claude_cli" || key === "codex_cli") {
+  if (isCliWorkerComponent(key)) {
     const observedAt = input.components?.[key]?.observedAt ?? null;
     const relative = formatRelativeTimestamp(observedAt, now);
     return relative ? `Last verified: ${relative}` : undefined;

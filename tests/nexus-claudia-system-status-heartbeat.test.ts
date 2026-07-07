@@ -139,6 +139,153 @@ describe("Claudia systemStatus heartbeat contract", () => {
   });
 });
 
+const SEVEN_LEGACY_KEYS = [
+  "core_api",
+  "nexus_connector",
+  "viktor_retrieval",
+  "sage_knowledge_base",
+  "claude_cli",
+  "codex_cli",
+  "cleanup_storage",
+] as const;
+
+describe("Cursor CLI heartbeat contract (eighth component)", () => {
+  it("accepts and persists a valid eight-component heartbeat including cursor_cli", async () => {
+    const t = p5Test();
+    await seedConnector(t);
+    const res = await fetchSigned(t, {
+      path: HEARTBEAT,
+      body: { operatingState: "idle", systemStatus: validSystemStatus() },
+    });
+    expect(res.status).toBe(200);
+    const row = await t.run(async (ctx) =>
+      ctx.db
+        .query("nexusConnectors")
+        .withIndex("by_connector_id", (q) => q.eq("connectorId", TEST_CONNECTOR_ID))
+        .unique(),
+    );
+    expect(row?.claudiaSystemStatus?.components?.cursor_cli?.active).toBe(true);
+    expect(row?.claudiaSystemStatus?.components?.cursor_cli?.observedAt).toBe(
+      Date.parse("2026-07-02T16:00:00Z"),
+    );
+  });
+
+  it("accepts an older seven-component heartbeat without cursor_cli", async () => {
+    const t = p5Test();
+    await seedConnector(t);
+    const legacyComponents = Object.fromEntries(
+      SEVEN_LEGACY_KEYS.map((key) => [key, { active: true, observedAt: "2026-07-02T16:00:00Z" }]),
+    );
+    const res = await fetchSigned(t, {
+      path: HEARTBEAT,
+      body: { systemStatus: validSystemStatus({ components: legacyComponents }) },
+    });
+    expect(res.status).toBe(200);
+    const row = await t.run(async (ctx) =>
+      ctx.db
+        .query("nexusConnectors")
+        .withIndex("by_connector_id", (q) => q.eq("connectorId", TEST_CONNECTOR_ID))
+        .unique(),
+    );
+    expect(row?.claudiaSystemStatus?.components?.claude_cli?.active).toBe(true);
+    expect(row?.claudiaSystemStatus?.components?.cursor_cli).toBeUndefined();
+  });
+
+  it("recognizes cursor_cli as an allowlisted component key", () => {
+    expect(CLAUDIA_SYSTEM_COMPONENT_KEYS).toContain("cursor_cli");
+    const parsed = parseClaudiaSystemStatus(validSystemStatus());
+    expect(parsed?.components?.cursor_cli?.active).toBe(true);
+  });
+
+  it("fails closed when cursor active is not boolean (drops only cursor)", () => {
+    const parsed = parseClaudiaSystemStatus(
+      validSystemStatus({
+        components: {
+          core_api: { active: true, observedAt: "2026-07-02T16:00:00Z" },
+          cursor_cli: { active: "yes" as unknown as boolean, observedAt: "2026-07-02T16:00:00Z" },
+        },
+      }),
+    );
+    expect(parsed).not.toBeNull();
+    expect(parsed?.components?.cursor_cli).toBeUndefined();
+    expect(parsed?.components?.core_api?.active).toBe(true);
+  });
+
+  it("fails closed on an invalid cursor observedAt", () => {
+    const parsed = parseClaudiaSystemStatus(
+      validSystemStatus({
+        components: { cursor_cli: { active: true, observedAt: "2026-07-02 16:00:00" } },
+      }),
+    );
+    expect(parsed?.components?.cursor_cli).toBeUndefined();
+  });
+
+  it("exposes cursor_cli through the private page query", async () => {
+    const t = p5Test();
+    await seedApprovedReader(t, IDENTITY_A);
+    await seedConnector(t);
+    await fetchSigned(t, { path: HEARTBEAT, body: { systemStatus: validSystemStatus() } });
+    const page = await t
+      .withIdentity(IDENTITY_A)
+      .query(api.connectorRegistry.getClaudiaSystemStatusForPage, {});
+    expect(page.components?.cursor_cli?.active).toBe(true);
+  });
+});
+
+describe("Cursor CLI freshness derivation", () => {
+  const now = Date.parse("2026-07-02T16:00:00Z");
+  const freshBase = {
+    configured: true as const,
+    presence: "online_idle" as const,
+    lastHeartbeatAt: now - 10_000,
+    operatingState: "idle" as const,
+    softwareVersion: null,
+    hasSystemStatus: true as const,
+    snapshotObservedAt: now - 10_000,
+  };
+
+  function cardsWithCursor(cursor: { active: boolean; observedAt: number } | null) {
+    const components: Record<string, { active: boolean; observedAt: number }> = Object.fromEntries(
+      CLAUDIA_SYSTEM_COMPONENT_KEYS.filter((k) => k !== "cursor_cli").map((key) => [
+        key,
+        { active: true, observedAt: now - 10_000 },
+      ]),
+    );
+    if (cursor) components.cursor_cli = cursor;
+    return deriveClaudiaSystemStatusCards({ ...freshBase, components: components as never }, now);
+  }
+
+  function cursorLive(cards: ReturnType<typeof deriveClaudiaSystemStatusCards>) {
+    return cards.find((c) => c.key === "cursor_cli")?.live;
+  }
+
+  it("is green when active and fresh with a fresh heartbeat and snapshot", () => {
+    expect(cursorLive(cardsWithCursor({ active: true, observedAt: now - 10_000 }))).toBe(true);
+  });
+
+  it("is not green when cursor is inactive", () => {
+    expect(cursorLive(cardsWithCursor({ active: false, observedAt: now - 10_000 }))).toBe(false);
+  });
+
+  it("is not green when cursor is missing entirely", () => {
+    const cards = cardsWithCursor(null);
+    expect(cursorLive(cards)).toBe(false);
+    expect(cards.find((c) => c.key === "cursor_cli")?.statusText).toBe("Unavailable");
+  });
+
+  it("is not green when the cursor observation is stale beyond the CLI TTL", () => {
+    const stale = now - 86_400_000 - 1;
+    expect(cursorLive(cardsWithCursor({ active: true, observedAt: stale }))).toBe(false);
+  });
+
+  it("does not affect Claude or Codex when only cursor fails", () => {
+    const cards = cardsWithCursor({ active: false, observedAt: now - 10_000 });
+    expect(cards.find((c) => c.key === "claude_cli")?.live).toBe(true);
+    expect(cards.find((c) => c.key === "codex_cli")?.live).toBe(true);
+    expect(cards.find((c) => c.key === "nexus_connector")?.live).toBe(true);
+  });
+});
+
 describe("Claudia system status freshness derivation", () => {
   const now = Date.parse("2026-07-02T16:00:00Z");
 
