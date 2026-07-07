@@ -12,7 +12,11 @@ import { recordIdentityAuditEvent } from "./identityAudit";
 import { NEXUS_ERROR_CODES, nexusError } from "./lib/errors";
 import { grantRoleInternal, revokeRoleInternal } from "./roles";
 
-const roleValidator = v.union(v.literal("knowledge_reader"), v.literal("nexus_admin"));
+const roleValidator = v.union(
+  v.literal("knowledge_reader"),
+  v.literal("nexus_admin"),
+  v.literal("deep_researcher"),
+);
 
 export const listUsersByStatus = query({
   args: {

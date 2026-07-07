@@ -24,8 +24,8 @@ function UserRow({
   onApprove: (id: string) => void;
   onSuspend: (id: string) => void;
   onReactivate: (id: string) => void;
-  onGrant: (id: string, role: "knowledge_reader" | "nexus_admin") => void;
-  onRevoke: (id: string, role: "knowledge_reader" | "nexus_admin") => void;
+  onGrant: (id: string, role: "knowledge_reader" | "nexus_admin" | "deep_researcher") => void;
+  onRevoke: (id: string, role: "knowledge_reader" | "nexus_admin" | "deep_researcher") => void;
 }) {
   return (
     <li className="nexus-source-card">
@@ -66,6 +66,23 @@ function UserRow({
             onClick={() => onRevoke(user.clerkUserId, "knowledge_reader")}
           >
             Revoke knowledge_reader
+          </button>
+        )}
+        {!user.roles.includes("deep_researcher") ? (
+          <button
+            type="button"
+            className="nexus-btn nexus-btn-ghost"
+            onClick={() => onGrant(user.clerkUserId, "deep_researcher")}
+          >
+            Grant deep_researcher
+          </button>
+        ) : (
+          <button
+            type="button"
+            className="nexus-btn nexus-btn-ghost"
+            onClick={() => onRevoke(user.clerkUserId, "deep_researcher")}
+          >
+            Revoke deep_researcher
           </button>
         )}
         {!user.roles.includes("nexus_admin") ? (

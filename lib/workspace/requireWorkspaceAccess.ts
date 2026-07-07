@@ -3,6 +3,7 @@ import { getClerkDisplayNameHints } from "@/lib/auth/clerkDisplayNameHints";
 import { getNexusAccess } from "@/lib/auth/getNexusAccess";
 import { nexusAccessRedirectPath } from "@/lib/auth/nexusAccessRouting";
 import { resolveNexusDisplayName } from "@/lib/auth/nexusDisplayName";
+import { hasDeepResearchAccess } from "@/lib/auth/permissions";
 import type { NexusAccessResult } from "@/lib/auth/getNexusAccess";
 
 export type WorkspaceAccessContext = {
@@ -13,6 +14,7 @@ export type WorkspaceAccessContext = {
 
 export async function requireWorkspaceAccess(options?: {
   requiredRole?: "nexus_admin";
+  requiredAccess?: "deep_research";
 }): Promise<WorkspaceAccessContext> {
   const access = await getNexusAccess();
   const redirectPath = nexusAccessRedirectPath(access);
@@ -22,6 +24,12 @@ export async function requireWorkspaceAccess(options?: {
 
   if (options?.requiredRole === "nexus_admin") {
     if (!access.roles?.includes("nexus_admin")) {
+      redirect("/");
+    }
+  }
+
+  if (options?.requiredAccess === "deep_research") {
+    if (!hasDeepResearchAccess(access.roles ?? [])) {
       redirect("/");
     }
   }

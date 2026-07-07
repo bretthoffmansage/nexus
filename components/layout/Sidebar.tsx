@@ -14,6 +14,7 @@ type SidebarProps = {
   userLabel?: string;
   sidebarIdentityLabel?: string;
   isAdmin?: boolean;
+  canAccessDeepResearch?: boolean;
 };
 
 export function Sidebar({
@@ -24,6 +25,7 @@ export function Sidebar({
   userLabel,
   sidebarIdentityLabel,
   isAdmin,
+  canAccessDeepResearch,
 }: SidebarProps) {
   const identityLabel = sidebarIdentityLabel ?? SIDEBAR_IDENTITY_LOADING_LABEL;
 
@@ -52,7 +54,7 @@ export function Sidebar({
 
       <div className="nexus-sidebar-nav-scroll">
         <nav className="nexus-sidebar-nav" aria-label="Primary">
-          <ToolNavigation isAdmin={isAdmin} />
+          <ToolNavigation isAdmin={isAdmin} canAccessDeepResearch={canAccessDeepResearch} />
         </nav>
       </div>
 

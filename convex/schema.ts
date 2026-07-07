@@ -112,7 +112,11 @@ const userStatus = v.union(
   v.literal("suspended"),
 );
 
-const roleName = v.union(v.literal("knowledge_reader"), v.literal("nexus_admin"));
+const roleName = v.union(
+  v.literal("knowledge_reader"),
+  v.literal("nexus_admin"),
+  v.literal("deep_researcher"),
+);
 
 const identityEventType = v.union(
   v.literal("user_seen"),

@@ -6,7 +6,7 @@ import {
   requireAuthenticatedIdentity,
 } from "./auth";
 import { NEXUS_ERROR_CODES, nexusError } from "./errors";
-import type { NexusRole } from "./permissions";
+import { hasDeepResearchAccess, type NexusRole } from "./permissions";
 
 /**
  * P5 ownership boundary.
@@ -57,14 +57,30 @@ export function requireKnowledgeReader(
 
 /**
  * Convenience: the role required for admin-only tool pages (Email, Calendar,
- * Deep Research, Vault Library, Skills, Settings). Fails closed unless the
- * caller holds an active `nexus_admin` role. Shared task/read helpers that also
- * serve allowed pages (Chat/Tasks) intentionally keep `requireKnowledgeReader`.
+ * Vault Library, Skills, Settings). Fails closed unless the caller holds an
+ * active `nexus_admin` role. Shared task/read helpers that also serve allowed
+ * pages (Chat/Tasks) intentionally keep `requireKnowledgeReader`.
  */
 export function requireNexusAdmin(
   ctx: QueryCtx | MutationCtx,
 ): Promise<ApprovedActor> {
   return requireApprovedRole(ctx, "nexus_admin");
+}
+
+/**
+ * Deep Research authority. Granted to an active `nexus_admin`, or to a user
+ * holding BOTH active `knowledge_reader` and active `deep_researcher`
+ * (see hasDeepResearchAccess). Fails closed otherwise.
+ */
+export async function requireDeepResearchAccess(
+  ctx: QueryCtx | MutationCtx,
+): Promise<ApprovedActor> {
+  const actor = await getCurrentApprovedClerkUserId(ctx);
+  const roles = await getActiveRolesForUser(ctx, actor.clerkUserId);
+  if (!hasDeepResearchAccess(roles)) {
+    nexusError(NEXUS_ERROR_CODES.ROLE_REQUIRED, "Required role not assigned");
+  }
+  return actor;
 }
 
 export async function requireOwnedConversation(

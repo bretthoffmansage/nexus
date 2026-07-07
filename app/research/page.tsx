@@ -5,7 +5,7 @@ export const dynamic = "force-dynamic";
 
 export default async function ResearchPage() {
   return (
-    <ToolPageFrame requiredRole="nexus_admin">
+    <ToolPageFrame requiredAccess="deep_research">
       <ResearchWorkspace />
     </ToolPageFrame>
   );

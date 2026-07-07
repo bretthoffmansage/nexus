@@ -15,11 +15,12 @@ const GROUP_LABELS: Record<NexusToolGroup, string> = {
 
 type ToolNavigationProps = {
   isAdmin?: boolean;
+  canAccessDeepResearch?: boolean;
 };
 
-export function ToolNavigation({ isAdmin }: ToolNavigationProps) {
+export function ToolNavigation({ isAdmin, canAccessDeepResearch }: ToolNavigationProps) {
   const pathname = usePathname() ?? "/";
-  const tools = toolsForNavigation({ isAdmin });
+  const tools = toolsForNavigation({ isAdmin, canAccessDeepResearch });
 
   const groups = (["chat", "communication", "tools", "system", "admin"] as NexusToolGroup[]).filter(
     (group) => tools.some((tool) => tool.group === group),

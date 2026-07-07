@@ -11,6 +11,7 @@ type AppShellProps = {
   userLabel?: string;
   sidebarIdentityLabel?: string;
   isAdmin?: boolean;
+  canAccessDeepResearch?: boolean;
 };
 
 export function AppShell({
@@ -20,6 +21,7 @@ export function AppShell({
   userLabel,
   sidebarIdentityLabel,
   isAdmin,
+  canAccessDeepResearch,
 }: AppShellProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -38,6 +40,7 @@ export function AppShell({
           userLabel={userLabel}
           sidebarIdentityLabel={sidebarIdentityLabel}
           isAdmin={isAdmin}
+          canAccessDeepResearch={canAccessDeepResearch}
         />
 
         {sidebarOpen ? (

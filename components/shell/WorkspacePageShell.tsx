@@ -9,6 +9,7 @@ type WorkspacePageShellProps = {
   convexConnected: boolean;
   clerkEnabled: boolean;
   isAdmin?: boolean;
+  canAccessDeepResearch?: boolean;
 };
 
 export function WorkspacePageShell({
@@ -18,6 +19,7 @@ export function WorkspacePageShell({
   convexConnected,
   clerkEnabled,
   isAdmin,
+  canAccessDeepResearch,
 }: WorkspacePageShellProps) {
   return (
     <AppShell
@@ -26,6 +28,7 @@ export function WorkspacePageShell({
       userLabel={userLabel}
       sidebarIdentityLabel={sidebarIdentityLabel}
       isAdmin={isAdmin}
+      canAccessDeepResearch={canAccessDeepResearch}
     >
       <div className="nexus-tool-page">{children}</div>
     </AppShell>

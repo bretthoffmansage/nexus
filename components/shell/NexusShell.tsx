@@ -10,6 +10,7 @@ type NexusShellProps = {
   convexConnected: boolean;
   clerkEnabled: boolean;
   isAdmin?: boolean;
+  canAccessDeepResearch?: boolean;
   /** True when the signed-in user is an approved, active knowledge_reader. */
   canSubmit?: boolean;
 };
@@ -20,6 +21,7 @@ export function NexusShell({
   convexConnected,
   clerkEnabled,
   isAdmin,
+  canAccessDeepResearch,
   canSubmit = false,
 }: NexusShellProps) {
   return (
@@ -30,6 +32,7 @@ export function NexusShell({
         userLabel={userLabel}
         sidebarIdentityLabel={sidebarIdentityLabel}
         isAdmin={isAdmin}
+        canAccessDeepResearch={canAccessDeepResearch}
       >
         <NexusChatWorkspace />
       </AppShell>

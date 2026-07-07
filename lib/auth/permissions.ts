@@ -1,4 +1,5 @@
 export {
+  hasDeepResearchAccess,
   NEXUS_PERMISSIONS,
   NEXUS_ROLES,
   permissionsForRoles,

@@ -3,6 +3,7 @@ import { getClerkDisplayNameHints } from "@/lib/auth/clerkDisplayNameHints";
 import { getNexusAccess } from "@/lib/auth/getNexusAccess";
 import { nexusAccessRedirectPath } from "@/lib/auth/nexusAccessRouting";
 import { resolveNexusDisplayName } from "@/lib/auth/nexusDisplayName";
+import { hasDeepResearchAccess } from "@/lib/auth/permissions";
 import { NexusShell } from "@/components/shell/NexusShell";
 import { isClerkConfigured, isConvexConfigured } from "@/lib/env";
 
@@ -36,8 +37,8 @@ export default async function HomePage() {
     clerkUsername: clerkHints.clerkUsername,
     primaryEmail: access.primaryEmail,
   });
-  const canSubmit =
-    access.state === "approved" && (access.roles ?? []).includes("knowledge_reader");
+  const roles = access.roles ?? [];
+  const canSubmit = access.state === "approved" && roles.includes("knowledge_reader");
 
   return (
     <NexusShell
@@ -45,7 +46,8 @@ export default async function HomePage() {
       clerkEnabled={isClerkConfigured()}
       userLabel={sidebarIdentityLabel}
       sidebarIdentityLabel={sidebarIdentityLabel}
-      isAdmin={access.roles?.includes("nexus_admin")}
+      isAdmin={roles.includes("nexus_admin")}
+      canAccessDeepResearch={hasDeepResearchAccess(roles)}
       canSubmit={canSubmit}
     />
   );

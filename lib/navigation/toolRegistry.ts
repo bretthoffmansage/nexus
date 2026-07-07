@@ -11,6 +11,11 @@ export type NexusToolDefinition = {
   legacyModules: string[];
   availability: ToolAvailability;
   requiredRole?: "nexus_admin";
+  /**
+   * Non-admin access gate. `deep_research` is visible to an active nexus_admin
+   * or to a user with both active knowledge_reader and deep_researcher roles.
+   */
+  requiredAccess?: "deep_research";
   showInChatHistoryRegion?: boolean;
   /** Omit from sidebar navigation while keeping route/registry entry restorable. */
   hiddenFromNavigation?: boolean;
@@ -71,7 +76,7 @@ export const NEXUS_TOOL_REGISTRY: NexusToolDefinition[] = [
     legacyButtonId: "tool-research-btn",
     legacyModules: ["static/js/research/panel.js", "static/js/research/jobs.js"],
     availability: "available",
-    requiredRole: "nexus_admin",
+    requiredAccess: "deep_research",
   },
   {
     id: "gallery",
@@ -168,10 +173,14 @@ export const NEXUS_TOOL_REGISTRY: NexusToolDefinition[] = [
   },
 ];
 
-export function toolsForNavigation(options?: { isAdmin?: boolean }): NexusToolDefinition[] {
+export function toolsForNavigation(options?: {
+  isAdmin?: boolean;
+  canAccessDeepResearch?: boolean;
+}): NexusToolDefinition[] {
   return NEXUS_TOOL_REGISTRY.filter((tool) => {
     if (tool.hiddenFromNavigation) return false;
     if (tool.requiredRole === "nexus_admin" && !options?.isAdmin) return false;
+    if (tool.requiredAccess === "deep_research" && !options?.canAccessDeepResearch) return false;
     return true;
   });
 }

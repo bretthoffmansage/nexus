@@ -1,4 +1,4 @@
-export const NEXUS_ROLES = ["knowledge_reader", "nexus_admin"] as const;
+export const NEXUS_ROLES = ["knowledge_reader", "nexus_admin", "deep_researcher"] as const;
 export type NexusRole = (typeof NEXUS_ROLES)[number];
 
 export const NEXUS_PERMISSIONS = {
@@ -60,6 +60,10 @@ const ROLE_PERMISSIONS: Record<NexusRole, readonly NexusPermission[]> = {
     NEXUS_PERMISSIONS["identity.audit.read"],
     NEXUS_PERMISSIONS["diagnostics.read"],
   ],
+  // deep_researcher is a capability flag, not a standalone permission set. It
+  // only unlocks Deep Research when combined with an active knowledge_reader
+  // (see hasDeepResearchAccess). On its own it grants no Nexus content access.
+  deep_researcher: [],
 };
 
 export function permissionsForRoles(roles: readonly NexusRole[]): NexusPermission[] {
@@ -74,4 +78,17 @@ export function permissionsForRoles(roles: readonly NexusRole[]): NexusPermissio
 
 export function roleHasPermission(role: NexusRole, permission: NexusPermission): boolean {
   return ROLE_PERMISSIONS[role].includes(permission);
+}
+
+/**
+ * Canonical Deep Research access predicate. Access is granted when the user has
+ * an active `nexus_admin`, OR has BOTH active `knowledge_reader` and active
+ * `deep_researcher`. `deep_researcher` never implies `knowledge_reader`, so a
+ * user holding only `deep_researcher` receives no normal Nexus tool access.
+ */
+export function hasDeepResearchAccess(roles: readonly NexusRole[]): boolean {
+  if (roles.includes("nexus_admin")) {
+    return true;
+  }
+  return roles.includes("knowledge_reader") && roles.includes("deep_researcher");
 }
