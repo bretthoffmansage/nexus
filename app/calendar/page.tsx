@@ -5,7 +5,7 @@ export const dynamic = "force-dynamic";
 
 export default async function CalendarPage() {
   return (
-    <ToolPageFrame>
+    <ToolPageFrame requiredRole="nexus_admin">
       <CalendarWorkspace />
     </ToolPageFrame>
   );

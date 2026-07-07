@@ -14,7 +14,7 @@ import { LIBRARY_DROPZONE_TOOL_ID } from "@/convex/lib/libraryDropzoneConfig";
 import { MEMBERSHIP_FULL_SYNC_TOOL_ID } from "@/convex/lib/p6config";
 import { P5_TOOL_DISPLAY_TITLES } from "@/convex/lib/p5config";
 import { NEXUS_TOOL_REGISTRY } from "@/lib/navigation/toolRegistry";
-import { IDENTITY_A, p5Test, seedApprovedReader } from "./helpers/convexP5";
+import { IDENTITY_A, p5Test, seedApprovedAdmin } from "./helpers/convexP5";
 import { seedConnector } from "./helpers/convexP6";
 
 const ROOT = path.resolve(import.meta.dirname, "..");
@@ -99,7 +99,7 @@ describe("Nexus Skills catalog", () => {
 
   it("listSkillsCatalog returns a non-empty grouped catalog", async () => {
     const t = p5Test();
-    await seedApprovedReader(t, IDENTITY_A);
+    await seedApprovedAdmin(t, IDENTITY_A);
     await seedConnector(t);
     const catalog = await t.withIdentity(IDENTITY_A).query(api.skillsCatalog.listSkillsCatalog, {});
     expect(catalog.sections.length).toBeGreaterThan(0);
@@ -113,7 +113,7 @@ describe("Nexus Skills catalog", () => {
 
   it("listSkillsCatalog returns known tools without an active Connector", async () => {
     const t = p5Test();
-    await seedApprovedReader(t, IDENTITY_A);
+    await seedApprovedAdmin(t, IDENTITY_A);
     const catalog = await t.withIdentity(IDENTITY_A).query(api.skillsCatalog.listSkillsCatalog, {});
     const tools = catalog.sections.flatMap((s) => s.tools);
     expect(tools.map((t) => t.toolId)).toEqual(NEXUS_SKILLS_CATALOG_TOOL_IDS);

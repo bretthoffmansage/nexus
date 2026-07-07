@@ -16,7 +16,7 @@ import {
 import { CALENDAR_SCHEDULE, scheduledEventIdempotencyKey } from "@/convex/lib/calendarScheduleConfig";
 import { isSupportedToolId, P5_SUPPORTED_TOOL_IDS, P5_TOOL_DISPLAY_TITLES } from "@/convex/lib/p5config";
 import { KNOWN_CONNECTOR_TOOL_IDS } from "@/convex/lib/p6config";
-import { IDENTITY_A, p5Test, seedApprovedReader } from "./helpers/convexP5";
+import { IDENTITY_A, p5Test, seedApprovedAdmin } from "./helpers/convexP5";
 import {
   clearConnectorEnv,
   installConnectorEnv,
@@ -103,7 +103,7 @@ describe("Membership.io full sync Calendar option", () => {
 
   it("listAllowedScheduledTools marks full sync unavailable without Connector capability", async () => {
     const t = p5Test();
-    await seedApprovedReader(t, IDENTITY_A);
+    await seedApprovedAdmin(t, IDENTITY_A);
     const tools = await t.withIdentity(IDENTITY_A).query(api.scheduledEvents.listAllowedScheduledTools, {});
     expect(tools).toHaveLength(5);
     const fullSync = tools.find((tool) => tool.id === MEMBERSHIP_FULL_SYNC_TOOL_ID);
@@ -116,7 +116,7 @@ describe("Membership.io full sync Calendar option", () => {
 
   it("rejects server-side save when Connector capability is absent", async () => {
     const t = p5Test();
-    await seedApprovedReader(t, IDENTITY_A);
+    await seedApprovedAdmin(t, IDENTITY_A);
     await expect(
       t.withIdentity(IDENTITY_A).mutation(api.scheduledEvents.createMyScheduledEvent, {
         title: "Membership refresh",
@@ -131,7 +131,7 @@ describe("Membership.io full sync Calendar option", () => {
 
   it("does not place hidden stale task text in requestText for no-input save", async () => {
     const t = p5Test();
-    await seedApprovedReader(t, IDENTITY_A);
+    await seedApprovedAdmin(t, IDENTITY_A);
     await seedConnector(t, {
       allowedToolIds: [...P5_SUPPORTED_TOOL_IDS, MEMBERSHIP_FULL_SYNC_TOOL_ID],
     });
@@ -155,7 +155,7 @@ describe("Membership.io full sync Calendar option", () => {
 
   it("text tools still require task request", async () => {
     const t = p5Test();
-    await seedApprovedReader(t, IDENTITY_A);
+    await seedApprovedAdmin(t, IDENTITY_A);
     await expect(
       t.withIdentity(IDENTITY_A).mutation(api.scheduledEvents.createMyScheduledEvent, {
         title: "Vault run",
@@ -175,7 +175,7 @@ describe("Membership.io full sync Calendar option", () => {
 
   it("dispatches membership full sync with Claudia contract metadata when Connector allows it", async () => {
     const t = p5Test();
-    await seedApprovedReader(t, IDENTITY_A);
+    await seedApprovedAdmin(t, IDENTITY_A);
     await seedConnector(t, {
       allowedToolIds: [...P5_SUPPORTED_TOOL_IDS, MEMBERSHIP_FULL_SYNC_TOOL_ID],
     });
@@ -227,7 +227,7 @@ describe("Membership.io full sync Calendar option", () => {
 
   it("duplicate scheduler passes create only one membership task", async () => {
     const t = p5Test();
-    await seedApprovedReader(t, IDENTITY_A);
+    await seedApprovedAdmin(t, IDENTITY_A);
     await seedConnector(t, {
       allowedToolIds: [...P5_SUPPORTED_TOOL_IDS, MEMBERSHIP_FULL_SYNC_TOOL_ID],
     });
@@ -250,7 +250,7 @@ describe("Membership.io full sync Calendar option", () => {
 
   it("blocks overlapping active full sync tasks and retries later", async () => {
     const t = p5Test();
-    await seedApprovedReader(t, IDENTITY_A);
+    await seedApprovedAdmin(t, IDENTITY_A);
     await seedConnector(t, {
       allowedToolIds: [...P5_SUPPORTED_TOOL_IDS, MEMBERSHIP_FULL_SYNC_TOOL_ID],
     });
@@ -330,7 +330,7 @@ describe("Membership.io full sync Calendar option", () => {
 
   it("dispatch rechecks Connector capability server-side", async () => {
     const t = p5Test();
-    await seedApprovedReader(t, IDENTITY_A);
+    await seedApprovedAdmin(t, IDENTITY_A);
     const past = Date.now() - 60_000;
     const now = Date.now();
     const eventId = await t.run(async (ctx) =>
@@ -366,7 +366,7 @@ describe("Membership.io full sync Calendar option", () => {
 
   it("existing text scheduled task still dispatches normally", async () => {
     const t = p5Test();
-    await seedApprovedReader(t, IDENTITY_A);
+    await seedApprovedAdmin(t, IDENTITY_A);
     const past = Date.now() - 60_000;
     const now = Date.now();
     const eventId = await t.run(async (ctx) =>
@@ -416,7 +416,7 @@ describe("Membership.io full sync Calendar terminal projection", () => {
   afterEach(() => clearConnectorEnv());
 
   async function dispatchRunningMembershipTask(t: ReturnType<typeof p5Test>) {
-    await seedApprovedReader(t, IDENTITY_A);
+    await seedApprovedAdmin(t, IDENTITY_A);
     await seedConnector(t, {
       allowedToolIds: [...P5_SUPPORTED_TOOL_IDS, MEMBERSHIP_FULL_SYNC_TOOL_ID],
     });

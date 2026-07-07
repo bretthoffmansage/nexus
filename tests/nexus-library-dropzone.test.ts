@@ -7,7 +7,7 @@ import {
   LIBRARY_MAX_UPLOAD_BYTES,
 } from "@/convex/lib/libraryDropzoneConfig";
 import { sha256HexFromBytes } from "@/convex/lib/librarySha256";
-import { IDENTITY_A, IDENTITY_B, p5Test, seedApprovedReader, type P5Test } from "./helpers/convexP5";
+import { IDENTITY_A, IDENTITY_B, p5Test, seedApprovedAdmin, type P5Test } from "./helpers/convexP5";
 import {
   clearConnectorEnv,
   installConnectorEnv,
@@ -77,7 +77,7 @@ async function processVersion(
 describe("Nexus Library Dropzone upload and attachment protocol", () => {
   it("authenticated upload finalization creates an immutable version with digest", async () => {
     const t = p5Test();
-    await seedApprovedReader(t, IDENTITY_A);
+    await seedApprovedAdmin(t, IDENTITY_A);
     const content = new TextEncoder().encode("hello dropzone");
     const result = await seedLibraryVersion(t, IDENTITY_A, "note.txt", content);
     expect(result.processingStatus).toBe("uploaded");
@@ -92,7 +92,7 @@ describe("Nexus Library Dropzone upload and attachment protocol", () => {
 
   it("rejects unsupported and denied extensions", async () => {
     const t = p5Test();
-    await seedApprovedReader(t, IDENTITY_A);
+    await seedApprovedAdmin(t, IDENTITY_A);
     const zip = await seedLibraryVersion(t, IDENTITY_A, "bad.zip", new Uint8Array([1, 2, 3]), "application/zip", "unsupported");
     expect(zip.processingStatus).toBe("unsupported");
     const key = await seedLibraryVersion(t, IDENTITY_A, "deck.key", new Uint8Array([1]), "application/octet-stream", "unsupported");
@@ -101,7 +101,7 @@ describe("Nexus Library Dropzone upload and attachment protocol", () => {
 
   it("rejects oversized uploads at finalization", async () => {
     const t = p5Test();
-    await seedApprovedReader(t, IDENTITY_A);
+    await seedApprovedAdmin(t, IDENTITY_A);
     const storageId = await t.run(async (ctx) =>
       ctx.storage.store(new Blob([new Uint8Array(16)])),
     );
@@ -120,7 +120,7 @@ describe("Nexus Library Dropzone upload and attachment protocol", () => {
 
   it("process creates one nexusTasks row with dropzone tool and metadata", async () => {
     const t = p5Test();
-    await seedApprovedReader(t, IDENTITY_A);
+    await seedApprovedAdmin(t, IDENTITY_A);
     await seedConnector(t, {
       allowedToolIds: [LIBRARY_DROPZONE_TOOL_ID, "vault.agentic_retrieval"],
     });
@@ -148,7 +148,7 @@ describe("Nexus Library Dropzone upload and attachment protocol", () => {
 
   it("duplicate process returns the existing active task", async () => {
     const t = p5Test();
-    await seedApprovedReader(t, IDENTITY_A);
+    await seedApprovedAdmin(t, IDENTITY_A);
     const uploaded = await seedLibraryVersion(t, IDENTITY_A, "dup.txt", new TextEncoder().encode("x"));
     const first = await processVersion(t, IDENTITY_A, uploaded.documentVersionId);
     const second = await processVersion(t, IDENTITY_A, uploaded.documentVersionId);
@@ -163,7 +163,7 @@ describe("Nexus Library Dropzone upload and attachment protocol", () => {
 
   it("claim includes attachment descriptor without bytes or owner id", async () => {
     const t = p5Test();
-    await seedApprovedReader(t, IDENTITY_A);
+    await seedApprovedAdmin(t, IDENTITY_A);
     await seedConnector(t, { allowedToolIds: [LIBRARY_DROPZONE_TOOL_ID] });
     const uploaded = await seedLibraryVersion(t, IDENTITY_A, "claim.pdf", new Uint8Array([0x25, 0x50, 0x44, 0x46]), "application/pdf");
     await processVersion(t, IDENTITY_A, uploaded.documentVersionId);
@@ -180,7 +180,7 @@ describe("Nexus Library Dropzone upload and attachment protocol", () => {
 
   it("text-only chat claim remains backward compatible", async () => {
     const t = p5Test();
-    await seedApprovedReader(t, IDENTITY_A);
+    await seedApprovedAdmin(t, IDENTITY_A);
     await seedConnector(t);
     await t.withIdentity(IDENTITY_A).mutation(api.tasks.submitKnowledgeRequest, {
       requestText: "plain chat task",
@@ -195,8 +195,8 @@ describe("Nexus Library Dropzone upload and attachment protocol", () => {
 
   it("user cannot read or process another user's version", async () => {
     const t = p5Test();
-    await seedApprovedReader(t, IDENTITY_A);
-    await seedApprovedReader(t, IDENTITY_B);
+    await seedApprovedAdmin(t, IDENTITY_A);
+    await seedApprovedAdmin(t, IDENTITY_B);
     const uploaded = await seedLibraryVersion(t, IDENTITY_A, "private.txt", new TextEncoder().encode("secret"));
     await expect(
       t.withIdentity(IDENTITY_B).query(api.libraryDocuments.listMyLibraryVersions, {}),
@@ -208,7 +208,7 @@ describe("Nexus Library Dropzone upload and attachment protocol", () => {
 
   it("terminal dropzone result projects library status idempotently", async () => {
     const t = p5Test();
-    await seedApprovedReader(t, IDENTITY_A);
+    await seedApprovedAdmin(t, IDENTITY_A);
     await seedConnector(t, { allowedToolIds: [LIBRARY_DROPZONE_TOOL_ID] });
     const uploaded = await seedLibraryVersion(t, IDENTITY_A, "done.md", new TextEncoder().encode("# hi"), "text/markdown");
     const proc = await processVersion(t, IDENTITY_A, uploaded.documentVersionId);
@@ -252,7 +252,7 @@ describe("Nexus Library Dropzone upload and attachment protocol", () => {
 
   it("uses only the canonical nexusTasks queue", async () => {
     const t = p5Test();
-    await seedApprovedReader(t, IDENTITY_A);
+    await seedApprovedAdmin(t, IDENTITY_A);
     const uploaded = await seedLibraryVersion(t, IDENTITY_A, "q.txt", new TextEncoder().encode("q"));
     const proc = await processVersion(t, IDENTITY_A, uploaded.documentVersionId);
     const task = await t.run(async (ctx) => ctx.db.get(proc.taskId as Id<"nexusTasks">));
@@ -266,7 +266,7 @@ describe("Nexus Library Dropzone upload and attachment protocol", () => {
 
 describe("Nexus Library status projection lifecycle", () => {
   async function runToProcessing(t: P5Test) {
-    await seedApprovedReader(t, IDENTITY_A);
+    await seedApprovedAdmin(t, IDENTITY_A);
     await seedConnector(t, { allowedToolIds: [LIBRARY_DROPZONE_TOOL_ID] });
     const uploaded = await seedLibraryVersion(
       t,
@@ -376,7 +376,7 @@ describe("Nexus Library status projection lifecycle", () => {
 describe("Nexus Library retry of blocked runs", () => {
   it("allows reprocessing a needs_review version whose stop was retryable", async () => {
     const t = p5Test();
-    await seedApprovedReader(t, IDENTITY_A);
+    await seedApprovedAdmin(t, IDENTITY_A);
     await seedConnector(t, { allowedToolIds: [LIBRARY_DROPZONE_TOOL_ID] });
     const uploaded = await seedLibraryVersion(
       t,
@@ -419,7 +419,7 @@ describe("Nexus Library retry of blocked runs", () => {
 
   it("still rejects reprocessing for processed and non-retryable needs_review versions", async () => {
     const t = p5Test();
-    await seedApprovedReader(t, IDENTITY_A);
+    await seedApprovedAdmin(t, IDENTITY_A);
     const uploaded = await seedLibraryVersion(
       t,
       IDENTITY_A,

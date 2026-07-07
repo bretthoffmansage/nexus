@@ -50,7 +50,7 @@ import {
   formatResearchDuration,
 } from "@/lib/nexus/deepResearchView";
 import { isSafeHttpUrl } from "@/lib/nexus/safeHttpUrl";
-import { IDENTITY_A, p5Test, seedApprovedReader } from "./helpers/convexP5";
+import { IDENTITY_A, p5Test, seedApprovedAdmin } from "./helpers/convexP5";
 
 const ROOT = path.resolve(import.meta.dirname, "..");
 
@@ -194,7 +194,7 @@ describe("Nexus Deep Research handoff", () => {
   describe("submission through nexusTasks", () => {
     it("creates a deep_research task without conversation fields", async () => {
       const t = p5Test();
-      await seedApprovedReader(t, IDENTITY_A);
+      await seedApprovedAdmin(t, IDENTITY_A);
       const asUser = t.withIdentity(IDENTITY_A);
 
       const submit = await asUser.mutation(api.deepResearch.submitDeepResearch, {

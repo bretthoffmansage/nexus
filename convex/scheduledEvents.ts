@@ -21,8 +21,7 @@ import {
 } from "./lib/calendarTimezone";
 import { NEXUS_ERROR_CODES, nexusError } from "./lib/errors";
 import {
-  getCurrentApprovedClerkUserId,
-  requireKnowledgeReader,
+  requireNexusAdmin,
   requireOwnedScheduledEvent,
 } from "./lib/ownership";
 import { clampLength, P5_LIMITS } from "./lib/p5config";
@@ -179,7 +178,7 @@ export const listMyScheduledEventsForRange = query({
     endDate: v.string(),
   },
   handler: async (ctx, args) => {
-    const { clerkUserId } = await requireKnowledgeReader(ctx);
+    const { clerkUserId } = await requireNexusAdmin(ctx);
     if (args.startDate > args.endDate) {
       nexusError(NEXUS_ERROR_CODES.INVALID_INPUT, "Invalid date range");
     }
@@ -199,7 +198,7 @@ export const listMyScheduledEventsForRange = query({
 export const getMyScheduledEvent = query({
   args: { eventId: v.id("nexusScheduledEvents") },
   handler: async (ctx, args) => {
-    const { clerkUserId } = await requireKnowledgeReader(ctx);
+    const { clerkUserId } = await requireNexusAdmin(ctx);
     const event = await requireOwnedScheduledEvent(ctx, clerkUserId, args.eventId);
     return projectEvent(event);
   },
@@ -208,7 +207,7 @@ export const getMyScheduledEvent = query({
 export const getMyScheduledEventTaskResult = query({
   args: { eventId: v.id("nexusScheduledEvents") },
   handler: async (ctx, args) => {
-    const { clerkUserId } = await requireKnowledgeReader(ctx);
+    const { clerkUserId } = await requireNexusAdmin(ctx);
     const event = await requireOwnedScheduledEvent(ctx, clerkUserId, args.eventId);
     if (!event.linkedTaskId) return null;
     const result = await ctx.db
@@ -247,7 +246,7 @@ export const createMyScheduledEvent = mutation({
     deepResearchReportRules: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const { clerkUserId } = await getCurrentApprovedClerkUserId(ctx);
+    const { clerkUserId } = await requireNexusAdmin(ctx);
     const scheduledForUtc = await validateScheduleInputAsync(ctx, args);
     const now = Date.now();
     const { localScheduledDate, localScheduledTime } = formatLocalDateTime(
@@ -301,7 +300,7 @@ export const updateMyScheduledEvent = mutation({
     deepResearchReportRules: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const { clerkUserId } = await getCurrentApprovedClerkUserId(ctx);
+    const { clerkUserId } = await requireNexusAdmin(ctx);
     const event = await requireOwnedScheduledEvent(ctx, clerkUserId, args.eventId);
     if (!isCalendarEventEditable(event)) {
       nexusError(NEXUS_ERROR_CODES.SCHEDULED_EVENT_NOT_EDITABLE, "Event cannot be edited");
@@ -367,7 +366,7 @@ export const updateMyScheduledEvent = mutation({
 export const deleteMyScheduledEvent = mutation({
   args: { eventId: v.id("nexusScheduledEvents") },
   handler: async (ctx, args) => {
-    const { clerkUserId } = await getCurrentApprovedClerkUserId(ctx);
+    const { clerkUserId } = await requireNexusAdmin(ctx);
     const event = await requireOwnedScheduledEvent(ctx, clerkUserId, args.eventId);
     if (!isCalendarEventDeletable(event)) {
       nexusError(
@@ -390,7 +389,7 @@ export const deleteMyScheduledEvent = mutation({
 export const listAllowedScheduledTools = query({
   args: {},
   handler: async (ctx) => {
-    await requireKnowledgeReader(ctx);
+    await requireNexusAdmin(ctx);
     const tools = await Promise.all(
       CALENDAR_SCHEDULED_TOOLS.map(async (tool) => {
         const available = await isCalendarScheduledToolAvailable(ctx, tool.requestedToolId);

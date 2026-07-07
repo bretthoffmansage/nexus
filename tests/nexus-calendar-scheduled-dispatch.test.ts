@@ -9,7 +9,7 @@ import {
 } from "@/convex/lib/calendarScheduleConfig";
 import { localDateTimeToUtcMs } from "@/convex/lib/calendarTimezone";
 import { NEXUS_TOOL_REGISTRY } from "@/lib/navigation/toolRegistry";
-import { IDENTITY_A, IDENTITY_B, p5Test, seedApprovedReader } from "./helpers/convexP5";
+import { IDENTITY_A, IDENTITY_B, p5Test, seedApprovedAdmin } from "./helpers/convexP5";
 
 const ROOT = path.resolve(import.meta.dirname, "..");
 
@@ -111,7 +111,7 @@ describe("Nexus Calendar navigation and badge policy", () => {
 describe("Nexus Calendar scheduled task dispatch", () => {
   it("authenticated user can create a private scheduled event", async () => {
     const t = p5Test();
-    await seedApprovedReader(t, IDENTITY_A);
+    await seedApprovedAdmin(t, IDENTITY_A);
     const future = new Date(Date.now() + 24 * 60 * 60 * 1000);
     const localScheduledDate = future.toISOString().slice(0, 10);
     const localScheduledTime = `${String(future.getUTCHours()).padStart(2, "0")}:${String(future.getUTCMinutes()).padStart(2, "0")}`;
@@ -151,8 +151,8 @@ describe("Nexus Calendar scheduled task dispatch", () => {
 
   it("user A cannot read user B events", async () => {
     const t = p5Test();
-    await seedApprovedReader(t, IDENTITY_A);
-    await seedApprovedReader(t, IDENTITY_B);
+    await seedApprovedAdmin(t, IDENTITY_A);
+    await seedApprovedAdmin(t, IDENTITY_B);
     const { eventId } = await t.withIdentity(IDENTITY_A).mutation(api.scheduledEvents.createMyScheduledEvent, {
       title: "Private",
       taskRequest: "Secret task",
@@ -181,7 +181,7 @@ describe("Nexus Calendar scheduled task dispatch", () => {
 
   it("does not dispatch before scheduled UTC instant", async () => {
     const t = p5Test();
-    await seedApprovedReader(t, IDENTITY_A);
+    await seedApprovedAdmin(t, IDENTITY_A);
     const futureMs = Date.now() + 5 * 60 * 1000 + 30_000;
     const d = new Date(futureMs);
     const localScheduledDate = d.toISOString().slice(0, 10);
@@ -203,7 +203,7 @@ describe("Nexus Calendar scheduled task dispatch", () => {
 
   it("dispatches exactly one task when due and preserves owner", async () => {
     const t = p5Test();
-    await seedApprovedReader(t, IDENTITY_A);
+    await seedApprovedAdmin(t, IDENTITY_A);
     const past = Date.now() - 60_000;
     const d = new Date(past);
     const { eventId } = await t.run(async (ctx) => {
@@ -253,7 +253,7 @@ describe("Nexus Calendar scheduled task dispatch", () => {
 
   it("deleted future events never dispatch", async () => {
     const t = p5Test();
-    await seedApprovedReader(t, IDENTITY_A);
+    await seedApprovedAdmin(t, IDENTITY_A);
     const past = Date.now() - 30_000;
     const eventId = await t.run(async (ctx) => {
       const now = Date.now();
@@ -290,7 +290,7 @@ describe("Nexus Calendar scheduled task dispatch", () => {
 
   it("future undispatched events remain editable", async () => {
     const t = p5Test();
-    await seedApprovedReader(t, IDENTITY_A);
+    await seedApprovedAdmin(t, IDENTITY_A);
     const { eventId } = await t.withIdentity(IDENTITY_A).mutation(api.scheduledEvents.createMyScheduledEvent, {
       title: "Original",
       taskRequest: "Original request",
@@ -314,7 +314,7 @@ describe("Nexus Calendar scheduled task dispatch", () => {
 
   it("rejects arbitrary tool IDs", async () => {
     const t = p5Test();
-    await seedApprovedReader(t, IDENTITY_A);
+    await seedApprovedAdmin(t, IDENTITY_A);
     await expect(
       t.withIdentity(IDENTITY_A).mutation(api.scheduledEvents.createMyScheduledEvent, {
         title: "Bad tool",

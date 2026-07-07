@@ -4,7 +4,7 @@ import { api, internal } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import { LIBRARY_DROPZONE_TOOL_ID } from "@/convex/lib/libraryDropzoneConfig";
 import { sha256HexFromBytes } from "@/convex/lib/librarySha256";
-import { IDENTITY_A, key, p5Test, seedApprovedReader, type P5Test } from "./helpers/convexP5";
+import { IDENTITY_A, key, p5Test, seedApprovedAdmin, type P5Test } from "./helpers/convexP5";
 import {
   clearConnectorEnv,
   installConnectorEnv,
@@ -74,7 +74,7 @@ async function queueDropzoneTask(t: P5Test): Promise<Id<"nexusTasks">> {
 describe("P6 Connector allowed-tools administrative update", () => {
   it("reproduces the field failure: a pre-Dropzone allowlist skips the queued Library task", async () => {
     const t = p5Test();
-    await seedApprovedReader(t, IDENTITY_A);
+    await seedApprovedAdmin(t, IDENTITY_A);
     // Connector bootstrapped before the Dropzone tool existed.
     await seedConnector(t, { allowedToolIds: READ_ONLY_TOOL_IDS });
     await queueDropzoneTask(t);
@@ -86,7 +86,7 @@ describe("P6 Connector allowed-tools administrative update", () => {
 
   it("setConnectorAllowedTools makes the SAME queued task claimable without recreation", async () => {
     const t = p5Test();
-    await seedApprovedReader(t, IDENTITY_A);
+    await seedApprovedAdmin(t, IDENTITY_A);
     await seedConnector(t, { allowedToolIds: READ_ONLY_TOOL_IDS });
     const taskId = await queueDropzoneTask(t);
     expect((await claim(t)).status).toBe("idle");
@@ -142,7 +142,7 @@ describe("P6 Connector allowed-tools administrative update", () => {
 
   it("still claims read-only tools after the update, honoring global queue order", async () => {
     const t = p5Test();
-    await seedApprovedReader(t, IDENTITY_A);
+    await seedApprovedAdmin(t, IDENTITY_A);
     await seedConnector(t, { allowedToolIds: READ_ONLY_TOOL_IDS });
     // Chat task queued FIRST, Dropzone task second.
     const chat = await t.withIdentity(IDENTITY_A).mutation(api.tasks.submitKnowledgeRequest, {
@@ -186,7 +186,7 @@ describe("P6 Connector allowed-tools administrative update", () => {
 
   it("a Connector still lacking the Dropzone capability cannot claim the Library task", async () => {
     const t = p5Test();
-    await seedApprovedReader(t, IDENTITY_A);
+    await seedApprovedAdmin(t, IDENTITY_A);
     await seedConnector(t, { allowedToolIds: FULL_TOOL_IDS });
     await seedConnector(t, { connectorId: "connector-readonly", allowedToolIds: READ_ONLY_TOOL_IDS });
     const taskId = await queueDropzoneTask(t);

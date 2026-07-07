@@ -4,7 +4,7 @@ import { api, internal } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import { LIBRARY_DROPZONE_TOOL_ID } from "@/convex/lib/libraryDropzoneConfig";
 import { sha256HexFromBytes } from "@/convex/lib/librarySha256";
-import { IDENTITY_A, p5Test, seedApprovedReader, type P5Test } from "./helpers/convexP5";
+import { IDENTITY_A, p5Test, seedApprovedAdmin, type P5Test } from "./helpers/convexP5";
 import {
   clearConnectorEnv,
   fetchSigned,
@@ -58,7 +58,7 @@ async function seedLibraryVersion(
 }
 
 async function claimStartedLibraryTask(t: P5Test, bytes: Uint8Array) {
-  await seedApprovedReader(t, IDENTITY_A);
+  await seedApprovedAdmin(t, IDENTITY_A);
   await seedConnector(t, { allowedToolIds: [LIBRARY_DROPZONE_TOOL_ID] });
   const uploaded = await seedLibraryVersion(t, bytes);
   const proc = await t.withIdentity(IDENTITY_A).mutation(api.libraryDocuments.processMyDocumentVersion, {
@@ -225,7 +225,7 @@ describe("Nexus signed attachment download route", () => {
 
   it("library re-process creates a fresh attachment row bound to the new task", async () => {
     const t = p5Test();
-    await seedApprovedReader(t, IDENTITY_A);
+    await seedApprovedAdmin(t, IDENTITY_A);
     const bytes = new TextEncoder().encode("# retry document\n".repeat(40));
     const uploaded = await seedLibraryVersion(t, bytes);
     const first = await t.withIdentity(IDENTITY_A).mutation(api.libraryDocuments.processMyDocumentVersion, {

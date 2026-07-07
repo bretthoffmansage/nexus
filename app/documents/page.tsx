@@ -5,7 +5,7 @@ export const dynamic = "force-dynamic";
 
 export default async function DocumentsPage() {
   return (
-    <ToolPageFrame>
+    <ToolPageFrame requiredRole="nexus_admin">
       <DocumentsWorkspace />
     </ToolPageFrame>
   );

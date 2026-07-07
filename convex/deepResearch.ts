@@ -7,7 +7,7 @@ import {
   DEEP_RESEARCH_TOOL_ID,
 } from "./lib/deepResearchConfig";
 import { NEXUS_ERROR_CODES, nexusError } from "./lib/errors";
-import { requireKnowledgeReader } from "./lib/ownership";
+import { requireNexusAdmin } from "./lib/ownership";
 import { clampLength, clampPageSize, P5_LIMITS, P5_QUEUE } from "./lib/p5config";
 import { appendProgress, recordAudit } from "./lib/p5writes";
 import { allocateQueueSequence, defaultQueuePriority } from "./lib/queue";
@@ -52,7 +52,7 @@ function projectDeepResearchTask(doc: Doc<"nexusTasks">) {
 }
 
 async function findByIdempotencyKey(
-  ctx: Parameters<typeof requireKnowledgeReader>[0],
+  ctx: Parameters<typeof requireNexusAdmin>[0],
   clerkUserId: string,
   idempotencyKey: string,
 ): Promise<Doc<"nexusTasks"> | null> {
@@ -94,7 +94,7 @@ export const submitDeepResearch = mutation({
     requestedModelId: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const { clerkUserId } = await requireKnowledgeReader(ctx);
+    const { clerkUserId } = await requireNexusAdmin(ctx);
 
     if (!P5_QUEUE.allowQueueWithoutConnector) {
       nexusError(NEXUS_ERROR_CODES.QUEUE_UNAVAILABLE, "Queue is not accepting new work");
@@ -187,7 +187,7 @@ export const listMyDeepResearchTasks = query({
     status: v.optional(taskStatusValidator),
   },
   handler: async (ctx, args) => {
-    const { clerkUserId } = await requireKnowledgeReader(ctx);
+    const { clerkUserId } = await requireNexusAdmin(ctx);
     const limit = clampPageSize(args.limit, P5_LIMITS.tasksPageSize, P5_LIMITS.tasksPageSizeMax);
     const fetchSize = Math.min(limit * 4, P5_LIMITS.tasksPageSizeMax * 2);
     const rows = await ctx.db

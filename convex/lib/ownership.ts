@@ -55,6 +55,18 @@ export function requireKnowledgeReader(
   return requireApprovedRole(ctx, "knowledge_reader");
 }
 
+/**
+ * Convenience: the role required for admin-only tool pages (Email, Calendar,
+ * Deep Research, Vault Library, Skills, Settings). Fails closed unless the
+ * caller holds an active `nexus_admin` role. Shared task/read helpers that also
+ * serve allowed pages (Chat/Tasks) intentionally keep `requireKnowledgeReader`.
+ */
+export function requireNexusAdmin(
+  ctx: QueryCtx | MutationCtx,
+): Promise<ApprovedActor> {
+  return requireApprovedRole(ctx, "nexus_admin");
+}
+
 export async function requireOwnedConversation(
   ctx: QueryCtx | MutationCtx,
   clerkUserId: string,

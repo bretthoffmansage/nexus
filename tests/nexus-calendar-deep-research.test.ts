@@ -27,7 +27,7 @@ import {
 import { MEMBERSHIP_FULL_SYNC_TOOL_ID } from "@/convex/lib/p6config";
 import { P5_SUPPORTED_TOOL_IDS } from "@/convex/lib/p5config";
 import { SKILLS_CATALOG_TOOL_DEFS } from "@/convex/lib/nexusSkillsCatalog";
-import { IDENTITY_A, p5Test, seedApprovedReader } from "./helpers/convexP5";
+import { IDENTITY_A, p5Test, seedApprovedAdmin } from "./helpers/convexP5";
 import { clearConnectorEnv, installConnectorEnv, seedConnector } from "./helpers/convexP6";
 
 const ROOT = path.resolve(import.meta.dirname, "..");
@@ -105,7 +105,7 @@ describe("Calendar Deep Research scheduling", () => {
 
     it("marks Deep Research unavailable without Connector capability", async () => {
       const t = p5Test();
-      await seedApprovedReader(t, IDENTITY_A);
+      await seedApprovedAdmin(t, IDENTITY_A);
       const tools = await t
         .withIdentity(IDENTITY_A)
         .query(api.scheduledEvents.listAllowedScheduledTools, {});
@@ -116,7 +116,7 @@ describe("Calendar Deep Research scheduling", () => {
 
     it("enables Deep Research when Connector advertises the tool", async () => {
       const t = p5Test();
-      await seedApprovedReader(t, IDENTITY_A);
+      await seedApprovedAdmin(t, IDENTITY_A);
       await seedConnector(t, {
         allowedToolIds: [...P5_SUPPORTED_TOOL_IDS, DEEP_RESEARCH_TOOL_ID],
       });
@@ -153,7 +153,7 @@ describe("Calendar Deep Research scheduling", () => {
 
     it("rejects blank research request and oversized composed payload server-side", async () => {
       const t = p5Test();
-      await seedApprovedReader(t, IDENTITY_A);
+      await seedApprovedAdmin(t, IDENTITY_A);
       await seedConnector(t, {
         allowedToolIds: [...P5_SUPPORTED_TOOL_IDS, DEEP_RESEARCH_TOOL_ID],
       });
@@ -187,7 +187,7 @@ describe("Calendar Deep Research scheduling", () => {
 
     it("stores raw request and rules at creation without pre-composing taskRequest", async () => {
       const t = p5Test();
-      await seedApprovedReader(t, IDENTITY_A);
+      await seedApprovedAdmin(t, IDENTITY_A);
       await seedConnector(t, {
         allowedToolIds: [...P5_SUPPORTED_TOOL_IDS, DEEP_RESEARCH_TOOL_ID],
       });
@@ -208,7 +208,7 @@ describe("Calendar Deep Research scheduling", () => {
 
     it("rejects scheduling when Connector capability is absent", async () => {
       const t = p5Test();
-      await seedApprovedReader(t, IDENTITY_A);
+      await seedApprovedAdmin(t, IDENTITY_A);
       await expect(
         t.withIdentity(IDENTITY_A).mutation(api.scheduledEvents.createMyScheduledEvent, {
           title: "Research",
@@ -264,7 +264,7 @@ describe("Calendar Deep Research scheduling", () => {
 
     it("dispatches one deep_research task into the global queue", async () => {
       const t = p5Test();
-      await seedApprovedReader(t, IDENTITY_A);
+      await seedApprovedAdmin(t, IDENTITY_A);
       await seedConnector(t, {
         allowedToolIds: [...P5_SUPPORTED_TOOL_IDS, DEEP_RESEARCH_TOOL_ID],
       });
@@ -305,7 +305,7 @@ describe("Calendar Deep Research scheduling", () => {
 
     it("reuses stable identifiers and creates only one task across scheduler passes", async () => {
       const t = p5Test();
-      await seedApprovedReader(t, IDENTITY_A);
+      await seedApprovedAdmin(t, IDENTITY_A);
       await seedConnector(t, {
         allowedToolIds: [...P5_SUPPORTED_TOOL_IDS, DEEP_RESEARCH_TOOL_ID],
       });
@@ -333,7 +333,7 @@ describe("Calendar Deep Research scheduling", () => {
 
     it("creates distinct execution identity for separate scheduled events", async () => {
       const t = p5Test();
-      await seedApprovedReader(t, IDENTITY_A);
+      await seedApprovedAdmin(t, IDENTITY_A);
       await seedConnector(t, {
         allowedToolIds: [...P5_SUPPORTED_TOOL_IDS, DEEP_RESEARCH_TOOL_ID],
       });
@@ -363,7 +363,7 @@ describe("Calendar Deep Research scheduling", () => {
   describe("history, projection, and skills", () => {
     it("lists Calendar-created research in Deep Research history and Tasks queue", async () => {
       const t = p5Test();
-      await seedApprovedReader(t, IDENTITY_A);
+      await seedApprovedAdmin(t, IDENTITY_A);
       await seedConnector(t, {
         allowedToolIds: [...P5_SUPPORTED_TOOL_IDS, DEEP_RESEARCH_TOOL_ID],
       });
@@ -386,7 +386,7 @@ describe("Calendar Deep Research scheduling", () => {
 
     it("projects completion onto the linked Calendar event", async () => {
       const t = p5Test();
-      await seedApprovedReader(t, IDENTITY_A);
+      await seedApprovedAdmin(t, IDENTITY_A);
       await seedConnector(t, {
         allowedToolIds: [...P5_SUPPORTED_TOOL_IDS, DEEP_RESEARCH_TOOL_ID],
       });

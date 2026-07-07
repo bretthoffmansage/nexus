@@ -41,6 +41,7 @@ export const NEXUS_TOOL_REGISTRY: NexusToolDefinition[] = [
       "static/js/emailLibrary/state.js",
     ],
     availability: "connector_required",
+    requiredRole: "nexus_admin",
   },
   {
     id: "memory",
@@ -60,6 +61,7 @@ export const NEXUS_TOOL_REGISTRY: NexusToolDefinition[] = [
     legacyButtonId: "tool-calendar-btn",
     legacyModules: ["static/js/calendar.js", "static/js/calendar/"],
     availability: "available",
+    requiredRole: "nexus_admin",
   },
   {
     id: "research",
@@ -69,6 +71,7 @@ export const NEXUS_TOOL_REGISTRY: NexusToolDefinition[] = [
     legacyButtonId: "tool-research-btn",
     legacyModules: ["static/js/research/panel.js", "static/js/research/jobs.js"],
     availability: "available",
+    requiredRole: "nexus_admin",
   },
   {
     id: "gallery",
@@ -88,6 +91,7 @@ export const NEXUS_TOOL_REGISTRY: NexusToolDefinition[] = [
     legacyButtonId: "tool-library-btn",
     legacyModules: ["static/js/documentLibrary.js", "static/js/document.js"],
     availability: "available",
+    requiredRole: "nexus_admin",
   },
   {
     id: "notes",
@@ -124,6 +128,7 @@ export const NEXUS_TOOL_REGISTRY: NexusToolDefinition[] = [
     group: "tools",
     legacyModules: ["static/js/skills.js"],
     availability: "available",
+    requiredRole: "nexus_admin",
   },
   {
     id: "settings",
@@ -132,6 +137,7 @@ export const NEXUS_TOOL_REGISTRY: NexusToolDefinition[] = [
     group: "system",
     legacyModules: ["static/js/settings.js"],
     availability: "partially_available",
+    requiredRole: "nexus_admin",
   },
   {
     id: "status",

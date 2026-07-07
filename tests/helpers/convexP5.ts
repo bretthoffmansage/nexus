@@ -74,6 +74,39 @@ export async function seedAdmin(
   });
 }
 
+/**
+ * Seed an approved, active user holding BOTH knowledge_reader and nexus_admin.
+ * This mirrors a real Nexus admin: nexus_admin unlocks the admin-only tool pages
+ * (Email, Calendar, Deep Research, Vault Library, Skills, Settings) while
+ * knowledge_reader is still required for the shared owner-scoped task/read
+ * surfaces (getMyTask, task results/sources/progress) those pages consume.
+ */
+export async function seedApprovedAdmin(
+  t: P5Test,
+  identity: { subject: string; email: string },
+): Promise<void> {
+  await t.run(async (ctx) => {
+    const now = Date.now();
+    await ctx.db.insert("approvedUsers", {
+      clerkUserId: identity.subject,
+      primaryEmail: identity.email,
+      status: "active",
+      firstSeenAt: now,
+      createdAt: now,
+      updatedAt: now,
+    });
+    for (const role of ["knowledge_reader", "nexus_admin"] as const) {
+      await ctx.db.insert("userRoles", {
+        clerkUserId: identity.subject,
+        role,
+        grantedAt: now,
+        grantedByClerkUserId: "system:test",
+        active: true,
+      });
+    }
+  });
+}
+
 /** A short, valid idempotency key built from a stable test seed. */
 export function key(seed: string): string {
   return `idem-${seed}-0000`;

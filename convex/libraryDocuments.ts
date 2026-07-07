@@ -23,10 +23,11 @@ import { P5_LIMITS } from "./lib/p5config";
 import { appendProgress, recordAudit } from "./lib/p5writes";
 import {
   getCurrentApprovedClerkUserId,
-  requireKnowledgeReader,
+  requireNexusAdmin,
   requireOwnedLibraryDocument,
   requireOwnedLibraryVersion,
 } from "./lib/ownership";
+import { getActiveRolesForUser, requireApprovedUser } from "./lib/auth";
 import type { TaskStatus } from "./lib/taskStatus";
 import { taskStatusValidator } from "./lib/taskStatus";
 
@@ -40,7 +41,7 @@ const ACTIVE_TASK_STATUSES: readonly TaskStatus[] = [
 export const generateUploadUrl = mutation({
   args: {},
   handler: async (ctx) => {
-    await requireKnowledgeReader(ctx);
+    await requireNexusAdmin(ctx);
     return await ctx.storage.generateUploadUrl();
   },
 });
@@ -57,6 +58,15 @@ export const finalizeUploadRecord = internalMutation({
   },
   handler: async (ctx, args) => {
     const now = Date.now();
+    // Defense-in-depth: Library content creation is admin-only. The calling
+    // action already verified identity and passes the verified clerkUserId; the
+    // storageId is only obtainable from the admin-gated generateUploadUrl. This
+    // DB-keyed role check fails closed for suspended/non-admin callers.
+    await requireApprovedUser(ctx, args.clerkUserId);
+    const roles = await getActiveRolesForUser(ctx, args.clerkUserId);
+    if (!roles.includes("nexus_admin")) {
+      nexusError(NEXUS_ERROR_CODES.ROLE_REQUIRED, "Required role not assigned");
+    }
     try {
       assertSafeOriginalFilename(args.originalFilename);
     } catch {
@@ -155,7 +165,7 @@ export const listMyLibraryVersions = query({
     limit: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    const { clerkUserId } = await requireKnowledgeReader(ctx);
+    const { clerkUserId } = await requireNexusAdmin(ctx);
     const limit = Math.min(args.limit ?? 50, 100);
     const filter = args.statusFilter ?? "all";
 
@@ -184,7 +194,7 @@ export const listMyLibraryVersions = query({
 export const listMyDocumentVersions = query({
   args: { documentId: v.id("nexusLibraryDocuments") },
   handler: async (ctx, args) => {
-    const { clerkUserId } = await requireKnowledgeReader(ctx);
+    const { clerkUserId } = await requireNexusAdmin(ctx);
     await requireOwnedLibraryDocument(ctx, clerkUserId, args.documentId);
     const rows = await ctx.db
       .query("nexusLibraryDocumentVersions")
@@ -240,7 +250,7 @@ async function findActiveTaskForVersion(
 export const processMyDocumentVersion = mutation({
   args: { documentVersionId: v.id("nexusLibraryDocumentVersions") },
   handler: async (ctx, args) => {
-    const { clerkUserId } = await requireKnowledgeReader(ctx);
+    const { clerkUserId } = await requireNexusAdmin(ctx);
     const version = await requireOwnedLibraryVersion(ctx, clerkUserId, args.documentVersionId);
 
     if (version.processingStatus === "archived" || version.deletedAt) {
@@ -369,7 +379,7 @@ export const processMyDocumentVersion = mutation({
 export const archiveMyDocumentVersion = mutation({
   args: { documentVersionId: v.id("nexusLibraryDocumentVersions") },
   handler: async (ctx, args) => {
-    const { clerkUserId } = await requireKnowledgeReader(ctx);
+    const { clerkUserId } = await requireNexusAdmin(ctx);
     const version = await requireOwnedLibraryVersion(ctx, clerkUserId, args.documentVersionId);
     if (version.activeTaskId) {
       const task = await ctx.db.get(version.activeTaskId);
@@ -390,7 +400,7 @@ export const archiveMyDocumentVersion = mutation({
 export const deleteMyDocumentVersion = mutation({
   args: { documentVersionId: v.id("nexusLibraryDocumentVersions") },
   handler: async (ctx, args) => {
-    const { clerkUserId } = await requireKnowledgeReader(ctx);
+    const { clerkUserId } = await requireNexusAdmin(ctx);
     const version = await requireOwnedLibraryVersion(ctx, clerkUserId, args.documentVersionId);
     if (version.activeTaskId) {
       const task = await ctx.db.get(version.activeTaskId);
