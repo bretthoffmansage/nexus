@@ -13,5 +13,5 @@ export function clearTypeOnSession(): void {
   animatedMessageIds.clear();
 }
 
-/** ~2 rendered lines per second at typical chat width. */
-export const TYPE_ON_CHARS_PER_SECOND = 100;
+/** ~4 rendered lines per second at typical chat width (2× the original pace). */
+export const TYPE_ON_CHARS_PER_SECOND = 200;

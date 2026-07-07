@@ -177,7 +177,7 @@ describe("Nexus Chat response rendering", () => {
     expect(screen.getByText(/Queued — waiting/i)).toBeInTheDocument();
   });
 
-  it("shows Sources only when completed task has sources", async () => {
+  it("shows a collapsed Sources disclosure only when a completed task has sources", async () => {
     const user = userEvent.setup();
     const convoId = "convo_src" as Id<"nexusConversations">;
     const taskId = "task_src" as Id<"nexusTasks">;
@@ -209,8 +209,14 @@ describe("Nexus Chat response rendering", () => {
     await user.click(screen.getByRole("button", { name: "History" }));
     await user.click(screen.getByRole("button", { name: /Src/i }));
 
-    expect(screen.getByRole("heading", { name: "Sources" })).toBeInTheDocument();
-    expect(screen.getByText("Vault note")).toBeInTheDocument();
+    // Disclosure summary is present, but the source list is collapsed by default.
+    const summary = screen.getByText("Sources");
+    expect(summary).toBeInTheDocument();
+    expect(screen.getByText("Vault note")).not.toBeVisible();
+
+    // Expanding the disclosure reveals the source list.
+    await user.click(summary);
+    expect(screen.getByText("Vault note")).toBeVisible();
   });
 
   it("omits Chat-page Diagnostics and outdated explanatory copy", () => {

@@ -398,6 +398,53 @@
   color: var(--nexus-muted);
 }
 
+.nexus-sources-disclosure {
+  margin: 0;
+}
+
+.nexus-sources-summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+  width: fit-content;
+}
+
+.nexus-sources-summary::-webkit-details-marker {
+  display: none;
+}
+
+.nexus-sources-summary:focus-visible {
+  outline: 2px solid var(--nexus-focus, #6ea8fe);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.nexus-sources-caret {
+  width: 0;
+  height: 0;
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+  border-left: 5px solid var(--nexus-muted);
+  transition: transform 0.15s ease;
+}
+
+.nexus-sources-disclosure[open] .nexus-sources-caret {
+  transform: rotate(90deg);
+}
+
+.nexus-sources-disclosure-body {
+  margin-top: 0.5rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nexus-sources-caret {
+    transition: none;
+  }
+}
+
 .nexus-empty-copy {
   margin: 0;
   color: var(--nexus-muted);

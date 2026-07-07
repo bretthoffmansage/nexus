@@ -9,7 +9,7 @@ import { ChatHistoryPanel } from "@/components/chat/ChatHistoryPanel";
 import { TranscriptMessage } from "@/components/chat/TranscriptMessage";
 import { useChatSession } from "@/components/chat/ChatSessionContext";
 import { ModeToggle } from "@/components/chat/ModeToggle";
-import { SourceList } from "@/components/sources/SourceList";
+import { CollapsibleSources } from "@/components/sources/CollapsibleSources";
 import {
   nexusChat,
   newIdempotencyKey,
@@ -280,8 +280,7 @@ export function NexusChatWorkspace() {
 
                 {showSources ? (
                   <div className="nexus-result-section">
-                    <h2 className="nexus-section-label">Sources</h2>
-                    <SourceList sources={sources} emptyLabel="" />
+                    <CollapsibleSources sources={sources} />
                   </div>
                 ) : null}
               </>
