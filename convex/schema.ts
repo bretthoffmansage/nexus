@@ -469,6 +469,11 @@ export default defineSchema({
       v.literal("tool_progress"),
       v.literal("task_completed"),
       v.literal("task_failed"),
+      // Sanitized live worker-activity readback (UI-only). Additive: older
+      // tasks have none, and any consumer that does not recognize it ignores
+      // it. Structured fields (surface/toolId/worker/phase/status/occurredAt)
+      // ride in the bounded `metadata`; `message` is the safe display line.
+      v.literal("worker_activity"),
     ),
     message: v.optional(v.string()),
     createdAt: v.number(),

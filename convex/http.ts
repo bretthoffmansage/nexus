@@ -284,6 +284,19 @@ const taskHandler = httpAction(async (ctx, request) => {
           percent: num(payload.percent),
         });
         break;
+      case "worker_activity": {
+        const activity = normalizeWorkerActivity(payload.activity);
+        if (!activity) {
+          return errorResponse(NEXUS_ERROR_CODES.INVALID_REQUEST, "Malformed worker activity", requestId);
+        }
+        data = await ctx.runMutation(internal.connectorTasks.appendConnectorActivity, {
+          connectorId,
+          taskId: typedTaskId,
+          leaseId,
+          ...activity,
+        });
+        break;
+      }
       case "complete":
         data = await ctx.runMutation(internal.connectorTasks.completeTask, {
           connectorId,
@@ -399,6 +412,38 @@ function normalizeDropzoneResult(value: unknown) {
     warnings,
     retryable: bool(record.retryable),
     partial: bool(record.partial),
+  };
+}
+
+/**
+ * Coerce the untrusted `activity` object into the strict worker-activity field
+ * set. Only known fields are forwarded (never an arbitrary blob); the mutation
+ * enforces the allowlist + length bounds. Returns null when the message is
+ * absent — the one field with no safe default.
+ */
+function normalizeWorkerActivity(value: unknown):
+  | {
+      surface: string;
+      toolId: string;
+      worker: string;
+      phase: string;
+      status: string;
+      message: string;
+      occurredAt?: string;
+    }
+  | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  const record = value as Record<string, unknown>;
+  const message = str(record.message);
+  if (!message) return null;
+  return {
+    surface: str(record.surface) ?? "",
+    toolId: str(record.toolId) ?? "",
+    worker: str(record.worker) ?? "",
+    phase: str(record.phase) ?? "",
+    status: str(record.status) ?? "",
+    message,
+    occurredAt: str(record.occurredAt),
   };
 }
 

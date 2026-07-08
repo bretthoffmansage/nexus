@@ -3,7 +3,16 @@ import { internalMutation } from "./_generated/server";
 import type { Doc, Id } from "./_generated/dataModel";
 import type { MutationCtx } from "./_generated/server";
 import { NEXUS_ERROR_CODES, nexusError } from "./lib/errors";
-import { clampLength, P5_LIMITS } from "./lib/p5config";
+import {
+  clampLength,
+  P5_LIMITS,
+  WORKER_ACTIVITY_LIMITS,
+  isWorkerActivityPhase,
+  isWorkerActivityStatus,
+  isWorkerActivitySurface,
+  isWorkerActivityToolId,
+  isWorkerActivityWorker,
+} from "./lib/p5config";
 import { appendMessage, appendProgress, recordAudit, touchConversation, writeCanonicalTaskResult, replaceTaskSourceRows } from "./lib/p5writes";
 import { effectiveExecutionRequestText } from "./lib/conversationContext";
 import { performTaskTransition } from "./lib/taskTransitions";
@@ -380,6 +389,100 @@ export const appendConnectorProgress = internalMutation({
     if (task.scheduledEventId) {
       await patchScheduledEventForTaskStatus(ctx, task, args.message);
     }
+    return { taskId: task._id, accepted: true as const };
+  },
+});
+
+/**
+ * Bounded, sanitized worker-activity readback (UI-only). Distinct from
+ * `appendConnectorProgress`: it carries an allowlisted worker-activity vocabulary
+ * (surface/worker/phase/status) that is deliberately kept separate from the
+ * technical `tool_progress` stage vocabulary so neither validation path can
+ * entangle the other. It reuses the same table, the same `appendProgress`
+ * writer, the same `/task` endpoint, and the same lease/ownership checks — no
+ * new route, queue, table, or channel.
+ *
+ * Forward-compatible by design: an event whose tuple is not (yet) allowlisted is
+ * accepted-and-dropped rather than errored, so a newer Claudia phase can never
+ * fail a task or corrupt the feed. Ownership is always copied from the task.
+ */
+export const appendConnectorActivity = internalMutation({
+  args: {
+    connectorId: v.string(),
+    taskId: v.id("nexusTasks"),
+    leaseId: v.string(),
+    surface: v.string(),
+    toolId: v.string(),
+    worker: v.string(),
+    phase: v.string(),
+    status: v.string(),
+    message: v.string(),
+    occurredAt: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    await requireActiveConnector(ctx, args.connectorId);
+    const task = await ctx.db.get(args.taskId);
+    if (!task) nexusError(NEXUS_ERROR_CODES.TASK_NOT_FOUND, "Task not found");
+    const now = Date.now();
+    requireLeaseOwnership(task, args.connectorId, args.leaseId, now);
+
+    if (!ACTIVE_LEASE_STATUSES.includes(task.status)) {
+      // Activity is only meaningful for an in-flight task; ignore late events
+      // without erroring (the worker may race the terminal transition).
+      return { taskId: task._id, accepted: true as const, dropped: "not_active" as const };
+    }
+
+    // Drop (do not error) anything outside the allowlisted vocabulary — this is
+    // the safety boundary and the forward-compat mechanism in one.
+    if (
+      !isWorkerActivitySurface(args.surface) ||
+      !isWorkerActivityToolId(args.toolId) ||
+      !isWorkerActivityWorker(args.worker) ||
+      !isWorkerActivityPhase(args.phase) ||
+      !isWorkerActivityStatus(args.status)
+    ) {
+      return { taskId: task._id, accepted: true as const, dropped: "unrecognized" as const };
+    }
+
+    // Defense-in-depth: single-line + trimmed + clamped. Claudia already
+    // sanitizes, and the UI clamps again on render; this guarantees the stored
+    // value is safe on its own and that a whitespace-only message is dropped.
+    const message = clampLength(
+      args.message.replace(/\s+/g, " ").trim(),
+      WORKER_ACTIVITY_LIMITS.maxMessageLength,
+    );
+    if (!message) {
+      return { taskId: task._id, accepted: true as const, dropped: "empty" as const };
+    }
+
+    // Per-task bound (defense-in-depth on top of Claudia's emission cap). One
+    // cheap read of the newest event; sequences are gap-free from 1, so the
+    // latest sequence is the total progress-event count for the task.
+    const last = await ctx.db
+      .query("nexusTaskProgressEvents")
+      .withIndex("by_task_and_sequence", (q) => q.eq("taskId", task._id))
+      .order("desc")
+      .first();
+    if ((last?.sequence ?? 0) >= WORKER_ACTIVITY_LIMITS.maxEventsPerTask * 5) {
+      return { taskId: task._id, accepted: true as const, dropped: "bounded" as const };
+    }
+
+    const occurredAt = typeof args.occurredAt === "string" ? args.occurredAt.slice(0, 40) : undefined;
+    await appendProgress(ctx, {
+      taskId: task._id,
+      ownerClerkUserId: task.ownerClerkUserId,
+      eventType: "worker_activity",
+      message,
+      metadata: {
+        surface: args.surface,
+        toolId: args.toolId,
+        worker: args.worker,
+        phase: args.phase,
+        status: args.status,
+        ...(occurredAt ? { occurredAt } : {}),
+      },
+      now,
+    });
     return { taskId: task._id, accepted: true as const };
   },
 });

@@ -247,6 +247,91 @@
   font-size: 0.85rem;
 }
 
+/* Live worker-activity readback — compact, latest-four, no scrolling log. */
+.nexus-activity-feed {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-top: 0.6rem;
+}
+
+.nexus-activity-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.nexus-activity-line {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  font-size: 0.82rem;
+  line-height: 1.35;
+  color: var(--nexus-muted);
+  animation: nexus-activity-in 180ms ease-out;
+}
+
+/* The newest line is emphasized so the eye tracks the live edge. */
+.nexus-activity-line:last-child {
+  color: var(--nexus-fg);
+}
+
+.nexus-activity-dot {
+  flex: 0 0 auto;
+  width: 6px;
+  height: 6px;
+  margin-top: 0.35em;
+  border-radius: 50%;
+  background: var(--nexus-border);
+}
+
+.nexus-activity-line:last-child .nexus-activity-dot {
+  background: var(--nexus-accent);
+}
+
+.nexus-activity-line.is-waiting .nexus-activity-dot {
+  background: var(--nexus-warning);
+}
+
+.nexus-activity-line.is-completed .nexus-activity-dot {
+  background: var(--nexus-success);
+}
+
+.nexus-activity-line.is-failed .nexus-activity-text,
+.nexus-activity-line.is-timed_out .nexus-activity-text {
+  color: var(--nexus-accent);
+}
+
+.nexus-activity-line.is-unavailable .nexus-activity-text {
+  color: var(--nexus-warning);
+}
+
+.nexus-activity-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+@keyframes nexus-activity-in {
+  from {
+    opacity: 0;
+    transform: translateY(2px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nexus-activity-line {
+    animation: none;
+  }
+}
+
 .legacy-port-scheduled {
   margin-top: 1.25rem;
   border-top: 1px solid var(--nexus-border);

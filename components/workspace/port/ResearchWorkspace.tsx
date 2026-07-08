@@ -7,6 +7,7 @@ import { SafeExternalLink } from "@/components/nexus/SafeExternalLink";
 import { SafeMarkdown } from "@/components/nexus/SafeMarkdown";
 import { nexusDeepResearch } from "@/lib/nexus/deepResearchClient";
 import { DeepResearchRequestFields } from "@/components/workspace/DeepResearchRequestFields";
+import { WorkerActivityFeed } from "@/components/status/WorkerActivityFeed";
 import { ResearchHistoryPanel } from "@/components/workspace/port/ResearchHistoryPanel";
 import { RequestDetailModal } from "@/components/workspace/port/RequestDetailModal";
 import {
@@ -452,20 +453,32 @@ export function ResearchWorkspace() {
                   </div>
                 ) : null}
 
-                {!researchSucceeded && detailProgress && detailProgress.length > 0 ? (
-                  <>
-                    <h3 className="research-report-title">Progress</h3>
-                    <ul className="nexus-progress-list">
-                      {detailProgress.map((event) => (
-                        <li key={event.id}>
-                          <span className="nexus-tool-chip nexus-tool-chip-muted">
-                            {event.eventType}
-                          </span>
-                          {event.message ? <span> {event.message}</span> : null}
-                        </li>
-                      ))}
-                    </ul>
-                  </>
+                {/* Hidden once a run is definitively successful (report stands
+                    alone). While active or on a non-success terminal state, prefer
+                    the sanitized worker-activity readback; if a task predates
+                    activity events, fall back to the technical Progress chips. */}
+                {!researchSucceeded ? (
+                  <WorkerActivityFeed
+                    events={detailProgress}
+                    label="Research activity"
+                    fallback={
+                      detailProgress && detailProgress.length > 0 ? (
+                        <>
+                          <h3 className="research-report-title">Progress</h3>
+                          <ul className="nexus-progress-list">
+                            {detailProgress.map((event) => (
+                              <li key={event.id}>
+                                <span className="nexus-tool-chip nexus-tool-chip-muted">
+                                  {event.eventType}
+                                </span>
+                                {event.message ? <span> {event.message}</span> : null}
+                              </li>
+                            ))}
+                          </ul>
+                        </>
+                      ) : null
+                    }
+                  />
                 ) : null}
               </>
             )}

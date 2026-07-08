@@ -10,6 +10,7 @@ import { TranscriptMessage } from "@/components/chat/TranscriptMessage";
 import { useChatSession } from "@/components/chat/ChatSessionContext";
 import { ModeToggle } from "@/components/chat/ModeToggle";
 import { CollapsibleSources } from "@/components/sources/CollapsibleSources";
+import { WorkerActivityFeed } from "@/components/status/WorkerActivityFeed";
 import {
   nexusChat,
   newIdempotencyKey,
@@ -72,6 +73,16 @@ export function NexusChatWorkspace() {
   const sourceRows = useQuery(
     nexusChat.listMyTaskSources,
     latestTask && ready && latestTask.status === "completed"
+      ? { taskId: latestTask.id }
+      : "skip",
+  );
+
+  // Per-message worker-activity readback: fetch the latest task's progress only
+  // while it is running or after it has failed. A successful task hides the feed
+  // (skip → no query), so it never competes with the final answer or sources.
+  const latestProgress = useQuery(
+    nexusChat.listMyTaskProgress,
+    latestTask && ready && (!isTerminalStatus(latestTask.status) || latestTask.status === "failed")
       ? { taskId: latestTask.id }
       : "skip",
   );
@@ -262,6 +273,7 @@ export function NexusChatWorkspace() {
                         {taskExecutionNote(latestTask.status)}
                       </span>
                     </p>
+                    <WorkerActivityFeed events={latestProgress} label="Retrieval activity" />
                   </div>
                 ) : null}
 
@@ -275,6 +287,9 @@ export function NexusChatWorkspace() {
                           : taskExecutionNote("failed")}
                       </span>
                     </p>
+                    {/* On failure the safe failure message stays, and the last
+                        activity lines are retained beneath it. */}
+                    <WorkerActivityFeed events={latestProgress} label="Retrieval activity" />
                   </div>
                 ) : null}
 

@@ -28,6 +28,9 @@ export const listMyTaskProgress = query({
       eventType: e.eventType,
       message: e.message ?? null,
       createdAt: e.createdAt,
+      // Bounded, already-sanitized structured fields for worker_activity events
+      // (surface/toolId/worker/phase/status/occurredAt). Null for other events.
+      metadata: e.metadata ?? null,
     }));
   },
 });
@@ -47,6 +50,7 @@ export const appendTaskProgressInternal = internalMutation({
       v.literal("task_failed"),
       v.literal("cancel_requested"),
       v.literal("task_cancelled"),
+      v.literal("worker_activity"),
     ),
     message: v.optional(v.string()),
     metadata: v.optional(boundedMetadataValidator),

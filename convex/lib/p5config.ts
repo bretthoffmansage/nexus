@@ -121,6 +121,79 @@ export function normalizedRequestHash(requestText: string): string {
   return (hash >>> 0).toString(16).padStart(8, "0");
 }
 
+/**
+ * Sanitized worker-activity readback (UI/readback only).
+ *
+ * Finite allowlists + bounds mirrored from Claudia's `core_api/worker_activity`
+ * so both ends agree on the safe vocabulary. These govern the additive
+ * `worker_activity` progress event: the Connector may only ever transport an
+ * allowlisted (surface, toolId, worker, phase, status) tuple plus a bounded,
+ * single-line message. Nothing outside these lists is persisted or rendered.
+ */
+export const WORKER_ACTIVITY_LIMITS = {
+  /** Hard bound on a single sanitized activity message (also clamped on render). */
+  maxMessageLength: 300,
+  /** Nexus renders only the latest N lines of the activity feed. */
+  visibleLineCount: 4,
+  /** Per-task cap on persisted activity events (defense against runaway emission). */
+  maxEventsPerTask: 100,
+} as const;
+
+export const WORKER_ACTIVITY_SURFACES = ["deep_research", "chat"] as const;
+export type WorkerActivitySurface = (typeof WORKER_ACTIVITY_SURFACES)[number];
+
+export const WORKER_ACTIVITY_WORKERS = ["system", "hermes", "cursor_cli", "claude", "codex"] as const;
+export type WorkerActivityWorker = (typeof WORKER_ACTIVITY_WORKERS)[number];
+
+export const WORKER_ACTIVITY_PHASES = [
+  "planning",
+  "preparing",
+  "retrieval",
+  "web_search",
+  "web_extract",
+  "vault_retrieval",
+  "transcript_retrieval",
+  "source_review",
+  "synthesis",
+  "finalizing",
+  "cleanup",
+] as const;
+export type WorkerActivityPhase = (typeof WORKER_ACTIVITY_PHASES)[number];
+
+export const WORKER_ACTIVITY_STATUSES = [
+  "started",
+  "running",
+  "waiting",
+  "completed",
+  "failed",
+  "unavailable",
+  "timed_out",
+] as const;
+export type WorkerActivityStatus = (typeof WORKER_ACTIVITY_STATUSES)[number];
+
+export const WORKER_ACTIVITY_TOOL_IDS = [
+  "research.hermes_deep_research",
+  "vault.agentic_retrieval",
+  "membership_io.transcript_retrieve",
+] as const;
+export type WorkerActivityToolId = (typeof WORKER_ACTIVITY_TOOL_IDS)[number];
+
+export function isWorkerActivitySurface(v: string): v is WorkerActivitySurface {
+  return (WORKER_ACTIVITY_SURFACES as readonly string[]).includes(v);
+}
+export function isWorkerActivityWorker(v: string): v is WorkerActivityWorker {
+  return (WORKER_ACTIVITY_WORKERS as readonly string[]).includes(v);
+}
+export function isWorkerActivityPhase(v: string): v is WorkerActivityPhase {
+  return (WORKER_ACTIVITY_PHASES as readonly string[]).includes(v);
+}
+export function isWorkerActivityStatus(v: string): v is WorkerActivityStatus {
+  return (WORKER_ACTIVITY_STATUSES as readonly string[]).includes(v);
+}
+export function isWorkerActivityToolId(v: string): v is WorkerActivityToolId {
+  return (WORKER_ACTIVITY_TOOL_IDS as readonly string[]).includes(v);
+}
+
 /** Convex validator for the bounded metadata blobs allowed on messages/events. */
 export const boundedMetadataValidator = v.record(
   v.string(),
