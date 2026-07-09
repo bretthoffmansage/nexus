@@ -107,6 +107,29 @@ describe("appendConnectorActivity (persistence)", () => {
     expect((res as { dropped?: string }).dropped).toBe("empty");
   });
 
+  it("returns the latest events (not the oldest page) for a long run", async () => {
+    const t = p5Test();
+    const { taskId, leaseId } = await setupRunning(t, "wa-many");
+    // Emit more than one page (progressPageSize = 100) of activity events.
+    for (let i = 1; i <= 105; i++) {
+      await t.mutation(internal.connectorTasks.appendConnectorActivity, {
+        connectorId: TEST_CONNECTOR_ID,
+        taskId,
+        leaseId,
+        ...OK_ACTIVITY,
+        message: `event ${i}`,
+      });
+    }
+    const rows = await t.withIdentity(IDENTITY_A).query(api.taskProgress.listMyTaskProgress, { taskId });
+    // A live feed must see the newest lines; the most recent event is present…
+    const messages = rows.map((r) => r.message);
+    expect(messages).toContain("event 105");
+    // …and the returned page is bounded and chronological (ascending sequence).
+    const seqs = rows.map((r) => r.sequence);
+    expect(seqs).toEqual([...seqs].sort((a, b) => a - b));
+    expect(rows[rows.length - 1].message).toBe("event 105");
+  });
+
   it("clamps an overly long message", async () => {
     const t = p5Test();
     const { taskId, leaseId } = await setupRunning(t);

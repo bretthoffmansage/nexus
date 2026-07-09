@@ -133,8 +133,10 @@ export function normalizedRequestHash(requestText: string): string {
 export const WORKER_ACTIVITY_LIMITS = {
   /** Hard bound on a single sanitized activity message (also clamped on render). */
   maxMessageLength: 300,
-  /** Nexus renders only the latest N lines of the activity feed. */
+  /** Nexus renders only the latest N lines of the activity feed (Chat default). */
   visibleLineCount: 4,
+  /** Deep Research shows more, since Hermes tool calls produce richer activity. */
+  deepResearchVisibleLineCount: 8,
   /** Per-task cap on persisted activity events (defense against runaway emission). */
   maxEventsPerTask: 100,
 } as const;

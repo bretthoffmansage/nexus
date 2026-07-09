@@ -17,11 +17,18 @@ export const listMyTaskProgress = query({
       P5_LIMITS.progressPageSize,
       P5_LIMITS.messagesPageSizeMax,
     );
-    const rows = await ctx.db
+    // Return the *latest* `limit` events (newest-first take, then reversed to
+    // chronological order). A long Deep Research run can emit more than one page
+    // of activity while Hermes calls tools; taking the tail guarantees the live
+    // feed always sees the most recent lines rather than the oldest page. For a
+    // task with fewer than `limit` events this is identical to the old ascending
+    // page, so the technical-progress fallback is unaffected.
+    const latest = await ctx.db
       .query("nexusTaskProgressEvents")
       .withIndex("by_task_and_sequence", (q) => q.eq("taskId", args.taskId))
-      .order("asc")
+      .order("desc")
       .take(limit);
+    const rows = latest.reverse();
     return rows.map((e) => ({
       id: e._id,
       sequence: e.sequence,

@@ -8,6 +8,7 @@ import { SafeMarkdown } from "@/components/nexus/SafeMarkdown";
 import { nexusDeepResearch } from "@/lib/nexus/deepResearchClient";
 import { DeepResearchRequestFields } from "@/components/workspace/DeepResearchRequestFields";
 import { WorkerActivityFeed } from "@/components/status/WorkerActivityFeed";
+import { WORKER_ACTIVITY_LIMITS } from "@/convex/lib/p5config";
 import { ResearchHistoryPanel } from "@/components/workspace/port/ResearchHistoryPanel";
 import { RequestDetailModal } from "@/components/workspace/port/RequestDetailModal";
 import {
@@ -461,6 +462,7 @@ export function ResearchWorkspace() {
                   <WorkerActivityFeed
                     events={detailProgress}
                     label="Research activity"
+                    visibleCount={WORKER_ACTIVITY_LIMITS.deepResearchVisibleLineCount}
                     fallback={
                       detailProgress && detailProgress.length > 0 ? (
                         <>

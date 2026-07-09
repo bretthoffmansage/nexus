@@ -40,6 +40,19 @@ describe("WorkerActivityFeed", () => {
     ]);
   });
 
+  it("honors a larger visibleCount (Deep Research shows up to eight)", () => {
+    seq = 0;
+    const events = Array.from({ length: 10 }, (_, i) => activity(`line ${i + 1}`));
+    render(<WorkerActivityFeed events={events} label="Research activity" visibleCount={8} />);
+    const items = screen.getAllByRole("listitem").map((li) => li.textContent);
+    expect(items).toHaveLength(8);
+    // Latest eight (lines 3..10); the two oldest are dropped.
+    expect(items[0]).toBe("line 3");
+    expect(items[7]).toBe("line 10");
+    expect(screen.queryByText("line 1")).toBeNull();
+    expect(screen.queryByText("line 2")).toBeNull();
+  });
+
   it("drops the oldest visible line when a fifth event arrives", () => {
     seq = 0;
     const events = [

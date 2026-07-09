@@ -37,13 +37,18 @@ function act(id: string, sequence: number, message: string, status = "running", 
   };
 }
 
+// Nine activity events so the 8-line Deep Research window drops the oldest.
 const ACTIVITY_EVENTS = [
   ...TECHNICAL_ONLY,
   act("a1", 4, "Planning the research approach…", "started", "system"),
   act("a2", 5, "Searching available research sources…"),
-  act("a3", 6, "Reviewing retrieved evidence…"),
-  act("a4", 7, "Drafting the final report…"),
-  act("a5", 8, "Reviewed 12 research sources."),
+  act("a3", 6, "Reviewing transcripts with the Cursor worker…", "running", "cursor_cli"),
+  act("a4", 7, "Received 5 transcript sources.", "running", "system"),
+  act("a5", 8, "Searching the SAGE Knowledge Vault…"),
+  act("a6", 9, "Reviewing retrieved evidence…"),
+  act("a7", 10, "Drafting the final report…"),
+  act("a8", 11, "Reviewed 12 research sources."),
+  act("a9", 12, "Finalizing the report…"),
 ];
 
 function seed({
@@ -103,7 +108,7 @@ afterEach(() => {
 });
 
 describe("Deep Research — live activity readback while running", () => {
-  it("shows the latest four activity lines and supersedes the technical Progress list", () => {
+  it("shows the latest eight activity lines and supersedes the technical Progress list", () => {
     seed({ status: "running" });
     render(<ResearchWorkspace />);
     const region = activityRegion();
@@ -111,12 +116,18 @@ describe("Deep Research — live activity readback while running", () => {
     // Rich activity present → the verbose technical Progress chip list is hidden.
     expect(progressHeading()).not.toBeInTheDocument();
     const lines = within(region!).getAllByRole("listitem").map((li) => li.textContent);
+    // Latest eight, in order — including the broker-forwarded Hermes tool activity.
     expect(lines).toEqual([
       "Searching available research sources…",
+      "Reviewing transcripts with the Cursor worker…",
+      "Received 5 transcript sources.",
+      "Searching the SAGE Knowledge Vault…",
       "Reviewing retrieved evidence…",
       "Drafting the final report…",
       "Reviewed 12 research sources.",
+      "Finalizing the report…",
     ]);
+    expect(lines).toHaveLength(8);
     // The dropped oldest line is not shown.
     expect(screen.queryByText("Planning the research approach…")).toBeNull();
   });

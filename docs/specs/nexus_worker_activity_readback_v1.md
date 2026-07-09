@@ -30,18 +30,25 @@ such events, and any consumer that does not recognize the type ignores it.
 - `http.ts` adds a `worker_activity` action on the existing `/task` handler
   (`normalizeWorkerActivity` coerces only known fields).
 - `taskProgress.listMyTaskProgress` (unchanged owner check:
-  `requireKnowledgeReader` + `requireOwnedTask`) now also returns `metadata`.
+  `requireKnowledgeReader` + `requireOwnedTask`) now also returns `metadata`, and
+  returns the **latest** `limit` events (newest-first take, reversed to
+  chronological order) rather than the oldest page — so a long Deep Research run,
+  which can emit more than one page of activity while Hermes calls tools, always
+  feeds the component the current lines. For a task with fewer than `limit` events
+  this is identical to the prior ascending page (fallback unaffected).
 
 ## Shared component
 
-`components/status/WorkerActivityFeed.tsx` renders **only the latest four**
-`worker_activity` events in chronological order (`slice(-4)` after a sequence
-sort) — a fifth event pushes the oldest visible line out. It renders message
-text only (never raw payload, never `dangerouslySetInnerHTML`), clamps length
-defensively, ignores unknown metadata, is an accessible `role="status"
-aria-live="polite"` region, and shows nothing (or a caller-provided fallback)
-when there is no activity. It is per-task: the caller passes exactly one task's
-rows, so activity never leaks across tasks/users.
+`components/status/WorkerActivityFeed.tsx` renders **only the latest `visibleCount`**
+`worker_activity` events in chronological order (`slice(-visibleCount)` after a
+sequence sort) — a further event pushes the oldest visible line out. Chat uses the
+default (`WORKER_ACTIVITY_LIMITS.visibleLineCount` = 4); Deep Research passes
+`deepResearchVisibleLineCount` = 8, since Hermes tool calls produce richer activity.
+It renders message text only (never raw payload, never `dangerouslySetInnerHTML`),
+clamps length defensively, ignores unknown metadata, is an accessible
+`role="status" aria-live="polite"` region, and shows nothing (or a caller-provided
+fallback) when there is no activity. It is per-task: the caller passes exactly one
+task's rows, so activity never leaks across tasks/users.
 
 ## Deep Research display rules (`ResearchWorkspace.tsx`)
 
