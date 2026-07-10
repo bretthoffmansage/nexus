@@ -73,7 +73,7 @@ export function taskStatusLabel(status: TaskStatus): string {
 export function taskExecutionNote(status: TaskStatus): string {
   switch (status) {
     case "queued":
-      return "Queued — waiting for the Claudia Connector.";
+      return "Queued — waiting for the Console Connector.";
     case "cancel_requested":
       return "Cancellation requested.";
     case "cancelled":

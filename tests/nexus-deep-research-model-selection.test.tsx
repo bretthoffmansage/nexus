@@ -92,7 +92,7 @@ describe("Deep Research model catalog normalization", () => {
 });
 
 describe("Deep Research envelope with model selection (v1.1)", () => {
-  it("omits requestedModelId for the Claudia default", () => {
+  it("omits requestedModelId for the Nexus default", () => {
     const result = buildDeepResearchEnvelope({
       requestText: "why do members churn?",
       researchRequestId: VALID_ID,
@@ -202,7 +202,7 @@ describe("Deep Research model persistence (localStorage preference)", () => {
 describe("ResearchModelSelector component", () => {
   const models: NexusResearchModel[] = normalizeResearchModelCatalog(RAW_CATALOG);
 
-  it("always offers the Claudia default first and lists compatible models", () => {
+  it("always offers the Nexus default first and lists compatible models", () => {
     render(
       <ResearchModelSelector
         value={CLAUDIA_DEFAULT_MODEL_VALUE}
@@ -212,7 +212,7 @@ describe("ResearchModelSelector component", () => {
         error={false}
       />,
     );
-    expect(screen.getByRole("option", { name: "Claudia default" })).toBeTruthy();
+    expect(screen.getByRole("option", { name: "Nexus default" })).toBeTruthy();
     expect(screen.getByRole("option", { name: /Claude Sonnet 4.6/ })).toBeTruthy();
     expect(
       screen.queryByText(/Claudia selects and validates the model for each run/i),

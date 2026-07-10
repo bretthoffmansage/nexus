@@ -7,14 +7,14 @@ const STATE_COPY: Record<
   not_configured: {
     label: "Connector not configured",
     detail:
-      "Claudia connection not yet linked. Nexus will reach Claudia through the private Console Connector.",
+      "System connection not yet linked. Nexus will reach the local system through the private Console Connector.",
   },
   offline: {
-    label: "Claudia offline",
+    label: "System offline",
     detail: "The Console Connector has not reported recently.",
   },
   online: {
-    label: "Claudia online",
+    label: "System online",
     detail: "Console Connector is connected.",
   },
   reconnecting: {
@@ -26,8 +26,8 @@ const STATE_COPY: Record<
     detail: "The Console Connector reported an error.",
   },
   busy: {
-    label: "Claudia busy",
-    detail: "A task is currently running on Claudia.",
+    label: "System busy",
+    detail: "A task is currently running on the system.",
   },
 };
 
@@ -47,7 +47,7 @@ export function ClaudiaPresence({ state = "not_configured" }: ClaudiaPresencePro
     >
       <div className="nexus-presence-head">
         <h2 className="nexus-presence-title" id="claudia-presence-title">
-          Claudia
+          System
         </h2>
         <span className="nexus-presence-pill">
           <span className="nexus-presence-dot" aria-hidden />

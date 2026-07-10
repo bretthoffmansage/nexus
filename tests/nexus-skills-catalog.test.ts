@@ -128,7 +128,7 @@ describe("Nexus Skills page and navigation", () => {
       path.join(ROOT, "components/workspace/port/SkillsWorkspace.tsx"),
       "utf8",
     );
-    expect(src).not.toContain("Local Claudia only");
+    expect(src).not.toContain("Local system only");
     expect(src).not.toContain("No skills loaded in hosted Nexus");
     expect(src).not.toContain("legacy local console");
     expect(src).not.toContain("ToolAvailabilityBanner");

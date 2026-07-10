@@ -26,7 +26,7 @@ export async function listScheduledTasks(): Promise<AdapterReadResult<ScheduledT
     ok: false,
     availability: "execution_connector_required",
     reason:
-      "Scheduled recurring prompts execute on Claudia and require the Console Connector. P5 persists one-off knowledge requests; recurring scheduling arrives in a later phase.",
+      "Scheduled recurring prompts execute on the local system and require the Console Connector. P5 persists one-off knowledge requests; recurring scheduling arrives in a later phase.",
     data: [],
   };
 }

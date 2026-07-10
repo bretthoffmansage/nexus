@@ -12,7 +12,7 @@ export function KnowledgeWorkspace() {
         <p className="legacy-port-subhead">Recipe library and serve workflows</p>
       </header>
       <div className="cookbook-grid legacy-port-empty">
-        <p>Cookbook install and serve controls remain on the Claudia Mac legacy console.</p>
+        <p>Cookbook install and serve controls remain on the Nexus Mac legacy console.</p>
         <button type="button" className="legacy-port-btn" disabled>
           Browse recipes
         </button>

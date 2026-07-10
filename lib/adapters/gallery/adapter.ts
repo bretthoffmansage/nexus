@@ -18,7 +18,7 @@ export async function listGalleryItems(): Promise<AdapterReadResult<GalleryItem[
   return {
     ok: false,
     availability: "connector_required",
-    reason: "Gallery media is stored locally on Claudia and requires the Connector.",
+    reason: "Gallery media is stored locally on the system and requires the Connector.",
     data: [],
   };
 }

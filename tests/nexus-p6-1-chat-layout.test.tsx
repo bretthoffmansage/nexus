@@ -247,7 +247,7 @@ describe("P6.1 — chat history placement", () => {
 });
 
 describe("P6.1 — duplicate status removal", () => {
-  it("16-19. sidebar has no Claudia card; status route keeps Connector copy", () => {
+  it("16-19. sidebar has no legacy presence card; status route keeps status copy", () => {
     const sidebarSrc = readFileSync(path.join(ROOT, "components/layout/Sidebar.tsx"), "utf8");
     expect(sidebarSrc).not.toContain("ClaudiaPresenceLive");
 
@@ -261,7 +261,7 @@ describe("P6.1 — duplicate status removal", () => {
     render(<StatusWorkspace />);
     expect(screen.getByRole("heading", { name: "Status" })).toBeInTheDocument();
     expect(
-      screen.getByText(/Execution begins when the Claudia Connector is online and claims queued work/i),
+      screen.getByText("Nexus system connectivity and service health"),
     ).toBeInTheDocument();
 
     render(

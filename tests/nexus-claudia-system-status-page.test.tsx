@@ -31,21 +31,21 @@ vi.mock("convex/react", async (importOriginal) => ({
 }));
 
 const CARD_TITLES = [
-  "Claudia Core API",
-  "Nexus Connector",
-  "Viktor Retrieval",
-  "Sage Knowledge Base",
+  "Nexus Core API",
+  "Console Connector",
+  "Vault Retrieval",
+  "Vault",
   "Cursor CLI",
   "Codex CLI",
   "Claude CLI",
   "Cleanup & Storage",
 ];
 
-describe("Claudia system status page", () => {
+describe("Nexus system status page", () => {
   it("renders the updated subtitle and eight cards without the legacy banner", () => {
     render(<StatusWorkspace />);
     expect(screen.getByRole("heading", { name: "Status" })).toBeInTheDocument();
-    expect(screen.getByText("Claudia system connectivity and service health")).toBeInTheDocument();
+    expect(screen.getByText("Nexus system connectivity and service health")).toBeInTheDocument();
     expect(screen.queryByText("Partially available")).not.toBeInTheDocument();
     expect(
       screen.queryByText(/interface is available; some actions remain disabled/i),
@@ -67,13 +67,13 @@ describe("Claudia system status page", () => {
     expect(cursorCard).not.toBeNull();
     expect(cursorCard?.className).toBe(claudeCard?.className);
     expect(
-      screen.getByText("Cursor command-line runtime used by governed Claudia workflows."),
+      screen.getByText("Cursor command-line runtime used by governed system workflows."),
     ).toBeInTheDocument();
   });
 
   it("shows green indicators only for live cards and omits yellow connector copy", () => {
     render(<StatusWorkspace />);
-    expect(screen.queryByText(/Claudia online/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/System online/i)).not.toBeInTheDocument();
     expect(document.querySelectorAll(".claudia-system-status-dot--live").length).toBe(8);
     expect(document.querySelector(".nexus-presence-dot")).toBeNull();
   });

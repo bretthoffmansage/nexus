@@ -5,7 +5,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: "Nexus",
     short_name: "Nexus",
     description:
-      "Nexus — hosted knowledge workspace. Claudia executes governed work through the private Console Connector.",
+      "Nexus — hosted knowledge workspace. The private system executes governed work through the Console Connector.",
     start_url: "/",
     display: "standalone",
     background_color: "#282c34",

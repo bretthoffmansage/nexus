@@ -26,12 +26,12 @@ export function ChatEmptyState() {
       <h2 className="nexus-chat-empty-title">Welcome</h2>
       <p className="nexus-chat-empty-copy">
         Ask a knowledge question and Nexus saves it privately and queues it. Execution begins when
-        the Claudia Connector is online and claims the request through the trusted Connector
-        protocol — Claudia Core is never exposed to the public internet. Answers and their sources
+        the Console Connector is online and claims the request through the trusted Connector
+        protocol — Nexus Core is never exposed to the public internet. Answers and their sources
         appear here once the Connector completes the work.
       </p>
       <ul className="nexus-chat-empty-list">
-        <li>Sage Knowledge Base retrieval</li>
+        <li>Vault retrieval</li>
         <li>{P5_TOOL_DISPLAY_TITLES["membership_io.transcript_retrieve"]}</li>
         <li>Summaries and synthesis with sources</li>
       </ul>

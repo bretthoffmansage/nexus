@@ -18,7 +18,7 @@ export async function listResearchJobs(): Promise<AdapterReadResult<ResearchJob[
   return {
     ok: false,
     availability: "connector_required",
-    reason: "Deep Research jobs run on Claudia and stream through the Connector.",
+    reason: "Deep Research jobs run on the local system and stream through the Connector.",
     data: [],
   };
 }

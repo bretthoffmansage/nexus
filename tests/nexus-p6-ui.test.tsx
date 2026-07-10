@@ -60,12 +60,12 @@ describe("P6 Connector status card (Part AA)", () => {
     // useQuery mocked → undefined → falls back to not_configured.
     render(<ClaudiaPresenceLive />);
     expect(screen.getByText(/Connector not configured/i)).toBeInTheDocument();
-    expect(screen.queryByText(/Claudia online/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/System online/i)).not.toBeInTheDocument();
   });
 
   it("10-11. status workspace exposes no private task content", () => {
     render(<StatusWorkspace />);
     expect(screen.getByRole("heading", { name: "Status" })).toBeInTheDocument();
-    expect(screen.getByText(/Execution begins when the Claudia Connector is online/i)).toBeInTheDocument();
+    expect(screen.getByText("Nexus system connectivity and service health")).toBeInTheDocument();
   });
 });

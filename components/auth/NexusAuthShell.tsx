@@ -28,8 +28,8 @@ export function NexusAuthShell({
           <span>Nexus</span>
         </div>
         <p className="nexus-auth-aside-copy">
-          Hosted knowledge workspace for approved operators. Claudia executes governed work through the
-          private Console Connector.
+          Hosted knowledge workspace for approved operators. The private system executes governed work
+          through the Console Connector.
         </p>
         <ul className="nexus-auth-aside-list">
           <li>Approval-controlled access</li>

@@ -29,7 +29,7 @@ export async function listMemories(): Promise<AdapterReadResult<MemoryRecord[]>>
   return {
     ok: false,
     availability: "connector_required",
-    reason: "Brain memories remain on Claudia; Nexus does not copy memory data into Convex.",
+    reason: "Brain memories remain on the local system; Nexus does not copy memory data into Convex.",
     data: [],
   };
 }

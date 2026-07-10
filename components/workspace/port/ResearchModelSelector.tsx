@@ -25,7 +25,7 @@ function contextLabel(model: NexusResearchModel): string {
  * Searchable Deep Research model selector.
  *
  * Replaces the legacy disabled "Managed by Claudia" field. The first option is
- * always "Claudia default" (submits no model id). Concrete options come from
+ * always "Nexus default" (submits no model id). Concrete options come from
  * the live Vercel AI Gateway catalog, filtered server-side to research-
  * compatible models. If the operator's saved model has disappeared from the
  * catalog it is shown as unavailable and the run is blocked until they choose
@@ -71,7 +71,7 @@ export function ResearchModelSelector({
       ) : null}
       {error ? (
         <p className="research-model-status research-model-status-warn" role="status">
-          Live model catalog is unavailable. You can still run with the Claudia default
+          Live model catalog is unavailable. You can still run with the Nexus default
           {isConcrete && selectedModel ? " or your last selection" : ""}.
         </p>
       ) : null}
@@ -94,7 +94,7 @@ export function ResearchModelSelector({
         onChange={(event) => onChange(event.target.value)}
         aria-describedby={showHint ? `${listId}-hint` : undefined}
       >
-        <option value={CLAUDIA_DEFAULT_MODEL_VALUE}>Claudia default</option>
+        <option value={CLAUDIA_DEFAULT_MODEL_VALUE}>Nexus default</option>
         {savedUnavailable ? (
           <option value="__unavailable__" disabled>
             {value} (unavailable — choose another)
@@ -112,7 +112,7 @@ export function ResearchModelSelector({
         <p id={`${listId}-hint`} className="research-model-hint">
           {savedUnavailable ? (
             <span className="research-validation-error">
-              Your saved model is no longer available. Select a model or use the Claudia default.
+              Your saved model is no longer available. Select a model or use the Nexus default.
             </span>
           ) : selectedModel ? (
             <span>

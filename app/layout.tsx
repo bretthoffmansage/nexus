@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     template: "%s · Nexus",
   },
   description:
-    "Nexus — hosted knowledge workspace. Claudia executes governed work through the private Console Connector.",
+    "Nexus — hosted knowledge workspace. The private system executes governed work through the Console Connector.",
   applicationName: "Nexus",
   icons: {
     icon: "/icon.svg",

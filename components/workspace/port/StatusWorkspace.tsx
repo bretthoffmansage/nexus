@@ -10,7 +10,7 @@ export function StatusWorkspace() {
     >
       <header className="legacy-port-head">
         <h1 id="status-heading">Status</h1>
-        <p className="legacy-port-subhead">Claudia system connectivity and service health</p>
+        <p className="legacy-port-subhead">Nexus system connectivity and service health</p>
       </header>
       <ClaudiaSystemStatusPanel />
     </section>

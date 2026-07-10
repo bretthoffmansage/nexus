@@ -25,7 +25,7 @@ export async function listFolders(): Promise<AdapterReadResult<EmailFolder[]>> {
   return {
     ok: false,
     availability: "connector_required",
-    reason: "Email folders require Claudia mail integration through the Connector.",
+    reason: "Email folders require system mail integration through the Connector.",
     data: [],
   };
 }

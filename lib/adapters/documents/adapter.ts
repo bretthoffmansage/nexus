@@ -20,7 +20,7 @@ export async function listDocuments(): Promise<AdapterReadResult<DocumentRecord[
   return {
     ok: false,
     availability: "connector_required",
-    reason: "Document library is served from Claudia local storage via the Connector.",
+    reason: "Document library is served from the system's local storage via the Connector.",
     data: [],
   };
 }
