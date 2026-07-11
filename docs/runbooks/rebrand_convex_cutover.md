@@ -14,9 +14,11 @@ Remaining follow-ups:
 1. ~~Remove the deprecated `getClaudiaSystemStatusForPage` alias query~~ —
    **done 2026-07-10** after the Vercel redeploy: alias deleted from
    `convex/connectorRegistry.ts` and pushed with `npx convex dev --once`.
-2. **Repoint the LAN GPT action** from
-   `/api/v1/viktor/knowledge-query` to `/api/v1/vault/knowledge-query`, then
-   delete the deprecated alias route in the system repo's `core_api/app.py`.
+2. ~~Repoint the external LAN caller and delete the viktor alias route~~ —
+   **done 2026-07-10.** The caller was a Fable instance on another LAN machine
+   (not a GPT) with the old URL in its task prompt; the operator hands it
+   `/api/v1/vault/knowledge-query` directly. Alias route deleted from
+   `core_api/app.py` (system commit 1a6c91f).
 3. Tasks submitted by the pre-redeploy frontend still carry the old
    `obsidian.dropzone.process_document` id; they stay queued and unclaimable —
    resubmit them after the redeploy if any exist.
