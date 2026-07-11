@@ -9,7 +9,7 @@
 
 ## Objective
 
-Close highest-priority competing-authority gaps when `CLAUDIA_CONSOLE_MODE=true` without deleting modules or removing Ollama/local model support.
+Close highest-priority competing-authority gaps when `NEXUS_CONSOLE_MODE=true` without deleting modules or removing Ollama/local model support.
 
 ## Files changed
 
@@ -23,12 +23,12 @@ Close highest-priority competing-authority gaps when `CLAUDIA_CONSOLE_MODE=true`
 | `src/agent_loop.py` | Defensive `stream_agent_loop` early exit (SSE) |
 | `src/tool_execution.py` | Defensive `execute_tool_block` early return |
 | `app.py` | Skip `connect_all_enabled` in Console Mode |
-| `tests/test_claudia_final_authority_hardening.py` | **New** (9 tests) |
-| `docs/claudia_console_reform/package_19_final_authority_hardening.md` | **New** |
+| `tests/test_nexus_final_authority_hardening.py` | **New** (9 tests) |
+| `docs/console_reform/package_19_final_authority_hardening.md` | **New** |
 
 ## Behavior changed
 
-When `CLAUDIA_CONSOLE_MODE=true`:
+When `NEXUS_CONSOLE_MODE=true`:
 
 - Manual task run and webhook task trigger return `local_execution_disabled` (`surface: tasks`).
 - Assistant check-in run returns `local_execution_disabled` (`surface: assistant`).
@@ -41,7 +41,7 @@ When `CLAUDIA_CONSOLE_MODE=true`:
 
 ## Behavior intentionally unchanged
 
-- Legacy mode (`CLAUDIA_CONSOLE_MODE=false`): all above paths unchanged.
+- Legacy mode (`NEXUS_CONSOLE_MODE=false`): all above paths unchanged.
 - Packages 1–18: chat bridge, Gateway, connector/execution/authority guards, branding, deployment warnings.
 - Task list/status/metadata, cookbook GET/state, gallery library/browse, document read, model admin routes.
 - Ollama/local model catalog and endpoint configuration surfaces.
@@ -80,9 +80,9 @@ When `CLAUDIA_CONSOLE_MODE=true`:
 
 - Gallery UI, routes, and `data/generated_images` assets **not deleted**.
 - Generative execution blocked in Console Mode on primary routes (ai-upscale, style-transfer, inpaint).
-- All primary `/api/image/*` and gallery AI routes guarded in Console Mode; code retained for legacy mode and future Claudia worker wiring.
+- All primary `/api/image/*` and gallery AI routes guarded in Console Mode; code retained for legacy mode and future Nexus worker wiring.
 - Legacy mode unchanged.
-- Future: Claudia Core worker/tool path for image generation.
+- Future: Nexus Core worker/tool path for image generation.
 
 ## Agent/tool defensive entry guard status
 
@@ -109,19 +109,19 @@ Chat bridge does not call `stream_agent_loop` in Console Mode (P5–P6); defensi
 
 ## Console Mode blocked response behavior
 
-Uses existing `local_execution_disabled` / `authority_disabled` shapes from `execution_console_guard` and `authority_console_guard` (`ok: false`, `success: false`, `claudia_console_mode: true`, `surface`, `operation`, `message`, `guidance`).
+Uses existing `local_execution_disabled` / `authority_disabled` shapes from `execution_console_guard` and `authority_console_guard` (`ok: false`, `success: false`, `console_mode: true`, `surface`, `operation`, `message`, `guidance`).
 
 ## Tests/checks run
 
 ```bash
 python3 -m compileall -q app.py core routes src
-venv/bin/python -m pytest -q tests/test_claudia_final_authority_hardening.py + P1–P18 Claudia tests
+venv/bin/python -m pytest -q tests/test_nexus_final_authority_hardening.py + P1–P18 Nexus tests
 ```
 
 ## Results
 
 - `compileall`: pass
-- Focused Claudia tests (P1–P19): **187 passed**
+- Focused Nexus tests (P1–P19): **187 passed**
 - Package 19 tests: **9 passed**
 
 ## Known pytest baseline issue from Package 0

@@ -1,6 +1,6 @@
 # Nexus P4.4 — Legacy Workspace Frontend Port (v1)
 
-**Package:** P4.4 — Port legacy Claudia Console workspace into Nexus
+**Package:** P4.4 — Port legacy local console workspace into Nexus
 **Status:** Complete
 **Date:** 2026-06-30
 
@@ -8,7 +8,7 @@
 
 - Route `/` unchanged; default post-login destination.
 - `NexusChatWorkspace` extracted from prior `ChatWorkspace`; same welcome card, answer/sources regions, composer, diagnostics, mode toggle.
-- Legacy Claudia Chat (`chat.js`) **not** substituted.
+- Legacy Nexus Chat (`chat.js`) **not** substituted.
 - Chat request history (`TaskHistorySection`) remains in sidebar **only on `/`**.
 
 ## What was ported

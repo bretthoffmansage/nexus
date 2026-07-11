@@ -1,7 +1,7 @@
 {
-  "name": "Claudia",
-  "short_name": "Claudia",
-  "description": "Claudia Console — self-hosted AI workspace with memory, documents, and tools",
+  "name": "Nexus",
+  "short_name": "Nexus",
+  "description": "legacy local console — self-hosted AI workspace with memory, documents, and tools",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

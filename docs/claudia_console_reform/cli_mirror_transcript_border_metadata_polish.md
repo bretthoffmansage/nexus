@@ -1,7 +1,7 @@
 # CLI Mirror Transcript Border and Expanded Metadata Polish Pass
 
 **Date:** 2026-06-03  
-**Repo:** `/Users/bretthoffman/Documents/claudia_console`  
+**Repo:** `/Users/bretthoffman/Documents/console`  
 **Scope:** Console UI only — transcript border and expanded metadata positioning
 
 ## Motivation
@@ -11,12 +11,12 @@ Live Hermes Transcript showed too many nested borders: outer transcript window, 
 ## Files changed
 
 - `static/style.css` — transparent group borders; expanded metadata inset
-- `tests/test_claudia_cli_mirror_ui.py` — border and metadata CSS tests
-- `docs/claudia_console_reform/cli_mirror_transcript_border_metadata_polish.md` — this note
+- `tests/test_nexus_cli_mirror_ui.py` — border and metadata CSS tests
+- `docs/console_reform/cli_mirror_transcript_border_metadata_polish.md` — this note
 
 ## Behavior changed
 
-- Individual `.claudia-cli-mirror-stream-group` wrappers use `border-color: transparent` (1px border width preserved for spacing).
+- Individual `.nexus-cli-mirror-stream-group` wrappers use `border-color: transparent` (1px border width preserved for spacing).
 - Role variants (HERMES, RESPONSE, USER, SYSTEM, ERROR, SESSION) no longer show colored borders.
 - Expanded transcript metadata inset from `right: 16px` (18px when panel expanded) with small `padding-right`.
 
@@ -24,7 +24,7 @@ Live Hermes Transcript showed too many nested borders: outer transcript window, 
 
 - Group DOM structure, grouping logic, labels, timestamps, content rendering
 - HERMES `pre` / horizontal scroll; RESPONSE `pre-wrap` / prose font
-- Outer `.claudia-cli-mirror-transcript` container border and background
+- Outer `.nexus-cli-mirror-transcript` container border and background
 - Transcript expand/minimize (except metadata position), raw debug, send input, session controls
 - Core/Hermes/PTY APIs, auth, Gateway routes, Console Mode, backend runtime
 
@@ -32,7 +32,7 @@ Live Hermes Transcript showed too many nested borders: outer transcript window, 
 
 | Layer | Policy |
 |-------|--------|
-| Outer transcript window (`.claudia-cli-mirror-transcript`) | Visible border preserved |
+| Outer transcript window (`.nexus-cli-mirror-transcript`) | Visible border preserved |
 | Individual stream groups | Border width kept; `border-color: transparent` |
 | Role-specific accent borders | Removed (transparent) |
 | Labels/content | Unchanged |
@@ -48,9 +48,9 @@ Live Hermes Transcript showed too many nested borders: outer transcript window, 
 ```bash
 bash -n start-macos.sh
 python3 -m compileall -q app.py core routes src
-node --check static/js/claudiaCliMirror.js
-node --check static/js/claudiaCliMirrorHelpers.js
-venv/bin/python -m pytest -q tests/test_claudia_cli_mirror_ui.py
+node --check static/js/nexusCliMirror.js
+node --check static/js/nexusCliMirrorHelpers.js
+venv/bin/python -m pytest -q tests/test_nexus_cli_mirror_ui.py
 ```
 
 ## Risks

@@ -4,25 +4,25 @@
 |-------|-------|
 | **Package** | Bridge 04B — Console chat renders Core message stub |
 | **Date** | 2026-06-02 |
-| **Repo** | `claudia_console` |
+| **Repo** | `console` |
 
 ## Objective
 
-Update the Claudia Console chat bridge so Console Mode chat forwards to Core `POST /messages` and renders `response.content` from Claudia Core’s message stub in the existing chat SSE/sync flow — without Odysseus `agent_loop`, Hermes, workers, or local tool execution.
+Update the legacy local console chat bridge so Console Mode chat forwards to Core `POST /messages` and renders `response.content` from Nexus Core’s message stub in the existing chat SSE/sync flow — without Odysseus `agent_loop`, Hermes, workers, or local tool execution.
 
 ## Files changed
 
 | File | Change |
 |------|--------|
-| `src/claudia_chat_bridge.py` | Render `core.response.content`; metadata; auth/unreachable fallbacks |
-| `tests/test_claudia_chat_core_stub.py` | **New** — stub rendering, degraded paths, Gateway `/messages` |
-| `scripts/test_claudia_gateway_bridge.sh` | Optional `/api/claudia/v1/messages` stub check |
+| `src/nexus_chat_bridge.py` | Render `core.response.content`; metadata; auth/unreachable fallbacks |
+| `tests/test_nexus_chat_core_stub.py` | **New** — stub rendering, degraded paths, Gateway `/messages` |
+| `scripts/test_nexus_gateway_bridge.sh` | Optional `/api/nexus/v1/messages` stub check |
 | `scripts/README.md` | Bridge 04B note |
-| `docs/claudia_console_reform/package_bridge_04b_console_chat_renders_core_message_stub.md` | **New** — this note |
+| `docs/console_reform/package_bridge_04b_console_chat_renders_core_message_stub.md` | **New** — this note |
 
 ## Chat route behavior
 
-When `CLAUDIA_CONSOLE_MODE=true`:
+When `NEXUS_CONSOLE_MODE=true`:
 
 | Route | Behavior |
 |-------|----------|
@@ -38,7 +38,7 @@ On successful Core forward (`forwarded: true`, `ok: true`):
 
 1. Prefer `core.response.content` (or `core_body.response.content`)
 2. Else Core top-level `message`
-3. Else: `"Claudia Core accepted the message, but no response content was returned."`
+3. Else: `"Nexus Core accepted the message, but no response content was returned."`
 
 SSE/sync payloads include metadata when present:
 
@@ -53,7 +53,7 @@ Assistant text is duplicated as `response`, `message`, and SSE `delta` for UI co
 
 | Condition | User-visible reply | agent_loop |
 |-----------|-------------------|------------|
-| `CLAUDIA_CORE_URL` unset | Core not configured message | Not called |
+| `NEXUS_CORE_URL` unset | Core not configured message | Not called |
 | Core unreachable / timeout / error | Unreachable/unavailable message | Not called |
 | Core HTTP 401 | Authentication failed message | Not called |
 | Missing `response.content` | Safe fallback string | Not called |
@@ -61,13 +61,13 @@ Assistant text is duplicated as `response`, `message`, and SSE `delta` for UI co
 ## Tests / checks run
 
 ```bash
-cd /Users/bretthoffman/Documents/Claudia/claudia_console
-pytest -q tests/test_claudia_chat_core_stub.py
-pytest -q tests/test_claudia_messages.py
-pytest -q tests/test_claudia_chat_demotion.py
-pytest -q tests/test_claudia_packets_passthrough.py
-pytest -q tests/test_claudia_console_mode.py
-bash -n ./scripts/test_claudia_gateway_bridge.sh
+cd /Users/bretthoffman/Documents/Nexus/console
+pytest -q tests/test_nexus_chat_core_stub.py
+pytest -q tests/test_nexus_messages.py
+pytest -q tests/test_nexus_chat_demotion.py
+pytest -q tests/test_nexus_packets_passthrough.py
+pytest -q tests/test_console_mode.py
+bash -n ./scripts/test_nexus_gateway_bridge.sh
 ```
 
 ## Manual smoke test commands
@@ -75,21 +75,21 @@ bash -n ./scripts/test_claudia_gateway_bridge.sh
 **Terminal 1 — Core**
 
 ```bash
-cd /Users/bretthoffman/Documents/Claudia/claudia_system
+cd /Users/bretthoffman/Documents/Nexus/system
 ./start-core-api.sh
 ```
 
 **Terminal 2 — Console**
 
 ```bash
-cd /Users/bretthoffman/Documents/Claudia/claudia_console
-CLAUDIA_CONSOLE_MODE=true CLAUDIA_CORE_URL=http://127.0.0.1:8080 ./start-macos.sh
+cd /Users/bretthoffman/Documents/Nexus/console
+NEXUS_CONSOLE_MODE=true NEXUS_CORE_URL=http://127.0.0.1:8080 ./start-macos.sh
 ```
 
 **Terminal 3 — Gateway message**
 
 ```bash
-curl -X POST http://127.0.0.1:7860/api/claudia/v1/messages \
+curl -X POST http://127.0.0.1:7860/api/nexus/v1/messages \
   -H "Content-Type: application/json" \
   -d '{"type":"message","route":"manual_test","payload":{"message":"Hello from Console Bridge 04B"}}'
 ```
@@ -97,21 +97,21 @@ curl -X POST http://127.0.0.1:7860/api/claudia/v1/messages \
 Or:
 
 ```bash
-./scripts/test_claudia_gateway_bridge.sh
+./scripts/test_nexus_gateway_bridge.sh
 ```
 
 **Browser UI**
 
 1. Open `http://127.0.0.1:7860`, log in
 2. Send a chat message in Console Mode
-3. Expected assistant reply: `Claudia Core received your message: "...". Full task execution is not enabled yet.`
+3. Expected assistant reply: `Nexus Core received your message: "...". Full task execution is not enabled yet.`
 
-With `AUTH_ENABLED=true`, set `CLAUDIA_GATEWAY_BEARER_TOKEN` for curl/script tests.
+With `AUTH_ENABLED=true`, set `NEXUS_GATEWAY_BEARER_TOKEN` for curl/script tests.
 
 ## Known limitations
 
-- Stub content only — not real Claudia/Hermes execution
-- No Core event SSE relay (`/api/claudia/v1/stream/{id}` still placeholder)
+- Stub content only — not real Nexus/Hermes execution
+- No Core event SSE relay (`/api/nexus/v1/stream/{id}` still placeholder)
 - Chat still requires Console auth when enabled
 - Gateway `/messages` route returns Gateway envelope + `core` body; chat bridge uses the same forward path internally
 
@@ -119,8 +119,8 @@ With `AUTH_ENABLED=true`, set `CLAUDIA_GATEWAY_BEARER_TOKEN` for curl/script tes
 
 **Bridge 05 — Core event stream relay or operator packet dashboard UI**
 
-- Wire `GET /api/claudia/v1/stream/{packet_id}` to Core when events exist, or
-- Add read-only Console dashboard panel for `/api/claudia/v1/packets` (no execution)
+- Wire `GET /api/nexus/v1/stream/{packet_id}` to Core when events exist, or
+- Add read-only Console dashboard panel for `/api/nexus/v1/packets` (no execution)
 
 ---
 

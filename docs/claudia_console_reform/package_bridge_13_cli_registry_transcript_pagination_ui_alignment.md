@@ -4,7 +4,7 @@
 |-------|-------|
 | **Package** | Bridge 13 — CLI Registry Transcript Pagination UI Alignment |
 | **Date** | 2026-06-03 |
-| **Repo** | `claudia_console` |
+| **Repo** | `console` |
 
 ## Objective
 
@@ -14,12 +14,12 @@ Align Console CLI Mirror UI with Core Bridge 13 registry-backed session history 
 
 | File | Change |
 |------|--------|
-| `static/js/claudiaCliMirror.js` | Active/stopped sections, multi-console copy, load-older transcript, event counts |
-| `static/js/claudiaCliMirrorHelpers.js` | Session list note for one-active + multi-console |
+| `static/js/nexusCliMirror.js` | Active/stopped sections, multi-console copy, load-older transcript, event counts |
+| `static/js/nexusCliMirrorHelpers.js` | Session list note for one-active + multi-console |
 | `static/style.css` | Section titles, multi-console note, pagination bar |
-| `src/claudia_client.py` | Transcript `before_seq` / `after_seq` relay |
-| `routes/claudia_routes.py` | Gateway transcript pagination params |
-| `tests/test_claudia_cli_mirror_ui.py` | Bridge 13 static tests |
+| `src/nexus_client.py` | Transcript `before_seq` / `after_seq` relay |
+| `routes/nexus_routes.py` | Gateway transcript pagination params |
+| `tests/test_nexus_cli_mirror_ui.py` | Bridge 13 static tests |
 
 ## Session list / history changes
 
@@ -43,9 +43,9 @@ Align Console CLI Mirror UI with Core Bridge 13 registry-backed session history 
 ## Tests / checks run
 
 ```bash
-cd claudia_console
-pytest tests/test_claudia_cli_mirror_ui.py tests/test_claudia_cli_relay.py tests/test_claudia_messages.py -q
-node --check static/js/claudiaCliMirror.js static/js/claudiaCliMirrorHelpers.js
+cd console
+pytest tests/test_nexus_cli_mirror_ui.py tests/test_nexus_cli_relay.py tests/test_nexus_messages.py -q
+node --check static/js/nexusCliMirror.js static/js/nexusCliMirrorHelpers.js
 ```
 
 ## Manual smoke instructions

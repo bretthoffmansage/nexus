@@ -2,7 +2,7 @@
 
 **Package / pass name:** CLI Mirror Session Panel Simplification and Transcript Cleanup Pass  
 **Date / time:** 2026-06-03 (local)  
-**Repo path:** `/Users/bretthoffman/Documents/claudia_console`
+**Repo path:** `/Users/bretthoffman/Documents/console`
 
 ## Root cause
 
@@ -21,11 +21,11 @@
 
 | File | Change |
 |------|--------|
-| `static/js/claudiaCliMirror.js` | Active setup UI; minimize/expand; stop clears title; `_renderCard` empty-row guard |
-| `static/js/claudiaCliMirrorHelpers.js` | `extractTranscriptText()`, `hasVisibleTranscriptText()`; improved classification |
+| `static/js/nexusCliMirror.js` | Active setup UI; minimize/expand; stop clears title; `_renderCard` empty-row guard |
+| `static/js/nexusCliMirrorHelpers.js` | `extractTranscriptText()`, `hasVisibleTranscriptText()`; improved classification |
 | `static/style.css` | Active/minimized setup panel; transcript body visibility |
-| `tests/test_claudia_cli_mirror_ui.py` | Setup, minimize, transcript static/Node tests |
-| `docs/claudia_console_reform/cli_mirror_session_panel_transcript_cleanup.md` | This note |
+| `tests/test_nexus_cli_mirror_ui.py` | Setup, minimize, transcript static/Node tests |
+| `docs/console_reform/cli_mirror_session_panel_transcript_cleanup.md` | This note |
 
 ## Behavior changed
 
@@ -88,10 +88,10 @@
 ```bash
 bash -n start-macos.sh
 python3 -m compileall -q app.py core routes src
-venv/bin/python -m pytest -q tests/test_claudia_cli_mirror_ui.py
+venv/bin/python -m pytest -q tests/test_nexus_cli_mirror_ui.py
 ```
 
-**Results:** 43 passed (`tests/test_claudia_cli_mirror_ui.py`); `bash -n start-macos.sh` OK; `compileall` OK.
+**Results:** 43 passed (`tests/test_nexus_cli_mirror_ui.py`); `bash -n start-macos.sh` OK; `compileall` OK.
 
 ## Risks
 

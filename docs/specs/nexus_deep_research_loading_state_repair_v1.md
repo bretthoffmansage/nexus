@@ -76,6 +76,6 @@ Focused component tests used in place of authenticated live `/research` (approva
 ## Out of scope
 
 - Convex schema / mutations
-- Claudia System
+- Nexus System
 - Direct Hermes/Tavily paths
 - Automatic retry

@@ -4,7 +4,7 @@ Package: `nexus_chat_response_rendering_and_conversation_management_v1`
 
 ## Scope
 
-Hosted Nexus UI and Nexus-owned conversation storage only. No changes to the Nexus/Convex queue protocol, Claudia Connector contract, task ownership model, or Claudia-side execution.
+Hosted Nexus UI and Nexus-owned conversation storage only. No changes to the Nexus/Convex queue protocol, Console Connector contract, task ownership model, or Nexus-side execution.
 
 ## Previous type-on failure root cause
 
@@ -68,10 +68,10 @@ Deletion removes conversation + messages only. Tasks, results, sources, and Task
 ## Removed UI elements
 
 - Chat-page Diagnostics button
-- Subtitle: “Private knowledge requests · queued for Claudia”
-- Composer help: “Requests are saved and queued. Execution waits for the Claudia Connector (not configured yet).”
+- Subtitle: “Private knowledge requests · queued for Nexus”
+- Composer help: “Requests are saved and queued. Execution waits for the Console Connector (not configured yet).”
 - Duplicate `ANSWER` panel and pending Answer/Sources placeholders
-- App-shell startup banner: “Nexus setup in progress. Read-only task connectivity through the Claudia Connector will be enabled in a later setup step. Claudia is not connected yet.” — removed from `AppShell` default render; the Connector is live. `TopAlertBanner` remains available for future real notices with dismiss support (`components/status/TopAlertBanner.tsx`).
+- App-shell startup banner: “Nexus setup in progress. Read-only task connectivity through the Console Connector will be enabled in a later setup step. Nexus is not connected yet.” — removed from `AppShell` default render; the Connector is live. `TopAlertBanner` remains available for future real notices with dismiss support (`components/status/TopAlertBanner.tsx`).
 
 ## Tests
 

@@ -9,7 +9,7 @@
 
 ## Goal
 
-Port the visual identity, layout, and safe read-only presentation patterns from the legacy Claudia Console (`static/`) into the hosted Nexus Next.js application — without porting execution authority, FastAPI routes, or fake operational state.
+Port the visual identity, layout, and safe read-only presentation patterns from the legacy local console (`static/`) into the hosted Nexus Next.js application — without porting execution authority, FastAPI routes, or fake operational state.
 
 ## Legacy assets inspected
 
@@ -25,10 +25,10 @@ Port the visual identity, layout, and safe read-only presentation patterns from 
 
 **Not ported (reviewed for boundary):**
 
-- `static/js/claudiaBrowserChatBridge.js` — FastAPI chat bridge
-- `static/js/claudiaConsoleMode.js` — local console mode banner
-- `static/js/claudiaModelSelector.js` — model writes
-- `static/js/claudiaCliMirror.js`, `claudiaCliMirrorHelpers.js` — CLI Mirror / PTY
+- `static/js/nexusBrowserChatBridge.js` — FastAPI chat bridge
+- `static/js/nexusConsoleMode.js` — local console mode banner
+- `static/js/nexusModelSelector.js` — model writes
+- `static/js/nexusCliMirror.js`, `nexusCliMirrorHelpers.js` — CLI Mirror / PTY
 
 ## Components created
 
@@ -53,7 +53,7 @@ Port the visual identity, layout, and safe read-only presentation patterns from 
 ### Status (`components/status/`)
 
 - `SystemPresence.tsx` — connector presentation (`not_configured` default)
-- `SetupBanner.tsx` — “Nexus setup in progress” (not Claudia Console Mode)
+- `SetupBanner.tsx` — “Nexus setup in progress” (not legacy local console Mode)
 
 ### Sources (`components/sources/`)
 
@@ -85,11 +85,11 @@ Port the visual identity, layout, and safe read-only presentation patterns from 
 - Full ~35k-line `static/style.css`
 - Theme editor, pattern backgrounds, frosted glass effects
 - Operational Web Search UI
-- “Claudia Console Mode” hosted banner
+- “legacy local console Mode” hosted banner
 - CLI Mirror transcript chrome
 - Model selector writes
 - Legacy `odysseus-*` localStorage keys
-- Fake tasks, fake messages, fake online Claudia status
+- Fake tasks, fake messages, fake online Nexus status
 - Service worker / legacy PWA offline shell
 
 ## Theme token mapping
@@ -126,7 +126,7 @@ Persistence: `nexus-theme-mode` in localStorage via `ThemeProvider`.
 | Agent mode | Hidden (`NEXUS_SHOW_AGENT_PLACEHOLDER=false`) |
 | Chat mode button | Shown selected but disabled (read-only) |
 | Task history | Empty copy only |
-| Claudia presence | `not_configured` only |
+| Nexus presence | `not_configured` only |
 
 ## Presentation types (`lib/types/presentation.ts`)
 
@@ -150,9 +150,9 @@ Frontend-only contracts (not Convex schema):
 
 Coverage:
 
-- Nexus branding; no “Claudia Console” product title
+- Nexus branding; no “legacy local console” product title
 - Disabled composer
-- Truthful Claudia presence
+- Truthful Nexus presence
 - Agent mode non-operational
 - Source card safe fields
 - Diagnostics expand/collapse
@@ -169,11 +169,11 @@ Coverage:
 P3 contains **no**:
 
 - Real task submission or optimistic messages
-- Claudia Core HTTP, FastAPI paths, EventSource/SSE
+- Nexus Core HTTP, FastAPI paths, EventSource/SSE
 - Connector heartbeat, HMAC, claims, leases
 - Convex product tables or task mutations beyond P2 `appMeta.get`
 - Clerk approval/roles (P4)
-- Modifications to `app.py`, `routes/`, `static/`, or `claudia_system`
+- Modifications to `app.py`, `routes/`, `static/`, or `system`
 
 ## Boundary verification
 

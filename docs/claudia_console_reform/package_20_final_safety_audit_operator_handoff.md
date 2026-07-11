@@ -4,22 +4,22 @@
 |-------|-------|
 | **Package** | Package 20 — Final safety audit and operator handoff |
 | **Date/time** | 2026-06-02 |
-| **Repo path** | `/Users/bretthoffman/Documents/claudia_console` |
-| **Claudia Core path** | `/Users/bretthoffman/Documents/claudia_system` |
+| **Repo path** | `/Users/bretthoffman/Documents/console` |
+| **Nexus Core path** | `/Users/bretthoffman/Documents/system` |
 | **Prior notes** | `package_00` … `package_20a_folder_rename_compatibility.md` |
 
 ## Objective
 
-Final safety audit and operator handoff for the Claudia Console/Gateway reform (Packages 0–19, 20A). Verify and document closeout state — **no new features, no runtime behavior changes, no auth migration, no Convex/Clerk, no Ollama removal**.
+Final safety audit and operator handoff for the legacy local console/Gateway reform (Packages 0–19, 20A). Verify and document closeout state — **no new features, no runtime behavior changes, no auth migration, no Convex/Clerk, no Ollama removal**.
 
 ## Files changed
 
 | File | Change |
 |------|--------|
-| `docs/claudia_console_reform/package_20_final_safety_audit_operator_handoff.md` | **New** — this audit |
-| `docs/claudia_console_reform/CLAUDIA_CONSOLE_OPERATOR_HANDOFF.md` | **New** — concise operator guide |
-| `docs/claudia_console_reform/final_console_gateway_checklist.md` | **New** — verification checklist |
-| `tests/test_claudia_final_safety_audit.py` | **New** — static closeout checks |
+| `docs/console_reform/package_20_final_safety_audit_operator_handoff.md` | **New** — this audit |
+| `docs/console_reform/NEXUS_CONSOLE_OPERATOR_HANDOFF.md` | **New** — concise operator guide |
+| `docs/console_reform/final_console_gateway_checklist.md` | **New** — verification checklist |
+| `tests/test_nexus_final_safety_audit.py` | **New** — static closeout checks |
 
 ## Behavior changed
 
@@ -33,18 +33,18 @@ All Packages 1–19 and 20A runtime behavior: Console Mode flags, Gateway forwar
 
 ```text
 ┌─────────────────────────────────────────────────────────────────┐
-│  Claudia Mac — /Users/bretthoffman/Documents/claudia_console    │
+│  Nexus Mac — /Users/bretthoffman/Documents/console    │
 │  ┌───────────────────────────────────────────────────────────┐  │
-│  │  Claudia Console UI (PWA) + Claudia Gateway API           │  │
-│  │  /api/claudia/v1/*  — forward-only, non-authoritative     │  │
+│  │  legacy local console UI (PWA) + Nexus Gateway API           │  │
+│  │  /api/nexus/v1/*  — forward-only, non-authoritative     │  │
 │  │  Console Mode — demotes Odysseus competing authority      │  │
 │  │  Auth, dashboard, approvals, read surfaces, model admin   │  │
 │  └───────────────────────────┬───────────────────────────────┘  │
-│                              │ CLAUDIA_CORE_URL (optional)      │
+│                              │ NEXUS_CORE_URL (optional)      │
 └──────────────────────────────┼──────────────────────────────────┘
                                ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│  Claudia Core — /Users/bretthoffman/Documents/claudia_system    │
+│  Nexus Core — /Users/bretthoffman/Documents/system    │
 │  Task loop, workers, tools, final authority, connector writes   │
 │  (separate process — NOT started by Console)                    │
 └─────────────────────────────────────────────────────────────────┘
@@ -54,9 +54,9 @@ All Packages 1–19 and 20A runtime behavior: Console Mode flags, Gateway forwar
 
 | Component | Responsibility |
 |-----------|----------------|
-| **Claudia Console** | UI shell, auth, Gateway packet normalization/forward, read-only or demoted legacy surfaces |
-| **Claudia Gateway** | `/api/claudia/v1/*` — health, intake, messages, sources, worker-output, approvals |
-| **Claudia Core** | Autonomy, execution, connector authority, housekeeping |
+| **legacy local console** | UI shell, auth, Gateway packet normalization/forward, read-only or demoted legacy surfaces |
+| **Nexus Gateway** | `/api/nexus/v1/*` — health, intake, messages, sources, worker-output, approvals |
+| **Nexus Core** | Autonomy, execution, connector authority, housekeeping |
 
 Console must not become Core. Gateway routes do not execute agents, tools, or tasks locally.
 
@@ -65,15 +65,15 @@ Console must not become Core. Gateway routes do not execute agents, tools, or ta
 **Basic:**
 
 ```bash
-cd /Users/bretthoffman/Documents/claudia_console
+cd /Users/bretthoffman/Documents/console
 ./start-macos.sh
 ```
 
 **Recommended Console Mode:**
 
 ```bash
-cd /Users/bretthoffman/Documents/claudia_console
-CLAUDIA_CONSOLE_MODE=true ./start-macos.sh
+cd /Users/bretthoffman/Documents/console
+NEXUS_CONSOLE_MODE=true ./start-macos.sh
 ```
 
 URL: `http://127.0.0.1:7860`
@@ -81,7 +81,7 @@ URL: `http://127.0.0.1:7860`
 ## Console Mode recommended env
 
 ```env
-CLAUDIA_CONSOLE_MODE=true
+NEXUS_CONSOLE_MODE=true
 AUTH_ENABLED=true
 LOCALHOST_BYPASS=false
 APP_BIND=127.0.0.1
@@ -90,13 +90,13 @@ APP_BIND=127.0.0.1
 Optional Gateway→Core:
 
 ```env
-CLAUDIA_CORE_URL=http://127.0.0.1:8080
-CLAUDIA_GATEWAY_SHARED_SECRET=<set locally; never commit>
+NEXUS_CORE_URL=http://127.0.0.1:8080
+NEXUS_GATEWAY_SHARED_SECRET=<set locally; never commit>
 ```
 
 ## Gateway routes summary
 
-Base prefix: `/api/claudia/v1`
+Base prefix: `/api/nexus/v1`
 
 | Method | Path | Role |
 |--------|------|------|
@@ -111,17 +111,17 @@ Base prefix: `/api/claudia/v1`
 | `GET` | `/approvals` | Approval queue list |
 | `POST` | `/approvals/{id}/resolve` | Forward approval resolution |
 
-Auth: Claudia token scopes (`claudia_intake`, `claudia_read`, etc.) or session when auth enabled. Gateway never runs local agent loop or tool execution.
+Auth: Nexus token scopes (`nexus_intake`, `nexus_read`, etc.) or session when auth enabled. Gateway never runs local agent loop or tool execution.
 
 ## Matrix 1 — Console Mode safety matrix
 
 | Area | Final Console Mode behavior | Evidence/package | Remaining caveat |
 |------|----------------------------|------------------|------------------|
 | **Startup scheduler/pollers/bg monitor** | Not started; default task seed skipped; nightly skill audit not scheduled | P1 `console_mode.py`, `app.py` | Task CRUD metadata still allowed |
-| **Chat** | Routes through Claudia message packets + SSE; forwards to Core when configured; no local agent/LLM | P5–P6 `claudia_chat_bridge.py`, `chat_routes.py` | Real Core streaming relay placeholder until Core live |
-| **Gateway intake/messages/source/worker-output** | Forward-only packet normalization to Core | P2, P4, P7–P8 `claudia_routes.py`, `claudia_client.py` | Core must be running for forward success |
-| **Approval forwarding** | List + resolve via Gateway; UI in dashboard | P10 `claudia_approvals.py`, dashboard JS | Core owns final approval authority |
-| **Upload source packets** | Staged upload → source packet bridge | P8 `claudia_upload_bridge.py` | — |
+| **Chat** | Routes through Nexus message packets + SSE; forwards to Core when configured; no local agent/LLM | P5–P6 `nexus_chat_bridge.py`, `chat_routes.py` | Real Core streaming relay placeholder until Core live |
+| **Gateway intake/messages/source/worker-output** | Forward-only packet normalization to Core | P2, P4, P7–P8 `nexus_routes.py`, `nexus_client.py` | Core must be running for forward success |
+| **Approval forwarding** | List + resolve via Gateway; UI in dashboard | P10 `nexus_approvals.py`, dashboard JS | Core owns final approval authority |
+| **Upload source packets** | Staged upload → source packet bridge | P8 `nexus_upload_bridge.py` | — |
 | **Upload vision/RAG local processing** | Blocked — no local vision/RAG on upload | P8b `upload_console_guard.py` | Files staged only |
 | **Email/calendar writes** | Blocked (send, schedule, draft, IMAP mutators, event CRUD) | P11 `connector_console_guard.py` | Read/list/quick-parse preserved |
 | **Shell execution** | Blocked at HTTP route | P12 `execution_console_guard.py`, `shell_routes.py` | — |
@@ -155,10 +155,10 @@ Auth: Claudia token scopes (`claudia_intake`, `claudia_read`, etc.) or session w
 | Functionality | Preserved as | Notes |
 |---------------|--------------|-------|
 | **Login/auth** | Full auth stack, 2FA, sessions | Cookie name `odysseus_session` retained |
-| **PWA/mobile shell** | `manifest.json`, `sw.js` (`claudia-console-v1`) | Private URL install only |
-| **Claudia dashboard** | `claudiaDashboard.js` | Health, warnings, approvals entry |
+| **PWA/mobile shell** | `manifest.json`, `sw.js` (`nexus-console-v1`) | Private URL install only |
+| **Nexus dashboard** | `nexusDashboard.js` | Health, warnings, approvals entry |
 | **Chat UI/session display** | `chat.js`, sessions | Console Mode uses packet bridge |
-| **Gateway API** | `/api/claudia/v1/*` | Forward-only |
+| **Gateway API** | `/api/nexus/v1/*` | Forward-only |
 | **Approvals UI** | Dashboard + Gateway routes | P10 |
 | **Upload staging** | Upload routes + source packet bridge | No local vision/RAG in Console Mode |
 | **Email read surfaces** | List, read, triage display | Writes blocked P11 |
@@ -170,7 +170,7 @@ Auth: Claudia token scopes (`claudia_intake`, `claudia_read`, etc.) or session w
 | **Ollama/local model admin capability** | Settings, Cookbook read, model endpoints | Serve/download blocked in Console Mode P19 |
 | **Gallery browsing/assets** | Library, albums, tags, GET image | Generative blocked P19; assets not deleted |
 | **Companion/mobile pairing** | `companion/routes.py` | — |
-| **Docker/Windows compatibility assets** | `docker-compose.yml`, `launch-windows.ps1` | Not primary Claudia Mac path |
+| **Docker/Windows compatibility assets** | `docker-compose.yml`, `launch-windows.ps1` | Not primary Nexus Mac path |
 
 ## Removed/archived/retained legacy file summary
 
@@ -192,7 +192,7 @@ Documented in [`private_pwa_deployment_hardening.md`](private_pwa_deployment_har
 
 - Loopback bind + Tailscale/private LAN access pattern
 - `AUTH_ENABLED=true`, `LOCALHOST_BYPASS=false` for network deployments
-- `GET /api/claudia/v1/health` → `deployment_warnings` (no secrets)
+- `GET /api/nexus/v1/health` → `deployment_warnings` (no secrets)
 - Ollama/Core ports internal-only
 - PWA install from trusted private URL only
 
@@ -200,17 +200,17 @@ Documented in [`private_pwa_deployment_hardening.md`](private_pwa_deployment_har
 
 **Complete (P20A).**
 
-- Active operator docs use `/Users/bretthoffman/Documents/claudia_console`
+- Active operator docs use `/Users/bretthoffman/Documents/console`
 - `start-macos.sh` repo-relative; no hardcoded `odysseus` folder name
 - Historical package notes 00–19 retain old path as implementation record
-- Verified by `tests/test_claudia_folder_rename_compatibility.py`
+- Verified by `tests/test_nexus_folder_rename_compatibility.py`
 
-## Visible Claudia branding status
+## Visible Nexus branding status
 
 **Complete (P14, P18).**
 
 - Login, main app, landing banner, manifest, service worker cache name
-- Claudia dashboard and Console Mode JS module
+- Nexus dashboard and Console Mode JS module
 - Internal identifiers intentionally unchanged (`odysseus_session`, etc.)
 
 ## Test/check results
@@ -219,8 +219,8 @@ Documented in [`private_pwa_deployment_hardening.md`](private_pwa_deployment_har
 |-------|--------|
 | `bash -n start-macos.sh` | **Pass** |
 | `python3 -m compileall -q app.py core routes src` | **Pass** |
-| Focused Claudia tests (22 files, incl. final safety audit) | **Pass** — 222 tests |
-| `tests/test_claudia_final_safety_audit.py` | **Pass** (static closeout) |
+| Focused Nexus tests (22 files, incl. final safety audit) | **Pass** — 222 tests |
+| `tests/test_nexus_final_safety_audit.py` | **Pass** (static closeout) |
 | Active docs grep — no old checkout path in operator files | **Pass** (only historical package notes) |
 | Live server smoke test on dedicated Mac | **Not run** (bounded validation only; operator verifies post-launch) |
 | Full pytest `--collect-only` | **2 pre-existing collection errors** (see below) |
@@ -229,28 +229,28 @@ Documented in [`private_pwa_deployment_hardening.md`](private_pwa_deployment_har
 
 ```bash
 venv/bin/python -m pytest -q \
-  tests/test_claudia_folder_rename_compatibility.py \
-  tests/test_claudia_final_authority_hardening.py \
-  tests/test_claudia_legacy_cleanup_archive.py \
-  tests/test_claudia_final_audit_artifacts.py \
-  tests/test_claudia_private_deployment_hardening.py \
-  tests/test_claudia_legacy_ui_classification.py \
-  tests/test_claudia_branding.py \
-  tests/test_claudia_authority_demotion.py \
-  tests/test_claudia_execution_surface_guards.py \
-  tests/test_claudia_connector_email_calendar_guards.py \
-  tests/test_claudia_approval_routes.py \
-  tests/test_claudia_dashboard_skeleton.py \
-  tests/test_claudia_upload_processing_guards.py \
-  tests/test_claudia_upload_bridge.py \
-  tests/test_claudia_source_worker_routes.py \
-  tests/test_claudia_messages.py \
-  tests/test_claudia_chat_demotion.py \
-  tests/test_claudia_gateway_routes.py \
-  tests/test_claudia_token_scopes.py \
-  tests/test_claudia_packets.py \
-  tests/test_claudia_console_mode.py \
-  tests/test_claudia_final_safety_audit.py
+  tests/test_nexus_folder_rename_compatibility.py \
+  tests/test_nexus_final_authority_hardening.py \
+  tests/test_nexus_legacy_cleanup_archive.py \
+  tests/test_nexus_final_audit_artifacts.py \
+  tests/test_nexus_private_deployment_hardening.py \
+  tests/test_nexus_legacy_ui_classification.py \
+  tests/test_nexus_branding.py \
+  tests/test_nexus_authority_demotion.py \
+  tests/test_nexus_execution_surface_guards.py \
+  tests/test_nexus_connector_email_calendar_guards.py \
+  tests/test_nexus_approval_routes.py \
+  tests/test_nexus_dashboard_skeleton.py \
+  tests/test_nexus_upload_processing_guards.py \
+  tests/test_nexus_upload_bridge.py \
+  tests/test_nexus_source_worker_routes.py \
+  tests/test_nexus_messages.py \
+  tests/test_nexus_chat_demotion.py \
+  tests/test_nexus_gateway_routes.py \
+  tests/test_nexus_token_scopes.py \
+  tests/test_nexus_packets.py \
+  tests/test_console_mode.py \
+  tests/test_nexus_final_safety_audit.py
 ```
 
 ## Known baseline pytest issue (Package 0)
@@ -262,15 +262,15 @@ Full-suite collection reports **2 pre-existing errors** (not fixed in Package 20
 | `tests/test_chat_image_routing.py` | Collection error |
 | `tests/test_webhook_ssrf_resilience.py` | `TypeError: Item in core.database.__all__ must be str, not MagicMock` |
 
-1548 other tests collect successfully. Focused Claudia reform suite (222 tests) passes.
+1548 other tests collect successfully. Focused Nexus reform suite (222 tests) passes.
 
 ## Operator next steps
 
-1. Read [`CLAUDIA_CONSOLE_OPERATOR_HANDOFF.md`](CLAUDIA_CONSOLE_OPERATOR_HANDOFF.md).
+1. Read [`NEXUS_CONSOLE_OPERATOR_HANDOFF.md`](NEXUS_CONSOLE_OPERATOR_HANDOFF.md).
 2. Copy `.env.example` → `.env`; set Console Mode recommended values.
-3. Launch from `/Users/bretthoffman/Documents/claudia_console` with `./start-macos.sh`.
-4. Verify health at `http://127.0.0.1:7860/api/claudia/v1/health`.
-5. When Claudia Core is available, set `CLAUDIA_CORE_URL` and gateway secret.
+3. Launch from `/Users/bretthoffman/Documents/console` with `./start-macos.sh`.
+4. Verify health at `http://127.0.0.1:7860/api/nexus/v1/health`.
+5. When Nexus Core is available, set `NEXUS_CORE_URL` and gateway secret.
 6. Use [`final_console_gateway_checklist.md`](final_console_gateway_checklist.md) for spot checks.
 7. Keep deployment on loopback/Tailscale; never expose raw ports publicly.
 
@@ -278,12 +278,12 @@ Full-suite collection reports **2 pre-existing errors** (not fixed in Package 20
 
 | Follow-up | Priority | Reason | Suggested future package |
 |-----------|----------|--------|--------------------------|
-| Actual Claudia Core endpoint integration once Core API is live | **High** | Gateway forward paths exist; Core runtime separate | Core integration package |
+| Actual Nexus Core endpoint integration once Core API is live | **High** | Gateway forward paths exist; Core runtime separate | Core integration package |
 | Core event stream / real streaming relay | **High** | Placeholder SSE on `/stream/{packet_id}` | Core streaming package |
-| Runtime smoke test on dedicated Claudia Mac | **Medium** | P20 did not start long-running server | Operator acceptance test |
+| Runtime smoke test on dedicated Nexus Mac | **Medium** | P20 did not start long-running server | Operator acceptance test |
 | Convex shared state | **Low** | Explicit non-goal for reform | Future architecture |
 | Clerk auth | **Low** | Explicit non-goal for reform | Future auth evaluation |
-| Optional upstream repo rename | **Low** | GitHub still `odysseus`; local folder `claudia_console` | Docs/infra |
+| Optional upstream repo rename | **Low** | GitHub still `odysseus`; local folder `console` | Docs/infra |
 | Optional internal identifier migration | **Low** | Breaking change for sessions/PWA | Major version only |
 | Optional full README rewrite | **Low** | Top block updated; body still Odysseus-oriented | Docs polish |
 | Optional broader document editor policy | **Low** | Read preserved; write blocked | Product policy |
@@ -294,18 +294,18 @@ Full-suite collection reports **2 pre-existing errors** (not fixed in Package 20
 
 **Reform closeout: approved for operator handoff.**
 
-Claudia Console/Gateway is ready to launch from `/Users/bretthoffman/Documents/claudia_console` in Console Mode as a private UI/API shell. Competing Odysseus authority is demoted via startup kill switches (P1) and HTTP/defensive guards (P5–P13, P19). Gateway routes are forward-only. Ollama/local model admin and gallery assets are preserved; generative execution and local agent paths are blocked in Console Mode.
+legacy local console/Gateway is ready to launch from `/Users/bretthoffman/Documents/console` in Console Mode as a private UI/API shell. Competing Odysseus authority is demoted via startup kill switches (P1) and HTTP/defensive guards (P5–P13, P19). Gateway routes are forward-only. Ollama/local model admin and gallery assets are preserved; generative execution and local agent paths are blocked in Console Mode.
 
 **Operator should:**
 
-- Run with `CLAUDIA_CONSOLE_MODE=true` on the dedicated Claudia Mac.
-- Wire Gateway to Claudia Core when Core is running.
+- Run with `NEXUS_CONSOLE_MODE=true` on the dedicated Nexus Mac.
+- Wire Gateway to Nexus Core when Core is running.
 - Treat this repo as Console/Gateway only — not Core.
 
 **No further reform packages required for baseline handoff.** Subsequent work is Core integration, streaming, and optional polish — not Console Mode safety gaps from Packages 1–19.
 
 ---
 
-**Operator handoff:** [`CLAUDIA_CONSOLE_OPERATOR_HANDOFF.md`](CLAUDIA_CONSOLE_OPERATOR_HANDOFF.md)
+**Operator handoff:** [`NEXUS_CONSOLE_OPERATOR_HANDOFF.md`](NEXUS_CONSOLE_OPERATOR_HANDOFF.md)
 
 **Quick checklist:** [`final_console_gateway_checklist.md`](final_console_gateway_checklist.md)

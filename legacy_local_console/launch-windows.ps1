@@ -1,8 +1,8 @@
 #Requires -Version 5.1
 <#
-  Odysseus / Claudia Console — native Windows launcher (no Docker).
-  Compatibility path for Windows dev/home lab. Primary Claudia Mac path:
-    cd /Users/bretthoffman/Documents/claudia_console
+  Odysseus / legacy local console — native Windows launcher (no Docker).
+  Compatibility path for Windows dev/home lab. Primary Nexus Mac path:
+    cd /Users/bretthoffman/Documents/console
     ./start-macos.sh
 
   One command to: create a virtualenv, install dependencies, run first-time

@@ -1,6 +1,6 @@
-"""Claudia Gateway API token scopes — machine client authorization only.
+"""Nexus Gateway API token scopes — machine client authorization only.
 
-Claudia scopes authorize Gateway intake/read surfaces. They do not grant shell,
+Nexus scopes authorize Gateway intake/read surfaces. They do not grant shell,
 MCP, legacy chat-agent, admin, or connector-write privileges.
 """
 
@@ -12,22 +12,22 @@ from fastapi import HTTPException, Request
 SCOPE_CHAT = "chat"
 SCOPE_RESEARCH = "research"
 
-# Claudia Gateway machine scopes (Package 3+).
-SCOPE_CLAUDIA_INTAKE = "claudia_intake"
-SCOPE_CLAUDIA_WORKER = "claudia_worker"
-SCOPE_CLAUDIA_READ = "claudia_read"
-SCOPE_CLAUDIA_ADMIN = "claudia_admin"
+# Nexus Gateway machine scopes (Package 3+).
+SCOPE_NEXUS_INTAKE = "nexus_intake"
+SCOPE_NEXUS_WORKER = "nexus_worker"
+SCOPE_NEXUS_READ = "nexus_read"
+SCOPE_NEXUS_ADMIN = "nexus_admin"
 
-CLAUDIA_SCOPES = frozenset({
-    SCOPE_CLAUDIA_INTAKE,
-    SCOPE_CLAUDIA_WORKER,
-    SCOPE_CLAUDIA_READ,
-    SCOPE_CLAUDIA_ADMIN,
+NEXUS_SCOPES = frozenset({
+    SCOPE_NEXUS_INTAKE,
+    SCOPE_NEXUS_WORKER,
+    SCOPE_NEXUS_READ,
+    SCOPE_NEXUS_ADMIN,
 })
 
 LEGACY_SCOPES = frozenset({SCOPE_CHAT, SCOPE_RESEARCH})
 
-ALL_KNOWN_API_TOKEN_SCOPES = CLAUDIA_SCOPES | LEGACY_SCOPES
+ALL_KNOWN_API_TOKEN_SCOPES = NEXUS_SCOPES | LEGACY_SCOPES
 
 DEFAULT_API_TOKEN_SCOPES = SCOPE_CHAT
 
@@ -70,14 +70,14 @@ def require_api_token_scope(request: Request, scope: str, *, label: str | None =
 
 
 def require_legacy_chat_api_token(request: Request) -> None:
-    """Legacy ``POST /api/v1/chat`` — requires ``chat`` scope, not Claudia scopes."""
+    """Legacy ``POST /api/v1/chat`` — requires ``chat`` scope, not Nexus scopes."""
     require_api_token_scope(request, SCOPE_CHAT, label="chat")
 
 
-def authorize_claudia_intake(request: Request) -> None:
-    """``POST /api/claudia/v1/intake`` — session auth or ``claudia_intake`` bearer token."""
+def authorize_nexus_intake(request: Request) -> None:
+    """``POST /api/nexus/v1/intake`` — session auth or ``nexus_intake`` bearer token."""
     if getattr(request.state, "api_token", False):
-        require_api_token_scope(request, SCOPE_CLAUDIA_INTAKE, label="Claudia intake")
+        require_api_token_scope(request, SCOPE_NEXUS_INTAKE, label="Nexus intake")
         return
 
     from src.auth_helpers import _auth_disabled, get_current_user, require_user
@@ -89,10 +89,10 @@ def authorize_claudia_intake(request: Request) -> None:
     require_user(request)
 
 
-def authorize_claudia_read(request: Request) -> None:
-    """Gateway read routes — session auth or ``claudia_read`` bearer token."""
+def authorize_nexus_read(request: Request) -> None:
+    """Gateway read routes — session auth or ``nexus_read`` bearer token."""
     if getattr(request.state, "api_token", False):
-        require_api_token_scope(request, SCOPE_CLAUDIA_READ, label="Claudia read")
+        require_api_token_scope(request, SCOPE_NEXUS_READ, label="Nexus read")
         return
     from src.auth_helpers import _auth_disabled, get_current_user, require_user
 
@@ -103,10 +103,10 @@ def authorize_claudia_read(request: Request) -> None:
     require_user(request)
 
 
-def authorize_claudia_admin(request: Request) -> None:
-    """Approval resolution and other privileged Gateway writes — ``claudia_admin`` bearer."""
+def authorize_nexus_admin(request: Request) -> None:
+    """Approval resolution and other privileged Gateway writes — ``nexus_admin`` bearer."""
     if getattr(request.state, "api_token", False):
-        require_api_token_scope(request, SCOPE_CLAUDIA_ADMIN, label="Claudia admin")
+        require_api_token_scope(request, SCOPE_NEXUS_ADMIN, label="Nexus admin")
         return
     from src.auth_helpers import _auth_disabled, get_current_user, require_user
 
@@ -117,10 +117,10 @@ def authorize_claudia_admin(request: Request) -> None:
     require_user(request)
 
 
-def authorize_claudia_worker(request: Request) -> None:
-    """``POST /api/claudia/v1/worker-output`` — session auth or ``claudia_worker`` bearer."""
+def authorize_nexus_worker(request: Request) -> None:
+    """``POST /api/nexus/v1/worker-output`` — session auth or ``nexus_worker`` bearer."""
     if getattr(request.state, "api_token", False):
-        require_api_token_scope(request, SCOPE_CLAUDIA_WORKER, label="Claudia worker")
+        require_api_token_scope(request, SCOPE_NEXUS_WORKER, label="Nexus worker")
         return
     from src.auth_helpers import _auth_disabled, get_current_user, require_user
 

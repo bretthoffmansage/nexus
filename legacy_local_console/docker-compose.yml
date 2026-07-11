@@ -1,5 +1,5 @@
-# Compatibility/reference stack — primary Claudia Mac path is ./start-macos.sh (native).
-# Private deployment: docs/claudia_console_reform/private_pwa_deployment_hardening.md
+# Compatibility/reference stack — primary Nexus Mac path is ./start-macos.sh (native).
+# Private deployment: docs/console_reform/private_pwa_deployment_hardening.md
 services:
   odysseus:
     build: .

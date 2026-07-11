@@ -258,7 +258,7 @@ function slashReply(text) {
   div.className = 'msg msg-ai';
   const role = document.createElement('div');
   role.className = 'role';
-  role.textContent = 'Claudia';
+  role.textContent = 'Nexus';
   div.appendChild(role);
   const body = document.createElement('div');
   body.className = 'body';
@@ -327,7 +327,7 @@ function typewriterReply(text, options = {}) {
     div.className = 'msg msg-ai';
     const role = document.createElement('div');
     role.className = 'role';
-    role.textContent = 'Claudia';
+    role.textContent = 'Nexus';
     div.appendChild(role);
     const body = document.createElement('div');
     body.className = 'body';
@@ -367,7 +367,7 @@ function typewriterBlocksReply(blocks, options = {}) {
     div.className = 'msg msg-ai';
     const role = document.createElement('div');
     role.className = 'role';
-    role.textContent = 'Claudia';
+    role.textContent = 'Nexus';
     div.appendChild(role);
     const body = document.createElement('div');
     body.className = 'body';
@@ -558,7 +558,7 @@ async function connectDetectedSetupEndpoint(detected) {
   spinnerDiv.className = 'msg msg-ai';
   const spinnerRole = document.createElement('div');
   spinnerRole.className = 'role';
-  spinnerRole.textContent = 'Claudia';
+  spinnerRole.textContent = 'Nexus';
   spinnerDiv.appendChild(spinnerRole);
   const spinnerBody = document.createElement('div');
   spinnerBody.className = 'body';
@@ -2178,7 +2178,7 @@ async function _cmdDemo(args, ctx) {
   const delay = ms => new Promise(r => setTimeout(r, ms));
 
   // ── Welcome ──
-  await typewriterReply('Welcome to Claudia! Lets begin the tour!');
+  await typewriterReply('Welcome to Nexus! Lets begin the tour!');
   // Beat between the welcome line and the first hint so it doesn't snap in.
   await delay(900);
 
@@ -2216,8 +2216,8 @@ async function _cmdDemo(args, ctx) {
     { sel: '#sidebar-new-chat-btn', text: 'Start a new chat here. <b>Click it.</b> You can do it!', mode: 'click',
       before() { if (sidebar?.classList.contains('hidden')) sidebar.classList.remove('hidden'); } },
     { sel: '#model-picker-btn',   text: 'Pick your LLM, Local or API.', advanceOnClick: true },
-    { sel: '#mode-agent-btn',     text: '<b>Agent mode</b> gives Claudia more control of the app when your model supports tools: create a theme, download a model, make a daily task, organize things, and more.', mode: 'click' },
-    { sel: '#web-toggle-btn',     text: 'Toggle tools like <b>web search</b>. Claudia comes with private built-in <b>SearXNG</b> search.', mode: 'click' },
+    { sel: '#mode-agent-btn',     text: '<b>Agent mode</b> gives Nexus more control of the app when your model supports tools: create a theme, download a model, make a daily task, organize things, and more.', mode: 'click' },
+    { sel: '#web-toggle-btn',     text: 'Toggle tools like <b>web search</b>. Nexus comes with private built-in <b>SearXNG</b> search.', mode: 'click' },
     { sel: '#overflow-plus-btn',  text: 'More tools can be found here, or in your sidebar. <b>Click to peek.</b>',
       advanceOnClick: true, pulseNext: true, afterDelay: 2200 },
     { sel: '#message',            text: 'Write your prompt here. Drag and drop files to attach them. <b>/prompt</b> for random prompt, <b>/help</b> for more.',
@@ -2247,7 +2247,7 @@ async function _cmdDemo(args, ctx) {
   }
 
   _clearTour();
-  await typewriterReply('Claudia is yours to explore, enjoy the voyage!');
+  await typewriterReply('Nexus is yours to explore, enjoy the voyage!');
   return true;
 }
 
@@ -2962,7 +2962,7 @@ async function _cmdTourTheme(args, ctx) {
   // work as a fallback (read past without touching anything).
   const steps = [
     { sel: '#theme-popup',
-      text: '<b>Welcome to Theme.</b> Claudia is yours to customize!',
+      text: '<b>Welcome to Theme.</b> Nexus is yours to customize!',
       placement: 'center-above',
       before: () => _clickTab('theme-tab-browse') },
     { sel: '#themeGrid',
@@ -3194,7 +3194,7 @@ async function _cmdTourSettings(args, ctx) {
       text: '<b>AI Defaults</b> — three roles share the work. Let\'s walk through them.',
       before: () => _clickNav('ai') },
     { sel: '#settings-modal .admin-card:has(#set-defaultModelSelect)',
-      text: '<b>Default Chat Model</b> — your main model. The one Claudia reaches for whenever you start a new chat.',
+      text: '<b>Default Chat Model</b> — your main model. The one Nexus reaches for whenever you start a new chat.',
       before: () => _clickNav('ai') },
     { sel: '#settings-modal .admin-card:has(#set-utilityModelSelect)',
       text: '<b>Utility Model</b> — your hard-working sidekick. Runs background tasks (compaction, cleanup, auto-naming, summarization) so your chat model doesn\'t burn cycles on chores. <b>Recommend a small local model</b> here — it\'s free and always on.',
@@ -3215,7 +3215,7 @@ async function _cmdTourSettings(args, ctx) {
       text: '<b>Email</b> — sync schedule, drafts, snooze defaults — everything email-flow related.',
       before: () => _clickNav('email') },
     { sel: '#settings-modal .settings-nav-item[data-settings-tab="reminders"]',
-      text: '<b>Reminders</b> — quiet hours and how Claudia nudges you about calendar + urgent email.',
+      text: '<b>Reminders</b> — quiet hours and how Nexus nudges you about calendar + urgent email.',
       before: () => _clickNav('reminders') },
   ];
 
@@ -3628,7 +3628,7 @@ async function _cmdTourNotes(args, ctx) {
       text: '<b>Notes</b> is your basic todo list, and also where reminders are managed.',
       placement: 'center-above' },
     { sel: '#notes-pane .notes-pane-body',
-      text: 'Your notes show up here. You can also <b>ask Claudia in chat</b> to take a note for you.' },
+      text: 'Your notes show up here. You can also <b>ask Nexus in chat</b> to take a note for you.' },
     { sel: '#notes-search',
       text: '<b>Search</b> across every note — title, body, tags, the works.' },
     { sel: '#notes-view-toggle',
@@ -4067,7 +4067,7 @@ async function _cmdTourTask1(args, ctx) {
       text: 'Tasks are <b>paused by default</b> — resume whichever ones make sense for you. (Or pause anything that\'s running.)' },
     { sel: '#tasks-modal .modal-body',
       text: 'When enabled, Tasks use the <b>utility model configured in Settings</b> for cleanup and organization jobs.' },
-  ], 'Use Tasks when you want Claudia to handle background housekeeping.', {
+  ], 'Use Tasks when you want Nexus to handle background housekeeping.', {
     continueLabel: 'continue →',
     continueText: '<b>Part 1 done.</b> Want to keep going into <b>adding & managing tasks</b>?',
   });
@@ -4091,7 +4091,7 @@ async function _cmdTourTask2(args, ctx) {
     // re-show it when the user moves past this step so the tour lands
     // back where it started.
     { sel: '#message',
-      text: 'You can also <b>just ask in chat</b> — say "every weekday at 9am check for urgent emails" and Claudia will create the task for you.',
+      text: 'You can also <b>just ask in chat</b> — say "every weekday at 9am check for urgent emails" and Nexus will create the task for you.',
       before: () => document.getElementById('tasks-modal')?.classList.add('hidden'),
       after:  () => document.getElementById('tasks-modal')?.classList.remove('hidden') },
   ], 'That\'s Tasks. Have it run the background bits so you can stay in chat.');
@@ -4961,7 +4961,7 @@ function _eggRender(html) {
   div.className = 'msg msg-ai';
   const role = document.createElement('div');
   role.className = 'role';
-  role.textContent = 'Claudia';
+  role.textContent = 'Nexus';
   div.appendChild(role);
   const body = document.createElement('div');
   body.className = 'body';

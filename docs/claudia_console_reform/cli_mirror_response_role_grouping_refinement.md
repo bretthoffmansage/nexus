@@ -1,7 +1,7 @@
 # CLI Mirror Response Role Grouping Refinement Pass
 
 **Date:** 2026-06-03  
-**Repo:** `/Users/bretthoffman/Documents/claudia_console`  
+**Repo:** `/Users/bretthoffman/Documents/console`  
 **Scope:** Console UI only — transcript display role grouping refinement
 
 ## Root cause
@@ -10,11 +10,11 @@ The continuous stream rendering pass grouped all “Hermes-like” categories (`
 
 ## Files changed
 
-- `static/js/claudiaCliMirrorHelpers.js` — `TRANSCRIPT_GROUP_ROLES.RESPONSE`, role normalization, `classifyStreamEvent` response/assistant handling
-- `static/js/claudiaCliMirror.js` — pass payload into role normalization
-- `static/style.css` — `.claudia-cli-mirror-stream-response` styling
-- `tests/test_claudia_cli_mirror_ui.py` — RESPONSE grouping tests
-- `docs/claudia_console_reform/cli_mirror_response_role_grouping_refinement.md` — this note
+- `static/js/nexusCliMirrorHelpers.js` — `TRANSCRIPT_GROUP_ROLES.RESPONSE`, role normalization, `classifyStreamEvent` response/assistant handling
+- `static/js/nexusCliMirror.js` — pass payload into role normalization
+- `static/style.css` — `.nexus-cli-mirror-stream-response` styling
+- `tests/test_nexus_cli_mirror_ui.py` — RESPONSE grouping tests
+- `docs/console_reform/cli_mirror_response_role_grouping_refinement.md` — this note
 
 ## Behavior changed
 
@@ -71,9 +71,9 @@ Append to the current visible group **only** when the normalized display role ex
 ```bash
 bash -n start-macos.sh
 python3 -m compileall -q app.py core routes src
-node --check static/js/claudiaCliMirror.js
-node --check static/js/claudiaCliMirrorHelpers.js
-venv/bin/python -m pytest -q tests/test_claudia_cli_mirror_ui.py
+node --check static/js/nexusCliMirror.js
+node --check static/js/nexusCliMirrorHelpers.js
+venv/bin/python -m pytest -q tests/test_nexus_cli_mirror_ui.py
 ```
 
 ## Risks

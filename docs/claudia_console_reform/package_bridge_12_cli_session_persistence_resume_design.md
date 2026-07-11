@@ -4,7 +4,7 @@
 |-------|-------|
 | **Package** | Bridge 12 — CLI Mirror Session Persistence and Resume Design |
 | **Date** | 2026-06-03 |
-| **Repo** | `claudia_console` |
+| **Repo** | `console` |
 | **Type** | Design alignment (no Console code changes in Bridge 12) |
 
 ## Objective
@@ -17,7 +17,7 @@ Align Console CLI Mirror UX and persistence expectations with the Core Bridge 12
 |----------|--------|
 | Simple Chat \| CLI Mirror top-bar toggle | Bridge 11B |
 | Session title vs Hermes input clarity | Bridge 11B |
-| localStorage mode + last session ID | `claudia_console_interaction_mode`, `claudia_console_cli_mirror_session_id` |
+| localStorage mode + last session ID | `console_interaction_mode`, `console_cli_mirror_session_id` |
 | Reattach on mode return / refresh / focus | `_resumeCliMirror()` — live Core registry only |
 | Leave CLI Mirror without stopping PTY | Bridge 11B |
 | Attach to running session | Manual attach card + list buttons |
@@ -27,7 +27,7 @@ Align Console CLI Mirror UX and persistence expectations with the Core Bridge 12
 | Session history beyond Gateway list | **Not implemented** |
 | Transcript pagination | Fixed `limit=200` reload |
 
-Gateway relay paths unchanged: `/api/claudia/v1/cli/sessions/*` → Core `/hermes/sessions/*`.
+Gateway relay paths unchanged: `/api/nexus/v1/cli/sessions/*` → Core `/hermes/sessions/*`.
 
 ---
 
@@ -37,8 +37,8 @@ Gateway relay paths unchanged: `/api/claudia/v1/cli/sessions/*` → Core `/herme
 
 | Key | Purpose | Limit |
 |-----|---------|-------|
-| `claudia_console_interaction_mode` | `simple_chat` \| `cli_mirror` | Mode only |
-| `claudia_console_cli_mirror_session_id` | Last attached session | Single ID; no history |
+| `console_interaction_mode` | `simple_chat` \| `cli_mirror` | Mode only |
+| `console_cli_mirror_session_id` | Last attached session | Single ID; no history |
 
 After **Core restart**, Bridge 11B reattach → 404 → alert + clear ID. JSONL may still exist on Core disk but Console cannot see it until Bridge 13 registry.
 
@@ -76,7 +76,7 @@ From `_resumeCliMirror()` / attach:
 |-----------------|------------------------|----------------------------|
 | **Attach** | Reconnect to running session: transcript + SSE | Same; also after tab return (11B) |
 | **View transcript** | `_attachSession(stopped)` — read-only cards, input disabled | Same; backed by JSONL pagination |
-| **Resume** | Not offered | Button when Core `resumable: true`; creates **new** Claudia session linked to `hermes_session_id` |
+| **Resume** | Not offered | Button when Core `resumable: true`; creates **new** Nexus session linked to `hermes_session_id` |
 
 **Preserve Bridge 11B:** switching to Simple Chat must **not** stop Core PTY; returning to CLI Mirror must reattach to last ID when registry knows it.
 
@@ -170,7 +170,7 @@ Bridge 12 Core adds (Console should consume in Bridge 13+):
 
 Future endpoints:
 
-- `POST /api/claudia/v1/cli/sessions/{id}/resume`
+- `POST /api/nexus/v1/cli/sessions/{id}/resume`
 - Transcript: `?before_seq=&after_seq=&limit=`
 
 No Gateway changes in Bridge 12.
@@ -208,9 +208,9 @@ Resume (future) blocked with same rule if another session active.
 ## Tests / checks run
 
 ```bash
-cd claudia_console
-pytest tests/test_claudia_cli_mirror_ui.py tests/test_claudia_cli_relay.py tests/test_claudia_messages.py -q
-node --check static/js/claudiaCliMirror.js static/js/claudiaCliMirrorHelpers.js
+cd console
+pytest tests/test_nexus_cli_mirror_ui.py tests/test_nexus_cli_relay.py tests/test_nexus_messages.py -q
+node --check static/js/nexusCliMirror.js static/js/nexusCliMirrorHelpers.js
 ```
 
 Confirms no regression from Bridge 12 (Console unchanged).

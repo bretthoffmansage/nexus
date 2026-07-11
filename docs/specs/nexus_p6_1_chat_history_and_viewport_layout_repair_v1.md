@@ -2,12 +2,12 @@
 
 ## Summary
 
-P6.1 is a focused frontend layout and navigation repair. It moves chat-specific conversation controls out of the global sidebar into Nexus Chat, removes the duplicate Claudia Connector status card from the sidebar, and makes the authenticated workspace viewport-fitted with internal scrolling.
+P6.1 is a focused frontend layout and navigation repair. It moves chat-specific conversation controls out of the global sidebar into Nexus Chat, removes the duplicate Console Connector status card from the sidebar, and makes the authenticated workspace viewport-fitted with internal scrolling.
 
 ## Original UX problems
 
 1. **Chat history in the global sidebar** — When Nexus Chat was selected, the left sidebar showed New request, a Requests heading, and conversation history. Switching tools hid that section, making history feel global rather than chat-specific.
-2. **Duplicate Claudia status** — `SystemPresenceLive` appeared in the sidebar while the same Connector projection already existed on `/status`.
+2. **Duplicate Nexus status** — `SystemPresenceLive` appeared in the sidebar while the same Connector projection already existed on `/status`.
 3. **Document-level scrolling** — The shell could grow taller than the viewport, forcing browser scroll to reach the chat composer.
 
 ## Prior sidebar behavior
@@ -50,7 +50,7 @@ Selecting a conversation from the history panel:
 - Highlights the active row with `aria-current="true"`
 - History panel remains visible (desktop) or can be reopened (mobile)
 
-## Duplicate Claudia status removal
+## Duplicate Nexus status removal
 
 Removed `SystemPresenceLive` from `Sidebar.tsx`.
 
@@ -133,4 +133,4 @@ Dev server (`npm run dev`) started for P6.1 validation. Navigating to `/` redire
 
 ## Boundary
 
-No changes to Convex queue protocol, task ownership, Connector HMAC, or `claudia_system`.
+No changes to Convex queue protocol, task ownership, Connector HMAC, or `system`.

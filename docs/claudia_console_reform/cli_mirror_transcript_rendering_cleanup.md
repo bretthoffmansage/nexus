@@ -2,7 +2,7 @@
 
 **Package / pass name:** CLI Mirror Transcript Rendering Cleanup Pass  
 **Date / time:** 2026-06-03 (local)  
-**Repo path:** `/Users/bretthoffman/Documents/claudia_console`
+**Repo path:** `/Users/bretthoffman/Documents/console`
 
 ## Root cause
 
@@ -14,11 +14,11 @@
 
 | File | Change |
 |------|--------|
-| `static/js/claudiaCliMirrorHelpers.js` | Added `extractTranscriptText()`, `hasVisibleTranscriptText()`; improved `classifyStreamEvent()`; updated labels; raw drawer uses full extraction |
-| `static/js/claudiaCliMirror.js` | `_renderCard()` skips empty label-only rows; removed chat `body` class from transcript pre |
+| `static/js/nexusCliMirrorHelpers.js` | Added `extractTranscriptText()`, `hasVisibleTranscriptText()`; improved `classifyStreamEvent()`; updated labels; raw drawer uses full extraction |
+| `static/js/nexusCliMirror.js` | `_renderCard()` skips empty label-only rows; removed chat `body` class from transcript pre |
 | `static/style.css` | Explicit transcript body color/display; mirror card input/output styling |
-| `tests/test_claudia_cli_mirror_ui.py` | Extraction and empty-row static/Node tests |
-| `docs/claudia_console_reform/cli_mirror_transcript_rendering_cleanup.md` | This note |
+| `tests/test_nexus_cli_mirror_ui.py` | Extraction and empty-row static/Node tests |
+| `docs/console_reform/cli_mirror_transcript_rendering_cleanup.md` | This note |
 
 ## Behavior changed
 
@@ -56,10 +56,10 @@ All values pass through `sanitizeTranscriptText()` (ANSI/control strip + redacti
 ```bash
 bash -n start-macos.sh
 python3 -m compileall -q app.py core routes src
-venv/bin/python -m pytest -q tests/test_claudia_cli_mirror_ui.py
+venv/bin/python -m pytest -q tests/test_nexus_cli_mirror_ui.py
 ```
 
-**Results:** 42 passed (`tests/test_claudia_cli_mirror_ui.py`); `bash -n start-macos.sh` OK; `compileall` OK.
+**Results:** 42 passed (`tests/test_nexus_cli_mirror_ui.py`); `bash -n start-macos.sh` OK; `compileall` OK.
 
 ## Risks
 

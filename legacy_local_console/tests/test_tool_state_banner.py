@@ -11,7 +11,7 @@ APP = REPO / "static/app.js"
 BANNER = REPO / "static/js/toolStateBanner.js"
 STYLE = REPO / "static/style.css"
 SLASH = REPO / "static/js/slashCommands.js"
-CLI_MIRROR = REPO / "static/js/claudiaCliMirror.js"
+CLI_MIRROR = REPO / "static/js/nexusCliMirror.js"
 
 
 def _node_eval(script: str) -> dict:

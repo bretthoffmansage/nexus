@@ -1,4 +1,4 @@
-"""Tests for Claudia Console Mode memory/skills/model authority demotion (Package 13)."""
+"""Tests for legacy local console Mode memory/skills/model authority demotion (Package 13)."""
 
 import asyncio
 import sys
@@ -15,14 +15,14 @@ def test_authority_disabled_shape():
 
     out = authority_disabled("memory", "add")
     assert out["status"] == "authority_disabled"
-    assert out["claudia_console_mode"] is True
+    assert out["console_mode"] is True
     assert out["surface"] == "memory"
     assert out["ok"] is False
 
 
 @pytest.mark.asyncio
 async def test_memory_add_blocked_before_mutation(monkeypatch):
-    monkeypatch.setenv("CLAUDIA_CONSOLE_MODE", "true")
+    monkeypatch.setenv("NEXUS_CONSOLE_MODE", "true")
     sys.modules.pop("src.console_mode", None)
 
     mm = MagicMock()
@@ -46,7 +46,7 @@ async def test_memory_add_blocked_before_mutation(monkeypatch):
 
 
 def test_memory_list_allowed_in_console_mode(monkeypatch):
-    monkeypatch.setenv("CLAUDIA_CONSOLE_MODE", "true")
+    monkeypatch.setenv("NEXUS_CONSOLE_MODE", "true")
     sys.modules.pop("src.console_mode", None)
 
     mm = MagicMock()
@@ -68,7 +68,7 @@ def test_memory_list_allowed_in_console_mode(monkeypatch):
 
 @pytest.mark.asyncio
 async def test_skill_add_blocked_before_mutation(monkeypatch):
-    monkeypatch.setenv("CLAUDIA_CONSOLE_MODE", "true")
+    monkeypatch.setenv("NEXUS_CONSOLE_MODE", "true")
     sys.modules.pop("src.console_mode", None)
 
     mgr = MagicMock()
@@ -91,7 +91,7 @@ async def test_skill_add_blocked_before_mutation(monkeypatch):
 
 @pytest.mark.asyncio
 async def test_skills_list_allowed_in_console_mode(monkeypatch):
-    monkeypatch.setenv("CLAUDIA_CONSOLE_MODE", "true")
+    monkeypatch.setenv("NEXUS_CONSOLE_MODE", "true")
     sys.modules.pop("src.console_mode", None)
 
     mgr = MagicMock()
@@ -112,7 +112,7 @@ async def test_skills_list_allowed_in_console_mode(monkeypatch):
 
 @pytest.mark.asyncio
 async def test_email_ai_reply_blocked_before_llm(monkeypatch):
-    monkeypatch.setenv("CLAUDIA_CONSOLE_MODE", "true")
+    monkeypatch.setenv("NEXUS_CONSOLE_MODE", "true")
     sys.modules.pop("src.console_mode", None)
 
     async def _boom(*_a, **_k):
@@ -138,7 +138,7 @@ async def test_email_ai_reply_blocked_before_llm(monkeypatch):
 
 
 def test_block_authority_inactive_when_legacy_mode(monkeypatch):
-    monkeypatch.delenv("CLAUDIA_CONSOLE_MODE", raising=False)
+    monkeypatch.delenv("NEXUS_CONSOLE_MODE", raising=False)
     sys.modules.pop("src.console_mode", None)
     from src.authority_console_guard import block_authority
 

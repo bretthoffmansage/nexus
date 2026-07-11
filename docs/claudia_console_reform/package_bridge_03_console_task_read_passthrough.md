@@ -2,34 +2,34 @@
 
 | Field | Value |
 |-------|-------|
-| **Package** | Bridge 03 — Console task read passthrough to Claudia Core |
+| **Package** | Bridge 03 — Console task read passthrough to Nexus Core |
 | **Date** | 2026-06-02 |
-| **Repo** | `claudia_console` |
+| **Repo** | `console` |
 
 ## Objective
 
-Wire Claudia Gateway `GET /api/claudia/v1/packets` and `GET /api/claudia/v1/packets/{packet_id}` to Claudia Core Bridge 02 ledger endpoints (`GET /tasks`, `GET /tasks/{packet_id}`) so operators can inspect packets received by Core through the Console API.
+Wire Nexus Gateway `GET /api/nexus/v1/packets` and `GET /api/nexus/v1/packets/{packet_id}` to Nexus Core Bridge 02 ledger endpoints (`GET /tasks`, `GET /tasks/{packet_id}`) so operators can inspect packets received by Core through the Console API.
 
 ## Files changed
 
 | File | Change |
 |------|--------|
-| `src/claudia_client.py` | `list_packets()`, `get_packet_detail()`, `sanitize_core_url()`; updated placeholders |
-| `routes/claudia_routes.py` | `/packets` routes forward to Core when configured |
-| `tests/test_claudia_packets_passthrough.py` | **New** — passthrough, 404, secret, agent_loop tests |
-| `tests/test_claudia_source_worker_routes.py` | Placeholder status → `core_not_configured` |
-| `scripts/test_claudia_gateway_bridge.sh` | **New** — Console intake + packet read E2E |
+| `src/nexus_client.py` | `list_packets()`, `get_packet_detail()`, `sanitize_core_url()`; updated placeholders |
+| `routes/nexus_routes.py` | `/packets` routes forward to Core when configured |
+| `tests/test_nexus_packets_passthrough.py` | **New** — passthrough, 404, secret, agent_loop tests |
+| `tests/test_nexus_source_worker_routes.py` | Placeholder status → `core_not_configured` |
+| `scripts/test_nexus_gateway_bridge.sh` | **New** — Console intake + packet read E2E |
 | `scripts/README.md` | Bridge test script docs |
-| `docs/claudia_console_reform/package_bridge_03_console_task_read_passthrough.md` | **New** — this note |
+| `docs/console_reform/package_bridge_03_console_task_read_passthrough.md` | **New** — this note |
 
 ## Routes changed
 
 Public Gateway routes unchanged; behavior updated:
 
-| Gateway route | Core route (when `CLAUDIA_CORE_URL` set) |
+| Gateway route | Core route (when `NEXUS_CORE_URL` set) |
 |---------------|------------------------------------------|
-| `GET /api/claudia/v1/packets` | `GET {core}/tasks` |
-| `GET /api/claudia/v1/packets/{packet_id}` | `GET {core}/tasks/{packet_id}` |
+| `GET /api/nexus/v1/packets` | `GET {core}/tasks` |
+| `GET /api/nexus/v1/packets/{packet_id}` | `GET {core}/tasks/{packet_id}` |
 
 When Core is not configured, routes return safe placeholders with `status: core_not_configured`.
 
@@ -38,7 +38,7 @@ When Core is not configured, routes return safe placeholders with `status: core_
 **List (`/packets`)**
 
 - Forwards to Core `/tasks`.
-- Success: `ok: true`, `forwarded: true`, `source: claudia_core`, `core_url` (host[:port] only), `packets` and `items` from Core `tasks`.
+- Success: `ok: true`, `forwarded: true`, `source: nexus_core`, `core_url` (host[:port] only), `packets` and `items` from Core `tasks`.
 - Unreachable: `ok: false`, `status: core_unreachable` (or `core_timeout`), empty lists.
 - Not configured: placeholder with `status: core_not_configured`.
 
@@ -53,9 +53,9 @@ Console does **not** persist packets locally.
 
 ## Secret forwarding behavior
 
-When `CLAUDIA_GATEWAY_SHARED_SECRET` is set on Console, all Core GET/POST forwards include:
+When `NEXUS_GATEWAY_SHARED_SECRET` is set on Console, all Core GET/POST forwards include:
 
-`X-Claudia-Gateway-Secret: <secret>`
+`X-Nexus-Gateway-Secret: <secret>`
 
 Secrets are never logged or included in Gateway JSON responses.
 
@@ -63,20 +63,20 @@ Secrets are never logged or included in Gateway JSON responses.
 
 | Variable | Purpose |
 |----------|---------|
-| `CLAUDIA_CONSOLE_MODE=true` | Recommended for Claudia Mac (demotes Odysseus authority) |
-| `CLAUDIA_CORE_URL` | Core base URL (e.g. `http://127.0.0.1:8080`) |
-| `CLAUDIA_GATEWAY_SHARED_SECRET` | Optional; must match Core when Core requires it |
-| `CLAUDIA_GATEWAY_BEARER_TOKEN` | Optional; for `scripts/test_claudia_gateway_bridge.sh` when auth enabled |
+| `NEXUS_CONSOLE_MODE=true` | Recommended for Nexus Mac (demotes Odysseus authority) |
+| `NEXUS_CORE_URL` | Core base URL (e.g. `http://127.0.0.1:8080`) |
+| `NEXUS_GATEWAY_SHARED_SECRET` | Optional; must match Core when Core requires it |
+| `NEXUS_GATEWAY_BEARER_TOKEN` | Optional; for `scripts/test_nexus_gateway_bridge.sh` when auth enabled |
 
 ## Tests / checks run
 
 ```bash
-cd /Users/bretthoffman/Documents/Claudia/claudia_console
-pytest -q tests/test_claudia_packets_passthrough.py
-pytest -q tests/test_claudia_source_worker_routes.py
-pytest -q tests/test_claudia_gateway_routes.py
-pytest -q tests/test_claudia_console_mode.py
-bash -n ./scripts/test_claudia_gateway_bridge.sh
+cd /Users/bretthoffman/Documents/Nexus/console
+pytest -q tests/test_nexus_packets_passthrough.py
+pytest -q tests/test_nexus_source_worker_routes.py
+pytest -q tests/test_nexus_gateway_routes.py
+pytest -q tests/test_console_mode.py
+bash -n ./scripts/test_nexus_gateway_bridge.sh
 ```
 
 ## Manual test commands
@@ -84,44 +84,44 @@ bash -n ./scripts/test_claudia_gateway_bridge.sh
 **Terminal 1 — Core**
 
 ```bash
-cd /Users/bretthoffman/Documents/Claudia/claudia_system
+cd /Users/bretthoffman/Documents/Nexus/system
 ./start-core-api.sh
 ```
 
 **Terminal 2 — Console**
 
 ```bash
-cd /Users/bretthoffman/Documents/Claudia/claudia_console
-CLAUDIA_CONSOLE_MODE=true CLAUDIA_CORE_URL=http://127.0.0.1:8080 ./start-macos.sh
+cd /Users/bretthoffman/Documents/Nexus/console
+NEXUS_CONSOLE_MODE=true NEXUS_CORE_URL=http://127.0.0.1:8080 ./start-macos.sh
 ```
 
 **Terminal 3 — curl or bridge script**
 
 ```bash
-curl http://127.0.0.1:7860/api/claudia/v1/health
+curl http://127.0.0.1:7860/api/nexus/v1/health
 
-curl -X POST http://127.0.0.1:7860/api/claudia/v1/intake \
+curl -X POST http://127.0.0.1:7860/api/nexus/v1/intake \
   -H "Content-Type: application/json" \
   -d '{"type":"message","route":"manual_test","payload":{"message":"Console packet read passthrough test"}}'
 
-curl http://127.0.0.1:7860/api/claudia/v1/packets
+curl http://127.0.0.1:7860/api/nexus/v1/packets
 ```
 
 Or:
 
 ```bash
-cd /Users/bretthoffman/Documents/Claudia/claudia_console
-./scripts/test_claudia_gateway_bridge.sh
+cd /Users/bretthoffman/Documents/Nexus/console
+./scripts/test_nexus_gateway_bridge.sh
 ```
 
-With `AUTH_ENABLED=true`, create an API token with `claudia_intake,claudia_read` and:
+With `AUTH_ENABLED=true`, create an API token with `nexus_intake,nexus_read` and:
 
 ```bash
-export CLAUDIA_GATEWAY_BEARER_TOKEN=<token>
-./scripts/test_claudia_gateway_bridge.sh
+export NEXUS_GATEWAY_BEARER_TOKEN=<token>
+./scripts/test_nexus_gateway_bridge.sh
 ```
 
-**Expected:** Intake packet appears in `/packets` with `source: claudia_core`, `forwarded: true`; detail route returns the same `packet_id`.
+**Expected:** Intake packet appears in `/packets` with `source: nexus_core`, `forwarded: true`; detail route returns the same `packet_id`.
 
 ## Known limitations
 
@@ -136,8 +136,8 @@ export CLAUDIA_GATEWAY_BEARER_TOKEN=<token>
 
 **Bridge 04 — Gateway stream relay or operator dashboard read surface**
 
-- Wire `GET /api/claudia/v1/stream/{packet_id}` to Core events when available, or
-- Add minimal Console dashboard panel reading `/api/claudia/v1/packets` (read-only).
+- Wire `GET /api/nexus/v1/stream/{packet_id}` to Core events when available, or
+- Add minimal Console dashboard panel reading `/api/nexus/v1/packets` (read-only).
 
 ---
 

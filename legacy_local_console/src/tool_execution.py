@@ -692,9 +692,9 @@ async def execute_tool_block(
     (bash, python) so the agent loop can emit `tool_progress` SSE
     events while the command is in flight. Ignored by other tools.
     """
-    from src.console_mode import is_claudia_console_mode
+    from src.console_mode import is_console_mode
 
-    if is_claudia_console_mode():
+    if is_console_mode():
         from src.execution_console_guard import local_execution_disabled
 
         op = getattr(block, "tool_type", None) or "unknown"

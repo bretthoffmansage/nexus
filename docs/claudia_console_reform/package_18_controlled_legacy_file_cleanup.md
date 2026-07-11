@@ -9,31 +9,31 @@
 
 ## Objective
 
-Controlled archive of low-risk legacy deployment/marketing clutter and Claudia-oriented doc/static pointers — **no** runtime authority changes.
+Controlled archive of low-risk legacy deployment/marketing clutter and Nexus-oriented doc/static pointers — **no** runtime authority changes.
 
 ## Files changed
 
 | File | Change |
 |------|--------|
-| `docs/claudia_console_reform/legacy_archive/README.md` | **New** — archive index + restore instructions |
-| `docs/claudia_console_reform/legacy_archive/install-service.sh` | **Moved** from root |
-| `docs/claudia_console_reform/legacy_archive/odysseus-ui.service` | **Moved** from root |
-| `docs/claudia_console_reform/legacy_archive/docs_index.html` | **Moved** from `docs/index.html` |
-| `README.md` | Claudia Console/Gateway top note; landing path fix |
-| `THREAT_MODEL.md` | Claudia Console/Gateway addendum |
+| `docs/console_reform/legacy_archive/README.md` | **New** — archive index + restore instructions |
+| `docs/console_reform/legacy_archive/install-service.sh` | **Moved** from root |
+| `docs/console_reform/legacy_archive/odysseus-ui.service` | **Moved** from root |
+| `docs/console_reform/legacy_archive/docs_index.html` | **Moved** from `docs/index.html` |
+| `README.md` | legacy local console/Gateway top note; landing path fix |
+| `THREAT_MODEL.md` | legacy local console/Gateway addendum |
 | `static/landing.html` | Legacy/satire banner |
-| `static/sw.js` | Cache name `claudia-console-v1` |
-| `start-macos.sh` | Claudia Mac primary path comment |
+| `static/sw.js` | Cache name `nexus-console-v1` |
+| `start-macos.sh` | Nexus Mac primary path comment |
 | `launch-windows.ps1` | Compatibility comment |
 | `Dockerfile`, `docker-compose.yml` | Compatibility comments |
 | `docker/README.md`, `scripts/README.md` | **New** operator notes |
-| `docs/claudia_console_reform/legacy_file_classification.json` | Archived status |
-| `tests/test_claudia_legacy_cleanup_archive.py` | **New** |
-| `docs/claudia_console_reform/package_18_controlled_legacy_file_cleanup.md` | **New** — this note |
+| `docs/console_reform/legacy_file_classification.json` | Archived status |
+| `tests/test_nexus_legacy_cleanup_archive.py` | **New** |
+| `docs/console_reform/package_18_controlled_legacy_file_cleanup.md` | **New** — this note |
 
 ## Behavior changed
 
-- **PWA:** Service worker cache name changed from `odysseus-v326` to `claudia-console-v1` (clients refresh precache on next SW activate).
+- **PWA:** Service worker cache name changed from `odysseus-v326` to `nexus-console-v1` (clients refresh precache on next SW activate).
 - **Static:** `static/landing.html` shows a one-line legacy/satire notice.
 - **Docs only:** README/THREAT_MODEL/deployment comments — no API/runtime logic changes.
 
@@ -49,32 +49,32 @@ Source: `package_17_competing_authority_legacy_file_audit.md` and `legacy_file_c
 
 | Original path | New path | Reason | Restore note |
 |---------------|----------|--------|--------------|
-| `install-service.sh` | `docs/claudia_console_reform/legacy_archive/install-service.sh` | Linux systemd installer; not Claudia Mac primary | Copy to repo root; edit service paths |
-| `odysseus-ui.service` | `docs/claudia_console_reform/legacy_archive/odysseus-ui.service` | Paired systemd unit | Copy with install script |
-| `docs/index.html` | `docs/claudia_console_reform/legacy_archive/docs_index.html` | Duplicate Odysseus marketing vs `static/landing.html` | `cp` to `docs/index.html` if GitHub Pages needs it |
+| `install-service.sh` | `docs/console_reform/legacy_archive/install-service.sh` | Linux systemd installer; not Nexus Mac primary | Copy to repo root; edit service paths |
+| `odysseus-ui.service` | `docs/console_reform/legacy_archive/odysseus-ui.service` | Paired systemd unit | Copy with install script |
+| `docs/index.html` | `docs/console_reform/legacy_archive/docs_index.html` | Duplicate Odysseus marketing vs `static/landing.html` | `cp` to `docs/index.html` if GitHub Pages needs it |
 
 ## Matrix 2 — Keep/compatibility
 
 | File/path | Classification | Reason kept | Future review? |
 |-----------|----------------|-------------|----------------|
-| `start-macos.sh` | keep_active_claudia | Primary Claudia Mac launcher | Optional plist/LaunchAgent doc |
+| `start-macos.sh` | keep_active_nexus | Primary Nexus Mac launcher | Optional plist/LaunchAgent doc |
 | `launch-windows.ps1` | keep_compatibility | Windows dev/home lab | P20 operator handoff |
 | `Dockerfile` | keep_compatibility | Container builds | — |
 | `docker-compose.yml` | keep_compatibility | Reference stack | — |
 | `docker/` | keep_compatibility | entrypoint, GPU overrides | — |
 | `setup.py` | keep_compatibility | Packaging metadata | — |
 | `scripts/` | keep_compatibility | Operator CLI utilities | Per-script audit later |
-| `companion/` | keep_active_claudia | Private mobile pairing | P16 network posture |
+| `companion/` | keep_active_nexus | Private mobile pairing | P16 network posture |
 | `data/` | do_not_touch_yet | Runtime user state | Never commit |
 
 ## Matrix 3 — Docs/static cleanup
 
 | File/path | Cleanup performed | Behavior impact | Follow-up |
 |-----------|-------------------|-----------------|-----------|
-| `README.md` | Claudia Console/Gateway note; `static/landing.html` link | None (docs) | Optional full README rebrand |
-| `THREAT_MODEL.md` | Claudia addendum + private deployment link | None (docs) | Align role table with Console Mode in P20 |
+| `README.md` | legacy local console/Gateway note; `static/landing.html` link | None (docs) | Optional full README rebrand |
+| `THREAT_MODEL.md` | Nexus addendum + private deployment link | None (docs) | Align role table with Console Mode in P20 |
 | `static/landing.html` | Satire/legacy banner + link to Console | Visual only | Optional satire copy edit |
-| `static/sw.js` | Cache `claudia-console-v1`; comment | PWA cache refresh once | — |
+| `static/sw.js` | Cache `nexus-console-v1`; comment | PWA cache refresh once | — |
 | `docs/index.html` | Archived as `docs_index.html` | None if unused at runtime | Restore only for GitHub Pages |
 
 ## Files intentionally not moved
@@ -98,15 +98,15 @@ Source: `package_17_competing_authority_legacy_file_audit.md` and `legacy_file_c
 
 ```bash
 python3 -m compileall -q app.py core routes src
-venv/bin/python -m pytest -q tests/test_claudia_legacy_cleanup_archive.py \
-  tests/test_claudia_final_audit_artifacts.py \
-  ... (P1–P17 Claudia tests)
+venv/bin/python -m pytest -q tests/test_nexus_legacy_cleanup_archive.py \
+  tests/test_nexus_final_audit_artifacts.py \
+  ... (P1–P17 Nexus tests)
 ```
 
 ## Results
 
 - `python3 -m compileall -q app.py core routes src`: **pass**
-- Focused Claudia tests (P1–P18): **178 passed** (9 new P18 archive tests)
+- Focused Nexus tests (P1–P18): **178 passed** (9 new P18 archive tests)
 
 ## Known pytest baseline issue from Package 0
 

@@ -3,9 +3,9 @@
 Package: `nexus_deep_research_request_and_response_panel_separation_v1`
 
 UI structure/presentation change only. No task creation, retry, id generation,
-idempotency, Claudia metadata, request/rules composition, history filtering,
+idempotency, Nexus metadata, request/rules composition, history filtering,
 status lifecycle, result rendering, source provenance, Connector behavior, or
-Convex schema is changed. No Claudia System file is touched.
+Convex schema is changed. No Nexus System file is touched.
 
 ## Current combined-layout problem
 

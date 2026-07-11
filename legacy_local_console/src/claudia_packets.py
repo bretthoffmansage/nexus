@@ -1,6 +1,6 @@
-"""Claudia Gateway packet envelope normalization (non-authoritative).
+"""Nexus Gateway packet envelope normalization (non-authoritative).
 
-Normalizes intake JSON into the Claudia Core packet contract. Does not import
+Normalizes intake JSON into the Nexus Core packet contract. Does not import
 agent_loop, task_scheduler, or any autonomous Odysseus runtime.
 """
 
@@ -10,7 +10,7 @@ import uuid
 from datetime import datetime, timezone
 from typing import Any
 
-# Claudia Core packet types (claudia_system contract).
+# Nexus Core packet types (system contract).
 ALLOWED_PACKET_TYPES = frozenset({
     "task",
     "message",
@@ -91,12 +91,12 @@ def _extract_payload(body: dict[str, Any]) -> dict[str, Any]:
     return extra
 
 
-def normalize_claudia_packet(
+def normalize_nexus_packet(
     body: dict[str, Any],
     *,
     created_by: str | None = None,
 ) -> dict[str, Any]:
-    """Normalize a Gateway intake JSON object into a Claudia Core packet envelope.
+    """Normalize a Gateway intake JSON object into a Nexus Core packet envelope.
 
     Caller-provided route/source/reply metadata is preserved. Technical fallbacks
     (route ``gateway``, source_id ``gateway:<packet_id>``) apply only when missing.
@@ -285,7 +285,7 @@ def create_chat_message_packet(
     }
     if created_by:
         body["created_by"] = created_by
-    return normalize_claudia_packet(body, created_by=created_by)
+    return normalize_nexus_packet(body, created_by=created_by)
 
 
 def normalize_source_packet(
@@ -298,7 +298,7 @@ def normalize_source_packet(
         raise PacketNormalizeError("Request body must be a JSON object")
     merged = dict(body)
     merged["type"] = "source"
-    return normalize_claudia_packet(merged, created_by=created_by)
+    return normalize_nexus_packet(merged, created_by=created_by)
 
 
 def create_upload_source_packet(
@@ -354,4 +354,4 @@ def normalize_worker_output_packet(
         raise PacketNormalizeError("Request body must be a JSON object")
     merged = dict(body)
     merged["type"] = "worker_output"
-    return normalize_claudia_packet(merged, created_by=created_by)
+    return normalize_nexus_packet(merged, created_by=created_by)

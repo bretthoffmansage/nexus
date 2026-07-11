@@ -9,7 +9,7 @@ The Calendar page (`components/workspace/port/CalendarWorkspace.tsx`) was a lega
 - Month grid UI only; week/agenda showed empty Connector-required states.
 - All controls disabled when `calendarAdapterMeta.availability === "connector_required"`.
 - `ToolAvailabilityBanner` displayed “Connector required”.
-- Copy referenced CalDAV, `.ics` import, and Claudia local calendar store.
+- Copy referenced CalDAV, `.ics` import, and Nexus local calendar store.
 - `lib/adapters/calendar/adapter.ts` returned stub failures for `listCalendars` / `listEvents`.
 - `lib/navigation/toolRegistry.ts` marked calendar `connector_required`.
 - **No Convex persistence** — no `nexusScheduledEvents` table or scheduler.
@@ -22,14 +22,14 @@ Nexus owns a **private per-user scheduled-event store** in Convex (`nexusSchedul
 2. Atomically dispatches eligible due events into the existing global `nexusTasks` queue.
 3. Reconciles linked task status and recovers stale dispatch claims.
 
-Claudia receives normal queued tasks; no calendar-specific Connector protocol. The browser never fires schedules.
+Nexus receives normal queued tasks; no calendar-specific Connector protocol. The browser never fires schedules.
 
 ```
 User → Calendar UI → Convex CRUD (nexusScheduledEvents)
                               ↓ (at/after scheduledForUtc)
                      Cron dispatcher → nexusTasks + queueSequence
                               ↓
-                     Claudia Connector (unchanged P6 claim/execute)
+                     Console Connector (unchanged P6 claim/execute)
                               ↓
                      Status/result projected back onto event
 ```
@@ -135,7 +135,7 @@ If Nexus scheduler was unavailable at the scheduled instant:
 - Event stays `due`/`scheduled` with no `linkedTaskId`
 - Next cron pass dispatches with `lateDispatch: true`, `latenessMs` recorded
 - Original `scheduledForUtc` unchanged
-- Claudia offline does **not** block queue creation — task remains `queued`
+- Nexus offline does **not** block queue creation — task remains `queued`
 
 ## Edit rules
 

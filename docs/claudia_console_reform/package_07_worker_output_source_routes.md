@@ -5,31 +5,31 @@
 | **Package** | Package 7 — Worker output and source packet routes |
 | **Date/time** | 2026-06-02 |
 | **Repo path** | `/Users/bretthoffman/Documents/odysseus` |
-| **Prior notes** | `package_00` … `package_06_chat_to_claudia_messages.md` |
+| **Prior notes** | `package_00` … `package_06_chat_to_nexus_messages.md` |
 
 ## Objective
 
-Add minimal Claudia Gateway routes for external **source** context and **worker output** packets, plus honest non-persistent packet list/detail placeholders. Forward to Claudia Core when configured; never execute locally.
+Add minimal Nexus Gateway routes for external **source** context and **worker output** packets, plus honest non-persistent packet list/detail placeholders. Forward to Nexus Core when configured; never execute locally.
 
 ## Files changed
 
 | File | Change |
 |------|--------|
-| `src/claudia_scopes.py` | `authorize_claudia_worker()` for worker-output Bearer/session auth |
-| `src/claudia_packets.py` | `normalize_source_packet()`, `normalize_worker_output_packet()` |
-| `src/claudia_client.py` | `_forward_with_intake_fallback()`, `forward_source_packet()`, `forward_worker_output()`, packet list/detail placeholders |
-| `routes/claudia_routes.py` | `POST /sources`, `POST /worker-output`, `GET /packets`, `GET /packets/{packet_id}` |
-| `tests/test_claudia_source_worker_routes.py` | **New** — normalization, auth, forwarding, placeholders |
-| `docs/claudia_console_reform/package_07_worker_output_source_routes.md` | **New** — this note |
+| `src/nexus_scopes.py` | `authorize_nexus_worker()` for worker-output Bearer/session auth |
+| `src/nexus_packets.py` | `normalize_source_packet()`, `normalize_worker_output_packet()` |
+| `src/nexus_client.py` | `_forward_with_intake_fallback()`, `forward_source_packet()`, `forward_worker_output()`, packet list/detail placeholders |
+| `routes/nexus_routes.py` | `POST /sources`, `POST /worker-output`, `GET /packets`, `GET /packets/{packet_id}` |
+| `tests/test_nexus_source_worker_routes.py` | **New** — normalization, auth, forwarding, placeholders |
+| `docs/console_reform/package_07_worker_output_source_routes.md` | **New** — this note |
 
 ## Behavior changed
 
 ### New Gateway routes
 
-- **`POST /api/claudia/v1/sources`** — normalizes `type=source`, forwards to Core `POST /source-packets` (404 → `/intake`).
-- **`POST /api/claudia/v1/worker-output`** — normalizes `type=worker_output`, forwards to Core `POST /worker-outputs` (404 → `/intake`).
-- **`GET /api/claudia/v1/packets`** — placeholder list; states persistence not implemented.
-- **`GET /api/claudia/v1/packets/{packet_id}`** — placeholder detail; not a canonical store.
+- **`POST /api/nexus/v1/sources`** — normalizes `type=source`, forwards to Core `POST /source-packets` (404 → `/intake`).
+- **`POST /api/nexus/v1/worker-output`** — normalizes `type=worker_output`, forwards to Core `POST /worker-outputs` (404 → `/intake`).
+- **`GET /api/nexus/v1/packets`** — placeholder list; states persistence not implemented.
+- **`GET /api/nexus/v1/packets/{packet_id}`** — placeholder detail; not a canonical store.
 
 ### Refactor (no behavior change intended)
 
@@ -39,26 +39,26 @@ Add minimal Claudia Gateway routes for external **source** context and **worker 
 
 - Package 1–6 console mode, chat bridge, messages/stream routes, intake, scopes (no new scopes).
 - No upload bridge, approvals, dashboard UI, connector demotion, packet database.
-- Legacy Odysseus chat/agent when `CLAUDIA_CONSOLE_MODE=false`.
+- Legacy Odysseus chat/agent when `NEXUS_CONSOLE_MODE=false`.
 - Frontend unchanged.
 
 ## New routes added
 
 | Method | Path |
 |--------|------|
-| `POST` | `/api/claudia/v1/sources` |
-| `POST` | `/api/claudia/v1/worker-output` |
-| `GET` | `/api/claudia/v1/packets` |
-| `GET` | `/api/claudia/v1/packets/{packet_id}` |
+| `POST` | `/api/nexus/v1/sources` |
+| `POST` | `/api/nexus/v1/worker-output` |
+| `GET` | `/api/nexus/v1/packets` |
+| `GET` | `/api/nexus/v1/packets/{packet_id}` |
 
 ## Route behavior matrix
 
 | Route | Packet type / behavior | Bearer scope | Session allowed? | Core target | Local execution? |
 |-------|------------------------|--------------|------------------|-------------|------------------|
-| **POST /api/claudia/v1/sources** | `type=source`; preserve route/source/reply; payload from caller (`source_type`, `content_ref`, etc.) | `claudia_intake` | Yes (when auth enabled) | `POST /source-packets` (404 → `/intake`) | **No** |
-| **POST /api/claudia/v1/worker-output** | `type=worker_output`; preserve metadata; payload (`task_id`, `worker`, `summary`, etc.) | `claudia_worker` | Yes | `POST /worker-outputs` (404 → `/intake`) | **No** |
-| **GET /api/claudia/v1/packets** | Placeholder list (`persistence_not_implemented`, empty `packets[]`) | `claudia_read` | Yes | None (no Core passthrough yet) | **No** |
-| **GET /api/claudia/v1/packets/{packet_id}** | Placeholder detail (`packet: null`, honest message) | `claudia_read` | Yes | None | **No** |
+| **POST /api/nexus/v1/sources** | `type=source`; preserve route/source/reply; payload from caller (`source_type`, `content_ref`, etc.) | `nexus_intake` | Yes (when auth enabled) | `POST /source-packets` (404 → `/intake`) | **No** |
+| **POST /api/nexus/v1/worker-output** | `type=worker_output`; preserve metadata; payload (`task_id`, `worker`, `summary`, etc.) | `nexus_worker` | Yes | `POST /worker-outputs` (404 → `/intake`) | **No** |
+| **GET /api/nexus/v1/packets** | Placeholder list (`persistence_not_implemented`, empty `packets[]`) | `nexus_read` | Yes | None (no Core passthrough yet) | **No** |
+| **GET /api/nexus/v1/packets/{packet_id}** | Placeholder detail (`packet: null`, honest message) | `nexus_read` | Yes | None | **No** |
 
 ## Source packet behavior
 
@@ -82,7 +82,7 @@ Add minimal Claudia Gateway routes for external **source** context and **worker 
 
 ## Core-unconfigured behavior
 
-`CLAUDIA_CORE_URL` unset → POST routes return `ok: false`, `status: core_not_configured`, `forwarded: false`, explicit message that nothing was forwarded or executed locally. GET placeholders still return 200 with `core_configured: false`.
+`NEXUS_CORE_URL` unset → POST routes return `ok: false`, `status: core_not_configured`, `forwarded: false`, explicit message that nothing was forwarded or executed locally. GET placeholders still return 200 with `core_configured: false`.
 
 ## Core-unreachable behavior
 
@@ -99,34 +99,34 @@ Connect/timeout/HTTP errors on forward → `core_unreachable`, `core_timeout`, o
 
 | Route | Bearer | Session (`AUTH_ENABLED=true`) |
 |-------|--------|-------------------------------|
-| `POST /sources` | `claudia_intake` required | Logged-in user allowed |
-| `POST /worker-output` | `claudia_worker` required | Logged-in user allowed |
-| `GET /packets`, `GET /packets/{id}` | `claudia_read` required | Logged-in user allowed |
+| `POST /sources` | `nexus_intake` required | Logged-in user allowed |
+| `POST /worker-output` | `nexus_worker` required | Logged-in user allowed |
+| `GET /packets`, `GET /packets/{id}` | `nexus_read` required | Logged-in user allowed |
 
-`claudia_intake` alone does **not** authorize `POST /worker-output` for Bearer tokens. Routes are not auth-exempt when auth is enabled. `AUTH_ENABLED=false` continues to allow test/local access per existing Gateway pattern.
+`nexus_intake` alone does **not** authorize `POST /worker-output` for Bearer tokens. Routes are not auth-exempt when auth is enabled. `AUTH_ENABLED=false` continues to allow test/local access per existing Gateway pattern.
 
 ## Safety guarantees
 
-1. All routes under `/api/claudia/v1` only.
+1. All routes under `/api/nexus/v1` only.
 2. POST bodies normalize to Package 4 envelope with correct `type`.
 3. Route/source/reply metadata preserved; no invented worker results or source content.
 4. Core-unconfigured/unreachable responses are safe and non-executing.
 5. Gateway does not run agent_loop, LLM, shell, MCP, or tools from new code paths.
 6. Packet list/detail do not pretend Gateway is source of truth.
-7. Package 6 chat-to-Claudia tests still pass.
+7. Package 6 chat-to-Nexus tests still pass.
 
 ## Tests / checks run
 
 ```bash
 python3 -m compileall -q app.py core routes src
 venv/bin/python -m pytest -q \
-  tests/test_claudia_source_worker_routes.py \
-  tests/test_claudia_messages.py \
-  tests/test_claudia_chat_demotion.py \
-  tests/test_claudia_gateway_routes.py \
-  tests/test_claudia_token_scopes.py \
-  tests/test_claudia_packets.py \
-  tests/test_claudia_console_mode.py
+  tests/test_nexus_source_worker_routes.py \
+  tests/test_nexus_messages.py \
+  tests/test_nexus_chat_demotion.py \
+  tests/test_nexus_gateway_routes.py \
+  tests/test_nexus_token_scopes.py \
+  tests/test_nexus_packets.py \
+  tests/test_console_mode.py
 ```
 
 **Results:** compileall pass; **69 passed**.

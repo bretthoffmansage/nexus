@@ -1,11 +1,11 @@
 /**
- * Claudia CLI Mirror — pure helpers (Bridge 09 + Bridge 10 transcript polish).
+ * Nexus CLI Mirror — pure helpers (Bridge 09 + Bridge 10 transcript polish).
  * Gateway-only paths; no direct Core URLs.
  */
 
-export const CLI_SESSIONS_API = '/api/claudia/v1/cli/sessions';
-export const CLI_MIRROR_MODE_KEY = 'claudia_console_interaction_mode';
-export const CLI_MIRROR_SESSION_KEY = 'claudia_console_cli_mirror_session_id';
+export const CLI_SESSIONS_API = '/api/nexus/v1/cli/sessions';
+export const CLI_MIRROR_MODE_KEY = 'console_interaction_mode';
+export const CLI_MIRROR_SESSION_KEY = 'console_cli_mirror_session_id';
 export const CLI_MIRROR_MODES = Object.freeze({
   SIMPLE_CHAT: 'simple_chat',
   CLI_MIRROR: 'cli_mirror',
@@ -62,7 +62,7 @@ export const DISPLAY_CATEGORIES = Object.freeze({
 const ANSI_RE = /\x1b\[[0-9;?]*[ -/]*[@-~]/g;
 const ANSI_OSC_RE = /\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)/g;
 const CTRL_RE = /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g;
-const SECRET_RE = /(?:sk-[A-Za-z0-9]{20,}|CLAUDIA_GATEWAY_SHARED_SECRET\s*=\s*\S+)/g;
+const SECRET_RE = /(?:sk-[A-Za-z0-9]{20,}|NEXUS_GATEWAY_SHARED_SECRET\s*=\s*\S+)/g;
 
 const ERROR_RE = /\b(error|traceback|exception|failed|fatal)\b/i;
 const WARN_RE = /\b(warning|warn:|deprecated)\b/i;
@@ -72,7 +72,7 @@ const TOOL_RE =
 const SPINNER_RE =
   /^[\s|/\\\-─═│└┌┐┘⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏●○◐◑◒◓…·.]+$/;
 
-const CARD_BASE = 'claudia-cli-mirror-card';
+const CARD_BASE = 'nexus-cli-mirror-card';
 
 const CATEGORY_STYLES = Object.freeze({
   user_input: { label: 'USER', card: `${CARD_BASE} ${CARD_BASE}-input` },
@@ -870,7 +870,7 @@ export function getTranscriptGroupLabel(role) {
 }
 
 export function getTranscriptGroupClass(role) {
-  return `claudia-cli-mirror-stream-group claudia-cli-mirror-stream-${role || 'hermes'}`;
+  return `nexus-cli-mirror-stream-group nexus-cli-mirror-stream-${role || 'hermes'}`;
 }
 
 /** Append raw chunk text to a group buffer (visible transcript append policy). */
@@ -1383,7 +1383,7 @@ export function mapApiError(httpStatus, body) {
       title: 'Admin access required',
       message:
         message ||
-        'CLI Mirror is operator-only. Sign in as an admin or use a Claudia admin API token.',
+        'CLI Mirror is operator-only. Sign in as an admin or use a Nexus admin API token.',
       action: 'Sign in with an admin account, then refresh this panel.',
       recoverable: true,
     };
@@ -1414,11 +1414,11 @@ export function mapApiError(httpStatus, body) {
   if (status === 'core_not_configured') {
     return {
       code: 'core_not_configured',
-      title: 'Claudia Core not configured',
+      title: 'Nexus Core not configured',
       message:
         message ||
-        'The Console Gateway has no Claudia Core URL. CLI Mirror cannot relay Hermes sessions.',
-      action: 'Set CLAUDIA_CORE_URL on the Console host and restart the Console.',
+        'The Console Gateway has no Nexus Core URL. CLI Mirror cannot relay Hermes sessions.',
+      action: 'Set NEXUS_CORE_URL on the Console host and restart the Console.',
       recoverable: false,
     };
   }
@@ -1426,9 +1426,9 @@ export function mapApiError(httpStatus, body) {
   if (status === 'core_unreachable' || status === 'unreachable') {
     return {
       code: 'core_unreachable',
-      title: 'Claudia Core unreachable',
-      message: message || 'The Gateway could not reach Claudia Core.',
-      action: 'Start Core, verify CLAUDIA_CORE_URL, then click Refresh sessions.',
+      title: 'Nexus Core unreachable',
+      message: message || 'The Gateway could not reach Nexus Core.',
+      action: 'Start Core, verify NEXUS_CORE_URL, then click Refresh sessions.',
       recoverable: true,
     };
   }
@@ -1439,8 +1439,8 @@ export function mapApiError(httpStatus, body) {
       title: 'Hermes PTY disabled on Core',
       message:
         message ||
-        'Claudia Core is reachable, but Hermes PTY mode is disabled.',
-      action: 'Start Core with CLAUDIA_ENABLE_HERMES_PTY=true, then retry Start session.',
+        'Nexus Core is reachable, but Hermes PTY mode is disabled.',
+      action: 'Start Core with NEXUS_ENABLE_HERMES_PTY=true, then retry Start session.',
       recoverable: false,
     };
   }

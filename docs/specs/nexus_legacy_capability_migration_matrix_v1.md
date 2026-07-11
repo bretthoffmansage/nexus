@@ -9,9 +9,9 @@
 | **Legacy reference tree** | `legacy_local_console/` |
 | **Hosted application tree** | Repository root (`app/`, `components/`, `convex/`, `lib/`) |
 
-> **Path update (P3.5):** Application paths formerly under `nexus/` were promoted to the **repository root** per [`nexus_repository_root_promotion_v1.md`](./nexus_repository_root_promotion_v1.md). Commands, Vercel Root Directory, and Convex live at repo root. Legacy Claudia Console is isolated under `legacy_local_console/`.
+> **Path update (P3.5):** Application paths formerly under `nexus/` were promoted to the **repository root** per [`nexus_repository_root_promotion_v1.md`](./nexus_repository_root_promotion_v1.md). Commands, Vercel Root Directory, and Convex live at repo root. Legacy legacy local console is isolated under `legacy_local_console/`.
 
-**Purpose:** Prevent feature loss during migration from the legacy FastAPI + static SPA Claudia Console to the hosted **Nexus** (Next.js + Clerk + Convex + Console Connector). This document is the single authority for *what each legacy capability becomes*, *where it persists*, *who executes it*, and *when it ships*.
+**Purpose:** Prevent feature loss during migration from the legacy FastAPI + static SPA legacy local console to the hosted **Nexus** (Next.js + Clerk + Convex + Console Connector). This document is the single authority for *what each legacy capability becomes*, *where it persists*, *who executes it*, and *when it ships*.
 
 **Related specs:**
 
@@ -28,15 +28,15 @@ These principles override convenience, nostalgia, and “just port the route.”
 | # | Principle | Meaning |
 |---|-----------|---------|
 | P1 | **Preserve capability, not implementation** | User intent (ask a question, review history, approve an action) survives; FastAPI routes, PTY relays, SQLite shapes, and `odysseus-*` keys do not automatically survive. |
-| P2 | **Nexus presents** | All hosted UI, layout, theme, task submission forms, history lists, diagnostics panels, and status chips live in the Next.js app at repo root. Nexus never runs Python, opens PTYs, or holds Claudia secrets. |
+| P2 | **Nexus presents** | All hosted UI, layout, theme, task submission forms, history lists, diagnostics panels, and status chips live in the Next.js app at repo root. Nexus never runs Python, opens PTYs, or holds Nexus secrets. |
 | P3 | **Convex persists** | Durable multi-user state (tasks, users, roles, connector presence, audit, bounded progress) lives in Convex. SQLite `data/app.db` and JSON flat files are **legacy-local only**. |
-| P4 | **Connector transports** | Claudia Mac work crosses the trust boundary only via **Console Connector** outbound HTTPS to Nexus (`/api/connector/v1/*`). No inbound tunnel, no browser→Core HTTP, no Vercel→`CLAUDIA_CORE_URL`. |
-| P5 | **Claudia governs** | Tool execution, shell, Hermes sessions, filesystem, email send, model endpoints, and MCP invocations remain on Claudia Core under governed policies. Nexus enqueues and displays; Claudia decides and executes. |
-| P6 | **Hermes is not a Nexus concept** | “Hermes,” PTY mirrors, raw terminal bytes, and `/api/claudia/v1/cli/sessions/*` relay are **local operator patterns**. Hosted Nexus exposes **Nexus Operations Terminal** — a structured, audited event stream — not a browser PTY. |
-| P7 | **No fake operational state** | Disabled controls, empty states, and `not_configured` badges are preferred over simulated online Claudia, fabricated tasks, or localStorage-backed history on Nexus. |
-| P8 | **Source minimization** | Answers include bounded source references and provenance labels (“Retrieved via Claudia · `vault.agentic_retrieval`”), not full document dumps or arbitrary filesystem paths. |
+| P4 | **Connector transports** | Nexus Mac work crosses the trust boundary only via **Console Connector** outbound HTTPS to Nexus (`/api/connector/v1/*`). No inbound tunnel, no browser→Core HTTP, no Vercel→`NEXUS_CORE_URL`. |
+| P5 | **Nexus governs** | Tool execution, shell, Hermes sessions, filesystem, email send, model endpoints, and MCP invocations remain on Nexus Core under governed policies. Nexus enqueues and displays; Nexus decides and executes. |
+| P6 | **Hermes is not a Nexus concept** | “Hermes,” PTY mirrors, raw terminal bytes, and `/api/nexus/v1/cli/sessions/*` relay are **local operator patterns**. Hosted Nexus exposes **Nexus Operations Terminal** — a structured, audited event stream — not a browser PTY. |
+| P7 | **No fake operational state** | Disabled controls, empty states, and `not_configured` badges are preferred over simulated online Nexus, fabricated tasks, or localStorage-backed history on Nexus. |
+| P8 | **Source minimization** | Answers include bounded source references and provenance labels (“Retrieved via Nexus · `vault.agentic_retrieval`”), not full document dumps or arbitrary filesystem paths. |
 | P9 | **Roles are authoritative in Convex** | Clerk proves identity; Convex `approvedUsers` + `userRoles` enforce policy. Legacy `auth.json` privileges (`can_use_bash`, etc.) do not map 1:1 without review. |
-| P10 | **Legacy stays legacy until retired** | `legacy_local_console/` remains the compatibility surface for Claudia Mac until Nexus + Connector cover operator needs or explicit retirement. |
+| P10 | **Legacy stays legacy until retired** | `legacy_local_console/` remains the compatibility surface for Nexus Mac until Nexus + Connector cover operator needs or explicit retirement. |
 
 ### Authority zones (summary)
 
@@ -55,9 +55,9 @@ flowchart LR
     Audit[auditEvents]
   end
 
-  subgraph ClaudiaMac["Claudia Mac"]
+  subgraph NexusMac["Nexus Mac"]
     Conn[Console Connector]
-    Core[Claudia Core]
+    Core[Nexus Core]
     Legacy[legacy_local_console optional]
   end
 
@@ -77,23 +77,23 @@ Every capability, table, JSON store, and UI module receives exactly one primary 
 
 | Code | Name | Definition | Typical outcome |
 |------|------|------------|-----------------|
-| **D1** | **Nexus Port (Hosted Primary)** | Capability is a first-class Nexus feature with Convex persistence and Clerk auth. Claudia involved only via Connector when execution is required. | Chat tasks, task history, presence, sources panel |
-| **D2** | **Connector Governed Task** | User action creates a `nexusTasks` row; Connector claims and runs an allowlisted Claudia tool; result written back to Convex. | KB retrieval, transcript fetch, future governed agent steps |
+| **D1** | **Nexus Port (Hosted Primary)** | Capability is a first-class Nexus feature with Convex persistence and Clerk auth. Nexus involved only via Connector when execution is required. | Chat tasks, task history, presence, sources panel |
+| **D2** | **Connector Governed Task** | User action creates a `nexusTasks` row; Connector claims and runs an allowlisted Nexus tool; result written back to Convex. | KB retrieval, transcript fetch, future governed agent steps |
 | **D2b** | *(subtag)* **Long-running local job** | Same as D2 but may exceed default lease; uses progress events + renewal. | Research, compare, image gen (if ever hosted-requested) |
-| **D3** | **Legacy Local Retain** | Stays in `legacy_local_console/` for Claudia Mac operators; not required on hosted Nexus MVP. | Cookbook, local model admin, in-process agent loop |
+| **D3** | **Legacy Local Retain** | Stays in `legacy_local_console/` for Nexus Mac operators; not required on hosted Nexus MVP. | Cookbook, local model admin, in-process agent loop |
 | **D4** | **Remove / Anti-Pattern** | Must **not** be ported to Nexus; keeping in legacy is tolerated until retirement. Violates hosted security model if exposed publicly. | Browser PTY, shell RCE, inbound Core forward, Hermes mirror |
 | **D5** | **Nexus Presentation Stub** | UI shell, disabled control, or empty state in Nexus; no backend execution until a later phase. | Agent toggle (hidden), composer (disabled in P3) |
-| **D6** | **Convex Metadata Only** | Settings, preferences, or catalog data in Convex; no Claudia execution on submit. | Theme mode, user display prefs, connector install metadata |
-| **D7** | **Claudia Control Center (Local Ops)** | Operator-facing execution UI belongs in `claudia_system` Control Center / local tools — **not** the public Nexus site. | Operations Terminal, governed shell, service controls, doctor |
+| **D6** | **Convex Metadata Only** | Settings, preferences, or catalog data in Convex; no Nexus execution on submit. | Theme mode, user display prefs, connector install metadata |
+| **D7** | **Nexus Control Center (Local Ops)** | Operator-facing execution UI belongs in `system` Control Center / local tools — **not** the public Nexus site. | Operations Terminal, governed shell, service controls, doctor |
 | **D8** | **Operator Decision Required** | Material ambiguity: product scope, data migration, legal/compliance, or dual-home conflict. **Do not implement** until resolved and recorded in §11. | Email/calendar write scope, PWA offline parity, compare on hosted |
 
 ---
 
 ## 3. Nexus Operations Terminal (future design)
 
-**Replaces:** Legacy **CLI Mirror** (`static/js/claudiaCliMirror.js`, `/api/claudia/v1/cli/sessions/*` → Core Hermes PTY relay).
+**Replaces:** Legacy **CLI Mirror** (`static/js/nexusCliMirror.js`, `/api/nexus/v1/cli/sessions/*` → Core Hermes PTY relay).
 
-**Does not replace:** Simple Chat task submit, read-only diagnostics in Nexus, or legacy local shell (`routes/shell_routes.py`) on Claudia Mac.
+**Does not replace:** Simple Chat task submit, read-only diagnostics in Nexus, or legacy local shell (`routes/shell_routes.py`) on Nexus Mac.
 
 ### 3.1 Design intent
 
@@ -101,7 +101,7 @@ Every capability, table, JSON store, and UI module receives exactly one primary 
 |-------------------|---------------------------|
 | Raw PTY bytes over SSE | Typed **event stream** with schema |
 | Browser holds session attachment | Connector/Core hold session; Nexus subscribes to **redacted** events |
-| Hermes session IDs in UI | **Claudia operation IDs** (`operationId`) — Hermes never labeled in Nexus |
+| Hermes session IDs in UI | **Nexus operation IDs** (`operationId`) — Hermes never labeled in Nexus |
 | Operator types into PTY | Operator sends **structured commands** (continue, cancel, approve, inject message) |
 | Transcript parsed client-side | Server-side classification; client renders cards |
 | Public internet exposure | **D7** — Control Center or VPN-local Nexus admin extension only; default **not** on public MVP |
@@ -134,7 +134,7 @@ sequenceDiagram
   participant Op as Operator (Control Center or admin Nexus)
   participant Nexus as Nexus / Convex
   participant Conn as Console Connector
-  participant Core as Claudia Core
+  participant Core as Nexus Core
 
   Op->>Nexus: Start governed operation (policy profile)
   Nexus->>Convex: insert operation + operationEvents
@@ -156,8 +156,8 @@ sequenceDiagram
 
 | CLI Mirror artifact | Operations Terminal equivalent |
 |---------------------|--------------------------------|
-| `claudia_console_interaction_mode=cli_mirror` | Removed from Nexus; mode is **task type** or Control Center view |
-| `claudia_console_cli_mirror_session_id` | `operationId` in Convex + local Control Center cache |
+| `console_interaction_mode=cli_mirror` | Removed from Nexus; mode is **task type** or Control Center view |
+| `console_cli_mirror_session_id` | `operationId` in Convex + local Control Center cache |
 | `GET .../cli/sessions/{id}/stream` SSE | `useQuery` on `operationEvents` + optional webhook push |
 | `POST .../cli/sessions/{id}/input` | `operation.control` mutation → Connector |
 | Transcript classification helpers | Server-side normalizer in Connector/Core |
@@ -171,13 +171,13 @@ sequenceDiagram
 
 Legacy shell (`/api/shell/*`, admin-only PTY/subprocess) and CLI Mirror PTY are **unbounded execution**. Nexus and Connector must not replay them.
 
-### 4.1 Policy concept (future Claudia Core)
+### 4.1 Policy concept (future Nexus Core)
 
 | Field | Intent |
 |-------|--------|
 | `policyId` | `system.governed_shell` |
 | `allowedCommands` | Allowlist patterns (not legacy “any bash for admin”) |
-| `cwdRoots` | Chroot-style allowed working directories on Claudia Mac |
+| `cwdRoots` | Chroot-style allowed working directories on Nexus Mac |
 | `maxDurationSeconds` | Hard cap per invocation |
 | `maxOutputBytes` | Cap streamed to Operations Terminal |
 | `requireApprovalFor` | Patterns matching write/exec escalation |
@@ -189,7 +189,7 @@ Legacy shell (`/api/shell/*`, admin-only PTY/subprocess) and CLI Mirror PTY are 
 | Legacy | Governed shell |
 |--------|----------------|
 | `routes/shell_routes.py` admin PTY | **D4** on Nexus; **D7** replacement via governed invocations |
-| `can_use_bash` in `auth.json` | **D8** — map to Claudia roles, not Nexus |
+| `can_use_bash` in `auth.json` | **D8** — map to Nexus roles, not Nexus |
 | Cookbook SSH/install scripts | Remain **D3** local until Cookbook is explicitly redesigned |
 | Agent loop shell tool | Core tool under same policy when agent mode returns |
 
@@ -205,14 +205,14 @@ Hosted by:** [`nexus_vercel_convex_architecture_correction_v1.md`](./nexus_verce
 
 | Pattern | Legacy location | Removal |
 |---------|-----------------|---------|
-| Browser → Gateway → Core HTTP forward | `src/claudia_client.py`, `claudiaBrowserChatBridge.js` | **D4** — replace with Convex task + Connector |
-| CLI Mirror / Hermes PTY SSE | `claudiaCliMirror.js`, `/api/claudia/v1/cli/*` | **D4** — replace with Operations Terminal (**D7**) |
-| `CLAUDIA_CORE_URL` on Vercel | env | **Forbidden** |
+| Browser → Gateway → Core HTTP forward | `src/nexus_client.py`, `nexusBrowserChatBridge.js` | **D4** — replace with Convex task + Connector |
+| CLI Mirror / Hermes PTY SSE | `nexusCliMirror.js`, `/api/nexus/v1/cli/*` | **D4** — replace with Operations Terminal (**D7**) |
+| `NEXUS_CORE_URL` on Vercel | env | **Forbidden** |
 | In-process agent loop on hosted | `src/agent_loop.py` | **D4** |
-| Model endpoint CRUD from browser | `model_routes.py`, `claudiaModelSelector.js` | **D4** on Nexus |
+| Model endpoint CRUD from browser | `model_routes.py`, `nexusModelSelector.js` | **D4** on Nexus |
 | Shell / cookbook / research starts | various | **D4** on Nexus MVP |
 
-### 5.2 Allowed Claudia interaction (hosted)
+### 5.2 Allowed Nexus interaction (hosted)
 
 1. User (Clerk) → Nexus UI → Convex mutation (`createTask`, etc.)
 2. Connector (HMAC) → Nexus API → Convex claim/result mutations
@@ -221,15 +221,15 @@ Hosted by:** [`nexus_vercel_convex_architecture_correction_v1.md`](./nexus_verce
 
 ### 5.3 Legacy local exception
 
-`legacy_local_console/` may retain Gateway relay **only** for Claudia Mac co-located debugging until Control Center subsumes it. That path is **not** a migration target — it is **compatibility debt** marked **D3/D4**.
+`legacy_local_console/` may retain Gateway relay **only** for Nexus Mac co-located debugging until Control Center subsumes it. That path is **not** a migration target — it is **compatibility debt** marked **D3/D4**.
 
 ### 5.4 Naming rule
 
-| Term | Nexus UI | Legacy local | Claudia Core |
+| Term | Nexus UI | Legacy local | Nexus Core |
 |------|----------|--------------|--------------|
 | Hermes | **Never surface** | Internal (CLI Mirror) | Internal session engine |
-| Claudia Core | “Claudia” in presence/status | Gateway target | Product name |
-| Console Connector | “Claudia connector” | N/A | Daemon name |
+| Nexus Core | “Nexus” in presence/status | Gateway target | Product name |
+| Console Connector | “Nexus connector” | N/A | Daemon name |
 | Operations Terminal | User-facing | N/A | Emits events |
 
 ---
@@ -246,8 +246,8 @@ Default file: `legacy_local_console/data/app.db` (`DATABASE_URL=sqlite:///./data
 | `document_versions` | Doc version history | SQLite | Same as documents | Yes | **D8** | P12+ | |
 | `gallery_albums` | Photo albums | SQLite + files | **D3** | Yes | **D3** | — | Worker/image gen local |
 | `gallery_images` | Image metadata + paths | SQLite + files | **D3** | Yes | **D3** | — | |
-| `email_accounts` | IMAP/SMTP credentials | SQLite (encrypted) | **D3** — secrets stay on Claudia | Yes | **D3** | — | Never store IMAP passwords in Convex |
-| `model_endpoints` | LLM provider config | SQLite (encrypted keys) | **D3** on Claudia; **D6** optional display catalog on Nexus | Yes | **D3/D6** | P8+ | Nexus never holds API keys |
+| `email_accounts` | IMAP/SMTP credentials | SQLite (encrypted) | **D3** — secrets stay on Nexus | Yes | **D3** | — | Never store IMAP passwords in Convex |
+| `model_endpoints` | LLM provider config | SQLite (encrypted keys) | **D3** on Nexus; **D6** optional display catalog on Nexus | Yes | **D3/D6** | P8+ | Nexus never holds API keys |
 | `mcp_servers` | MCP server config | SQLite | **D3** | Yes | **D3** | — | MCP runs local |
 | `comparisons` | A/B model eval results | SQLite | `nexusTasks` result payload if hosted | Partial | **D8** | P10+ | See §11 |
 | `signatures` | Handwritten signatures (encrypted) | SQLite | **D3** | Yes | **D3** | — | Sensitive biometric-adjacent data |
@@ -295,7 +295,7 @@ Default file: `legacy_local_console/data/app.db` (`DATABASE_URL=sqlite:///./data
 | `uploads/` | Uploaded files | `upload_routes.py` | **D8** | Object storage vs Connector |
 | `personal_docs/` | Personal RAG corpus | `personal_routes.py` | **D3** | |
 | `chroma/` | Vector index | RAG | **D3** | |
-| `.app_key` | Fernet key for encrypted columns | `secret_storage.py` | **D4** | Never leave Claudia Mac |
+| `.app_key` | Fernet key for encrypted columns | `secret_storage.py` | **D4** | Never leave Nexus Mac |
 
 ### 7.2 localStorage inventory
 
@@ -343,8 +343,8 @@ Default file: `legacy_local_console/data/app.db` (`DATABASE_URL=sqlite:///./data
 | `odysseus-stream-{sessionId}` | Navigator lock name | **D4** |
 | `odysseus-tour-*`, `odysseus-hint-*` | Tours/hints | **D3** |
 | `odysseus-thinking-expanded` | Think block UI | **D6** when chat renders think blocks |
-| `claudia_console_interaction_mode` | simple_chat \| cli_mirror | **D4** on Nexus |
-| `claudia_console_cli_mirror_session_id` | CLI Mirror attach | **D4** on Nexus |
+| `console_interaction_mode` | simple_chat \| cli_mirror | **D4** on Nexus |
+| `console_cli_mirror_session_id` | CLI Mirror attach | **D4** on Nexus |
 | `sidebar-collapsed`, `sidebar-width`, `sidebar-side`, `currentSessionId`, `sidebar-section-order`, `admin-last-tab` | Layout (non-odysseus prefix) | Re-evaluate per Nexus layout **D6** |
 
 ---
@@ -362,18 +362,18 @@ Legend for columns:
 
 | Field | Value |
 |-------|-------|
-| **Current UI** | Main composer + message column; Console Mode uses `claudiaBrowserChatBridge.js` |
-| **Backend** | `routes/chat_routes.py` (`/api/chat`, `/api/chat_stream`); Console Mode: `routes/claudia_routes.py` `POST /messages` → `claudia_client.py` |
+| **Current UI** | Main composer + message column; Console Mode uses `nexusBrowserChatBridge.js` |
+| **Backend** | `routes/chat_routes.py` (`/api/chat`, `/api/chat_stream`); Console Mode: `routes/nexus_routes.py` `POST /messages` → `nexus_client.py` |
 | **Persistence** | `sessions`, `chat_messages` (SQLite); streaming ephemeral |
-| **Execution authority** | Legacy: in-process `agent_loop.py`; Console Mode: Claudia Core HTTP |
+| **Execution authority** | Legacy: in-process `agent_loop.py`; Console Mode: Nexus Core HTTP |
 | **Local dependency** | LLM endpoints, Core URL, GPU optional |
 | **User intent** | Ask a question; get an answer in conversational UI |
 | **Future Nexus presentation** | Enabled `ChatComposer` + `AnswerPanel`; task status badge; sources list |
 | **Future Convex model** | `nexusTasks` (create/read), optional `threadMessages` **D8** |
-| **Future Claudia tool ID** | Phase 1: `vault.agentic_retrieval`; general chat **D8** (may stay read-only KB first) |
+| **Future Nexus tool ID** | Phase 1: `vault.agentic_retrieval`; general chat **D8** (may stay read-only KB first) |
 | **Role expectation** | `knowledge_reader` minimum for KB; broader chat **D8** |
 | **Confirmation** | None for read-only KB |
-| **Sources / provenance** | `NexusSource[]` on task; label “Retrieved via Claudia · {toolId}” |
+| **Sources / provenance** | `NexusSource[]` on task; label “Retrieved via Nexus · {toolId}” |
 | **Disposition** | **D1** (UI) + **D2** (execution) |
 | **Phase** | P5–P9 |
 | **Dependencies** | P4 roles, P5 tasks, P6 connector, P7 connector daemon, Core tools |
@@ -391,7 +391,7 @@ Legend for columns:
 | **User intent** | Find prior conversations; resume context |
 | **Future Nexus presentation** | `TaskHistorySection` → live task/thread list |
 | **Future Convex model** | `nexusTasks` by `requestingClerkUserId`; **D8** for session parity |
-| **Future Claudia tool ID** | `membership_io.transcript_retrieve` for transcript pull |
+| **Future Nexus tool ID** | `membership_io.transcript_retrieve` for transcript pull |
 | **Role expectation** | Owner sees own history; admin audit **D8** |
 | **Confirmation** | Delete/archive **D8** |
 | **Sources** | N/A for list; transcript task returns provenance |
@@ -412,7 +412,7 @@ Legend for columns:
 | **User intent** | Multi-step autonomous work |
 | **Future Nexus presentation** | Hidden by default (`NEXUS_SHOW_AGENT_PLACEHOLDER=false`); later disabled toggle with tooltip |
 | **Future Convex model** | `nexusTasks` with `authorityLevel: governed` **future** |
-| **Future Claudia tool ID** | Multi-tool allowlist **D8** — not MVP |
+| **Future Nexus tool ID** | Multi-tool allowlist **D8** — not MVP |
 | **Role expectation** | Elevated role + per-tool policy |
 | **Confirmation** | Required for write/exec tools (approval queue) |
 | **Sources** | Per tool result |
@@ -429,7 +429,7 @@ See **§9** (summary: **D4** on Nexus, **D7** successor).
 
 | Field | Value |
 |-------|-------|
-| **Current UI** | `modelPicker.js`, `models.js`, `claudiaModelSelector.js` |
+| **Current UI** | `modelPicker.js`, `models.js`, `nexusModelSelector.js` |
 | **Backend** | `routes/model_routes.py` (`/api/models`, `/api/model-endpoints/*`) |
 | **Persistence** | `model_endpoints` SQLite; localStorage favorites |
 | **Execution authority** | Admin/user config writes |
@@ -437,7 +437,7 @@ See **§9** (summary: **D4** on Nexus, **D7** successor).
 | **User intent** | Pick model for chat |
 | **Future Nexus presentation** | None on MVP; optional read-only display name on completed task |
 | **Future Convex model** | `task.model` display field only |
-| **Future Claudia tool ID** | N/A — model chosen by Core/Connector policy |
+| **Future Nexus tool ID** | N/A — model chosen by Core/Connector policy |
 | **Role expectation** | N/A on Nexus MVP |
 | **Confirmation** | N/A |
 | **Sources** | N/A |
@@ -454,12 +454,12 @@ See **§9** (summary: **D4** on Nexus, **D7** successor).
 | **Backend** | `model_routes.py` CRUD |
 | **Persistence** | `model_endpoints` |
 | **Execution authority** | Admin |
-| **Local dependency** | Claudia Mac network |
+| **Local dependency** | Nexus Mac network |
 | **User intent** | Configure OpenRouter/local vLLM |
 | **Future Nexus presentation** | None |
 | **Future Convex model** | None (secrets) |
-| **Future Claudia tool ID** | N/A |
-| **Role expectation** | Claudia Mac operator |
+| **Future Nexus tool ID** | N/A |
+| **Role expectation** | Nexus Mac operator |
 | **Confirmation** | Delete endpoint confirm |
 | **Sources** | N/A |
 | **Disposition** | **D3** |
@@ -480,7 +480,7 @@ See **§9** (summary: **D4** on Nexus, **D7** successor).
 | **User intent** | Ground answers with web results |
 | **Future Nexus presentation** | Disabled; sources from governed tools only |
 | **Future Convex model** | Sources on `nexusTasks` |
-| **Future Claudia tool ID** | **D8** — `web.search` equivalent if allowlisted |
+| **Future Nexus tool ID** | **D8** — `web.search` equivalent if allowlisted |
 | **Role expectation** | **D8** |
 | **Confirmation** | None if read-only |
 | **Sources** | URL + title snippets (minimized) |
@@ -493,15 +493,15 @@ See **§9** (summary: **D4** on Nexus, **D7** successor).
 
 | Field | Value |
 |-------|-------|
-| **Current UI** | `claudiaDashboard.js`, status chips |
-| **Backend** | `GET /api/claudia/v1/health`, `/api/ping` |
+| **Current UI** | `nexusDashboard.js`, status chips |
+| **Backend** | `GET /api/nexus/v1/health`, `/api/ping` |
 | **Persistence** | None |
 | **Execution authority** | Gateway/Core probe |
 | **Local dependency** | Core reachable (legacy) |
-| **User intent** | Is Claudia alive? |
+| **User intent** | Is Nexus alive? |
 | **Future Nexus presentation** | `SystemPresence`, `ConvexConnectivityBadge` |
 | **Future Convex model** | `connectorPresence` |
-| **Future Claudia tool ID** | N/A |
+| **Future Nexus tool ID** | N/A |
 | **Role expectation** | Any approved user |
 | **Confirmation** | N/A |
 | **Sources** | N/A |
@@ -521,11 +521,11 @@ See **§9** (summary: **D4** on Nexus, **D7** successor).
 | **User intent** | Troubleshoot install |
 | **Future Nexus presentation** | `DiagnosticsPanel` (hosted checks only: Clerk, Convex, env) |
 | **Future Convex model** | Optional `diagnosticSnapshots` **D7** |
-| **Future Claudia tool ID** | N/A |
+| **Future Nexus tool ID** | N/A |
 | **Role expectation** | Admin |
 | **Confirmation** | N/A |
 | **Sources** | N/A |
-| **Disposition** | Split: Nexus self-check **D1**; Claudia doctor **D7** |
+| **Disposition** | Split: Nexus self-check **D1**; Nexus doctor **D7** |
 | **Phase** | P8 |
 | **Non-goals** | Run `setup.py` from Vercel |
 
@@ -533,15 +533,15 @@ See **§9** (summary: **D4** on Nexus, **D7** successor).
 
 | Field | Value |
 |-------|-------|
-| **Current UI** | Claudia dashboard cards |
-| **Backend** | `claudia_routes.py` `/health`, `/packets`, `/workers` |
+| **Current UI** | Nexus dashboard cards |
+| **Backend** | `nexus_routes.py` `/health`, `/packets`, `/workers` |
 | **Persistence** | Ephemeral |
 | **Execution authority** | Gateway |
 | **Local dependency** | Core |
 | **User intent** | Debug gateway intake |
 | **Future Nexus presentation** | Connector queue depth, last error |
 | **Future Convex model** | `connectorPresence`, `auditEvents` |
-| **Future Claudia tool ID** | N/A |
+| **Future Nexus tool ID** | N/A |
 | **Role expectation** | Admin |
 | **Confirmation** | N/A |
 | **Sources** | N/A |
@@ -557,10 +557,10 @@ See **§9** (summary: **D4** on Nexus, **D7** successor).
 | **Persistence** | `connectorPresence` |
 | **Execution authority** | Connector |
 | **Local dependency** | Outbound HTTPS |
-| **User intent** | Know Claudia online |
+| **User intent** | Know Nexus online |
 | **Future Nexus presentation** | `SystemPresence` online/offline/busy |
 | **Future Convex model** | `connectorPresence` |
-| **Future Claudia tool ID** | N/A |
+| **Future Nexus tool ID** | N/A |
 | **Role expectation** | N/A |
 | **Confirmation** | N/A |
 | **Sources** | N/A |
@@ -579,7 +579,7 @@ See **§9** (summary: **D4** on Nexus, **D7** successor).
 | **User intent** | Automate recurring work |
 | **Future Nexus presentation** | **D8** — maybe Convex crons triggering Connector tasks |
 | **Future Convex model** | `scheduledNexusJobs` **D8** |
-| **Future Claudia tool ID** | Per job type **D8** |
+| **Future Nexus tool ID** | Per job type **D8** |
 | **Role expectation** | Admin **D8** |
 | **Confirmation** | Run-now confirms |
 | **Sources** | Run logs |
@@ -598,7 +598,7 @@ See **§9** (summary: **D4** on Nexus, **D7** successor).
 | **User intent** | Audit automation runs |
 | **Future Nexus presentation** | Task detail progress timeline |
 | **Future Convex model** | `taskProgressEvents`, `nexusTasks` |
-| **Future Claudia tool ID** | Same as parent task |
+| **Future Nexus tool ID** | Same as parent task |
 | **Role expectation** | Owner |
 | **Confirmation** | N/A |
 | **Sources** | Embedded in result |
@@ -619,7 +619,7 @@ See **§9** (summary: **D4** on Nexus, **D7** successor).
 | **User intent** | Run arbitrary commands |
 | **Future Nexus presentation** | **None** |
 | **Future Convex model** | None |
-| **Future Claudia tool ID** | `system.governed_shell` **D7** only |
+| **Future Nexus tool ID** | `system.governed_shell` **D7** only |
 | **Role expectation** | Local operator |
 | **Confirmation** | Approval for risky patterns |
 | **Sources** | Command audit log |
@@ -632,14 +632,14 @@ See **§9** (summary: **D4** on Nexus, **D7** successor).
 | Field | Value |
 |-------|-------|
 | **Current UI** | CLI Mirror tab |
-| **Backend** | `claudia_routes.py` `/cli/sessions/*` |
+| **Backend** | `nexus_routes.py` `/cli/sessions/*` |
 | **Persistence** | Core-side JSONL |
 | **Execution authority** | Hermes PTY |
 | **Local dependency** | Core |
-| **User intent** | Operate Claudia CLI visually |
+| **User intent** | Operate Nexus CLI visually |
 | **Future Nexus presentation** | **Operations Terminal (D7)** — not MVP |
 | **Future Convex model** | `operationEvents` |
-| **Future Claudia tool ID** | Governed operation tools (no Hermes-branded IDs in Nexus) |
+| **Future Nexus tool ID** | Governed operation tools (no Hermes-branded IDs in Nexus) |
 | **Role expectation** | Operator |
 | **Confirmation** | Per approval events |
 | **Sources** | Tool cards |
@@ -657,7 +657,7 @@ See **§9** (summary: **D4** on Nexus, **D7** successor).
 | **User intent** | Debug server |
 | **Future Nexus presentation** | Audit export **D8** |
 | **Future Convex model** | `auditEvents` bounded |
-| **Future Claudia tool ID** | N/A |
+| **Future Nexus tool ID** | N/A |
 | **Role expectation** | Admin |
 | **Confirmation** | N/A |
 | **Disposition** | **D7** local / **D6** audit subset |
@@ -675,8 +675,8 @@ See **§9** (summary: **D4** on Nexus, **D7** successor).
 | **User intent** | Start/stop local inference |
 | **Future Nexus presentation** | None |
 | **Future Convex model** | None |
-| **Future Claudia tool ID** | N/A |
-| **Role expectation** | Claudia Mac operator |
+| **Future Nexus tool ID** | N/A |
+| **Role expectation** | Nexus Mac operator |
 | **Confirmation** | Kill confirm |
 | **Sources** | N/A |
 | **Disposition** | **D3** |
@@ -695,7 +695,7 @@ See **§9** (summary: **D4** on Nexus, **D7** successor).
 | **User intent** | Attach personal files to RAG |
 | **Future Nexus presentation** | Upload via task attachment **D8** |
 | **Future Convex model** | Convex file storage **D8** |
-| **Future Claudia tool ID** | Read-only vault paths if allowlisted |
+| **Future Nexus tool ID** | Read-only vault paths if allowlisted |
 | **Role expectation** | **D8** |
 | **Confirmation** | Upload confirm |
 | **Sources** | File metadata |
@@ -713,7 +713,7 @@ See **§9** (summary: **D4** on Nexus, **D7** successor).
 | **User intent** | Send files to chat/RAG |
 | **Future Nexus presentation** | Task attachment UI **D8** |
 | **Future Convex model** | Convex storage + virus scan policy **D8** |
-| **Future Claudia tool ID** | Ingest tools **D8** |
+| **Future Nexus tool ID** | Ingest tools **D8** |
 | **Role expectation** | **D8** |
 | **Confirmation** | Size/type confirm |
 | **Sources** | Upload provenance |
@@ -731,7 +731,7 @@ See **§9** (summary: **D4** on Nexus, **D7** successor).
 | **User intent** | Trust but verify |
 | **Future Nexus presentation** | `SourceList`, `SourceCard` |
 | **Future Convex model** | `nexusTasks.sources` |
-| **Future Claudia tool ID** | `vault.agentic_retrieval` |
+| **Future Nexus tool ID** | `vault.agentic_retrieval` |
 | **Role expectation** | `knowledge_reader` |
 | **Confirmation** | N/A |
 | **Sources** | Minimized excerpts + labels |
@@ -749,7 +749,7 @@ See **§9** (summary: **D4** on Nexus, **D7** successor).
 | **User intent** | Long-term recall |
 | **Future Nexus presentation** | Read-only memory query task **D8** |
 | **Future Convex model** | Not full memory DB **D8** |
-| **Future Claudia tool ID** | Memory tools **D8** |
+| **Future Nexus tool ID** | Memory tools **D8** |
 | **Role expectation** | **D8** |
 | **Confirmation** | Write memory confirm |
 | **Sources** | Memory entry refs |
@@ -767,7 +767,7 @@ See **§9** (summary: **D4** on Nexus, **D7** successor).
 | **User intent** | Teach agent procedures |
 | **Future Nexus presentation** | None MVP |
 | **Future Convex model** | Catalog metadata **D8** |
-| **Future Claudia tool ID** | Skill execution **D8** |
+| **Future Nexus tool ID** | Skill execution **D8** |
 | **Role expectation** | Admin |
 | **Confirmation** | Publish/audit |
 | **Sources** | Skill docs |
@@ -785,7 +785,7 @@ See **§9** (summary: **D4** on Nexus, **D7** successor).
 | **User intent** | Manage local models |
 | **Future Nexus presentation** | None |
 | **Future Convex model** | None |
-| **Future Claudia tool ID** | N/A |
+| **Future Nexus tool ID** | N/A |
 | **Role expectation** | Operator |
 | **Confirmation** | Install confirms |
 | **Sources** | N/A |
@@ -796,14 +796,14 @@ See **§9** (summary: **D4** on Nexus, **D7** successor).
 
 | Field | Value |
 |-------|-------|
-| **Current UI** | `claudiaDashboard.js` |
-| **Backend** | Claudia gateway aggregate |
+| **Current UI** | `nexusDashboard.js` |
+| **Backend** | Nexus gateway aggregate |
 | **Persistence** | Ephemeral |
 | **Execution authority** | Gateway |
 | **User intent** | Ops overview |
-| **Future Nexus presentation** | `ClaudiaStatusPanel` + task queue stats |
+| **Future Nexus presentation** | `NexusStatusPanel` + task queue stats |
 | **Future Convex model** | `connectorPresence`, task counts |
-| **Future Claudia tool ID** | N/A |
+| **Future Nexus tool ID** | N/A |
 | **Role expectation** | Admin |
 | **Confirmation** | N/A |
 | **Sources** | N/A |
@@ -821,7 +821,7 @@ See **§9** (summary: **D4** on Nexus, **D7** successor).
 | **User intent** | Living documents |
 | **Future Nexus presentation** | **D8** — likely Connector-mediated |
 | **Future Convex model** | **D8** |
-| **Future Claudia tool ID** | Doc tools **D8** |
+| **Future Nexus tool ID** | Doc tools **D8** |
 | **Role expectation** | **D8** |
 | **Confirmation** | AI edit confirm |
 | **Sources** | Doc versions |
@@ -839,7 +839,7 @@ See **§9** (summary: **D4** on Nexus, **D7** successor).
 | **User intent** | Read/send email |
 | **Future Nexus presentation** | Read-only connector packets **D8** |
 | **Future Convex model** | Minimal envelope metadata |
-| **Future Claudia tool ID** | Email tools **D8** |
+| **Future Nexus tool ID** | Email tools **D8** |
 | **Role expectation** | **D8** |
 | **Confirmation** | Send confirm |
 | **Sources** | Message-ID |
@@ -857,7 +857,7 @@ See **§9** (summary: **D4** on Nexus, **D7** successor).
 | **User intent** | Schedule view/edit |
 | **Future Nexus presentation** | Read-only **D8** |
 | **Future Convex model** | **D8** |
-| **Future Claudia tool ID** | Calendar read **D8** |
+| **Future Nexus tool ID** | Calendar read **D8** |
 | **Role expectation** | **D8** |
 | **Confirmation** | Event write |
 | **Sources** | CalDAV/id |
@@ -875,7 +875,7 @@ See **§9** (summary: **D4** on Nexus, **D7** successor).
 | **User intent** | Quick capture |
 | **Future Nexus presentation** | **D8** |
 | **Future Convex model** | **D8** |
-| **Future Claudia tool ID** | **D8** |
+| **Future Nexus tool ID** | **D8** |
 | **Role expectation** | Owner |
 | **Confirmation** | Agent solve button |
 | **Sources** | Note link |
@@ -893,7 +893,7 @@ See **§9** (summary: **D4** on Nexus, **D7** successor).
 | **User intent** | Model A/B eval |
 | **Future Nexus presentation** | **D8** |
 | **Future Convex model** | Task result **D8** |
-| **Future Claudia tool ID** | **D8** |
+| **Future Nexus tool ID** | **D8** |
 | **Role expectation** | Admin/evaluator |
 | **Confirmation** | Run compare |
 | **Sources** | Model ids in result |
@@ -911,7 +911,7 @@ See **§9** (summary: **D4** on Nexus, **D7** successor).
 | **User intent** | Manage images |
 | **Future Nexus presentation** | None MVP |
 | **Future Convex model** | None |
-| **Future Claudia tool ID** | Image gen **D8** |
+| **Future Nexus tool ID** | Image gen **D8** |
 | **Role expectation** | **D8** |
 | **Confirmation** | Gen confirm |
 | **Sources** | Model/prompt metadata |
@@ -929,7 +929,7 @@ See **§9** (summary: **D4** on Nexus, **D7** successor).
 | **User intent** | Deep multi-step research |
 | **Future Nexus presentation** | Long-running task + progress **D8** |
 | **Future Convex model** | `nexusTasks` + progress |
-| **Future Claudia tool ID** | Research tools **D8** |
+| **Future Nexus tool ID** | Research tools **D8** |
 | **Role expectation** | **D8** |
 | **Confirmation** | Start research |
 | **Sources** | Research report refs |
@@ -949,7 +949,7 @@ See **§9** (summary: **D4** on Nexus, **D7** successor).
 | **User intent** | Sign in securely |
 | **Future Nexus presentation** | Clerk `<SignIn />` |
 | **Future Convex model** | `approvedUsers` |
-| **Future Claudia tool ID** | N/A |
+| **Future Nexus tool ID** | N/A |
 | **Role expectation** | Approved user |
 | **Confirmation** | TOTP if enabled legacy — Clerk handles hosted |
 | **Sources** | N/A |
@@ -967,7 +967,7 @@ See **§9** (summary: **D4** on Nexus, **D7** successor).
 | **User intent** | Least privilege |
 | **Future Nexus presentation** | Server-enforced; optional UI badge |
 | **Future Convex model** | `userRoles` |
-| **Future Claudia tool ID** | N/A |
+| **Future Nexus tool ID** | N/A |
 | **Role expectation** | `knowledge_reader`, `admin`, … |
 | **Confirmation** | Role grant by admin |
 | **Sources** | N/A |
@@ -985,7 +985,7 @@ See **§9** (summary: **D4** on Nexus, **D7** successor).
 | **User intent** | Automate chat |
 | **Future Nexus presentation** | Separate machine auth **D8** |
 | **Future Convex model** | `apiTokens` hash **D8** |
-| **Future Claudia tool ID** | N/A |
+| **Future Nexus tool ID** | N/A |
 | **Role expectation** | Admin |
 | **Confirmation** | Token create |
 | **Sources** | N/A |
@@ -1003,7 +1003,7 @@ See **§9** (summary: **D4** on Nexus, **D7** successor).
 | **User intent** | Configure app |
 | **Future Nexus presentation** | Minimal hosted settings page |
 | **Future Convex model** | `userPreferences`, `systemConfig` |
-| **Future Claudia tool ID** | N/A |
+| **Future Nexus tool ID** | N/A |
 | **Role expectation** | User vs admin split |
 | **Confirmation** | Destructive settings |
 | **Sources** | N/A |
@@ -1021,7 +1021,7 @@ See **§9** (summary: **D4** on Nexus, **D7** successor).
 | **User intent** | Comfortable visuals |
 | **Future Nexus presentation** | `ThemeToggle`, `ThemeProvider` |
 | **Future Convex model** | Optional sync **D6** |
-| **Future Claudia tool ID** | N/A |
+| **Future Nexus tool ID** | N/A |
 | **Role expectation** | Any |
 | **Confirmation** | N/A |
 | **Sources** | N/A |
@@ -1039,7 +1039,7 @@ See **§9** (summary: **D4** on Nexus, **D7** successor).
 | **User intent** | Don't miss reminders |
 | **Future Nexus presentation** | In-app toasts **D8** |
 | **Future Convex model** | `notifications` **D8** |
-| **Future Claudia tool ID** | N/A |
+| **Future Nexus tool ID** | N/A |
 | **Role expectation** | Owner |
 | **Confirmation** | N/A |
 | **Sources** | N/A |
@@ -1057,7 +1057,7 @@ See **§9** (summary: **D4** on Nexus, **D7** successor).
 | **User intent** | Use when offline |
 | **Future Nexus presentation** | Next.js `app/manifest.ts`; no legacy SW |
 | **Future Convex model** | Live queries require network |
-| **Future Claudia tool ID** | N/A |
+| **Future Nexus tool ID** | N/A |
 | **Role expectation** | N/A |
 | **Confirmation** | N/A |
 | **Sources** | N/A |
@@ -1076,7 +1076,7 @@ See **§9** (summary: **D4** on Nexus, **D7** successor).
 | **User intent** | Abort long work |
 | **Future Nexus presentation** | Cancel button on in-flight task |
 | **Future Convex model** | Task status → `cancel_requested` |
-| **Future Claudia tool ID** | Connector cancel message |
+| **Future Nexus tool ID** | Connector cancel message |
 | **Role expectation** | Task owner |
 | **Confirmation** | Optional confirm |
 | **Sources** | N/A |
@@ -1094,11 +1094,11 @@ See **§9** (summary: **D4** on Nexus, **D7** successor).
 | **User intent** | Debug subsystems |
 | **Future Nexus presentation** | `DiagnosticsPanel` (collapsed) |
 | **Future Convex model** | Self-check only |
-| **Future Claudia tool ID** | N/A |
+| **Future Nexus tool ID** | N/A |
 | **Role expectation** | Admin |
 | **Confirmation** | N/A |
 | **Sources** | N/A |
-| **Disposition** | Split **D1** hosted / **D7** Claudia |
+| **Disposition** | Split **D1** hosted / **D7** Nexus |
 | **Phase** | P8 |
 
 #### Audit
@@ -1112,7 +1112,7 @@ See **§9** (summary: **D4** on Nexus, **D7** successor).
 | **User intent** | Compliance review |
 | **Future Nexus presentation** | Admin audit export |
 | **Future Convex model** | `auditEvents` |
-| **Future Claudia tool ID** | N/A |
+| **Future Nexus tool ID** | N/A |
 | **Role expectation** | Admin |
 | **Confirmation** | Export confirm |
 | **Sources** | N/A |
@@ -1130,7 +1130,7 @@ See **§9** (summary: **D4** on Nexus, **D7** successor).
 | **User intent** | Extend tools |
 | **Future Nexus presentation** | None |
 | **Future Convex model** | None |
-| **Future Claudia tool ID** | MCP via Core only |
+| **Future Nexus tool ID** | MCP via Core only |
 | **Role expectation** | Operator |
 | **Confirmation** | Connect MCP |
 | **Sources** | Tool outputs |
@@ -1148,7 +1148,7 @@ See **§9** (summary: **D4** on Nexus, **D7** successor).
 | **User intent** | Integrate n8n etc. |
 | **Future Nexus presentation** | **D8** |
 | **Future Convex model** | **D8** |
-| **Future Claudia tool ID** | N/A |
+| **Future Nexus tool ID** | N/A |
 | **Role expectation** | Admin |
 | **Confirmation** | Secret display once |
 | **Sources** | N/A |
@@ -1166,7 +1166,7 @@ See **§9** (summary: **D4** on Nexus, **D7** successor).
 | **User intent** | Private corpus for RAG |
 | **Future Nexus presentation** | Task-attached sources only **D8** |
 | **Future Convex model** | **D8** |
-| **Future Claudia tool ID** | Vault paths |
+| **Future Nexus tool ID** | Vault paths |
 | **Role expectation** | **D8** |
 | **Confirmation** | Directory add |
 | **Sources** | Doc paths (redacted) |
@@ -1182,9 +1182,9 @@ See **§9** (summary: **D4** on Nexus, **D7** successor).
 | **Hosted Nexus** | **D4 Remove** — no CLI Mirror tab, no PTY SSE, no Hermes labeling |
 | **Legacy local** | **D3 Retain** until Control Center + Operations Terminal cover operators |
 | **Successor** | **D7 Operations Terminal** (§3) — structured events, not PTY |
-| **Gateway routes** | `/api/claudia/v1/cli/sessions/*` remain in `legacy_local_console/` only; **never** implement on Vercel |
-| **Frontend modules** | `claudiaCliMirror.js`, `claudiaCliMirrorHelpers.js` — **reference only** for event-card UX; do not import into Nexus |
-| **localStorage** | `claudia_console_interaction_mode`, `claudia_console_cli_mirror_session_id` — **do not port** |
+| **Gateway routes** | `/api/nexus/v1/cli/sessions/*` remain in `legacy_local_console/` only; **never** implement on Vercel |
+| **Frontend modules** | `nexusCliMirror.js`, `nexusCliMirrorHelpers.js` — **reference only** for event-card UX; do not import into Nexus |
+| **localStorage** | `console_interaction_mode`, `console_cli_mirror_session_id` — **do not port** |
 | **Bridge docs** | Bridge 08–12 remain historical design for local era |
 | **Transcript classification** | Reimplement server-side for Operations Terminal; client heuristics are not authoritative |
 | **Multi-tab attach** | Replace with Convex `operationId` subscription + optimistic locking |
@@ -1192,7 +1192,7 @@ See **§9** (summary: **D4** on Nexus, **D7** successor).
 
 ### Operator migration path
 
-1. **Now–P9:** Legacy operators use `legacy_local_console/` CLI Mirror on Claudia Mac.
+1. **Now–P9:** Legacy operators use `legacy_local_console/` CLI Mirror on Nexus Mac.
 2. **P7–P9:** Connector + read-only tools prove event/task pipeline.
 3. **P11+:** Operations Terminal in Control Center; optional admin-only Nexus view **D8**.
 4. **Retirement:** Remove CLI Mirror from legacy when Control Center reaches parity (separate retirement spec).
@@ -1208,7 +1208,7 @@ See **§9** (summary: **D4** on Nexus, **D7** successor).
 | **P4** ✅ | Clerk approval + roles | Auth, roles | D1/D4 |
 | **P5** ✅ | Private Convex conversations/tasks + shared queue | Persisted chat submit/history/reopen, task cancel/retry, global queue ordering — no execution yet | D1/D2 |
 | **P6** ✅ | Trusted Connector queue protocol (Nexus/Convex side) | Signed claim/lease/heartbeat/progress/complete/fail/cancel over the canonical queue; content-free Connector status. No execution yet — P5 ownership/privacy remain authoritative | D1/D2 |
-| **P7** | Connector poller (`claudia_system`) | Outbound polling loop that executes queued work through Claudia (see P6→P7 handoff contract) | D2 |
+| **P7** | Connector poller (`system`) | Outbound polling loop that executes queued work through Nexus (see P6→P7 handoff contract) | D2 |
 | **P8** | Control Center UI | Dashboard, diagnostics split | D7/D1 |
 | **P9** | Read-only tools E2E | Chat KB, sources, task runs | D2 |
 | **P10** | Prod hardening | Audit, API tokens?, webhooks?, notifications? | D6/D8 |
@@ -1231,7 +1231,7 @@ Record decisions here before implementation proceeds. Until resolved, treat as *
 | **D8-04** | **All compare/eval on hosted** | Host compare tasks vs local-only legacy | Local-only | P10 compare |
 | **D8-05** | **Email/calendar hosted read** | Connector read envelopes vs stay local-only | Local-only | P11 connectors |
 | **D8-06** | **Memory hosted read/write** | No hosted memory vs read-only query tasks vs full sync | No hosted memory | P10 memory |
-| **D8-07** | **Uploads on Nexus** | Convex storage vs Claudia-only ingest vs none | None MVP | P10 uploads |
+| **D8-07** | **Uploads on Nexus** | Convex storage vs Nexus-only ingest vs none | None MVP | P10 uploads |
 | **D8-08** | **PWA offline** | Online-only vs read-only cache vs full offline queue | Online-only | P10 PWA |
 | **D8-09** | **API tokens for users** | Connector-only machine auth vs user API tokens vs both | Connector-only | P10 automation |
 | **D8-10** | **Presets/persona port** | Keep Odysseus literary presets on Nexus vs drop | Drop for MVP | Chat UX |
@@ -1260,7 +1260,7 @@ Before closing any migration phase, verify:
 - [ ] No Nexus component imports from `legacy_local_console/static/`.
 - [ ] `./scripts/verify-nexus-boundary.sh` passes (no FastAPI paths, CLI Mirror, or Hermes strings in hosted tree).
 - [ ] Convex schema changes reference this doc's table names when introduced.
-- [ ] New Claudia tools document Nexus `requestedToolId` and role requirements here.
+- [ ] New Nexus tools document Nexus `requestedToolId` and role requirements here.
 - [ ] D8 items blocking the phase are either decided (§11 log) or explicitly deferred with user-visible stubs only (**D5**).
 
 ---

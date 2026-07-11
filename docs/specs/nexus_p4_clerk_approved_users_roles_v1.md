@@ -12,7 +12,7 @@ P4 establishes the authoritative human identity and authorization boundary for N
 - **Convex** is authoritative for approval, suspension, roles, and identity audit metadata.
 - Browser-supplied roles, Clerk public metadata, and client JSON are never trusted for authorization.
 
-No task persistence (P5), connector APIs (P6), or Claudia execution was added.
+No task persistence (P5), connector APIs (P6), or Nexus execution was added.
 
 ## Remote warning
 
@@ -249,7 +249,7 @@ Record exact results in commit closeout (run at package completion).
 - Connector installations and credentials
 - HMAC connector API
 - Claims, leases, presence
-- Claudia Core execution paths
+- Nexus Core execution paths
 
 ## Exact next step
 

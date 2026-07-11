@@ -15,7 +15,7 @@ repair for private queries; no schema/backend/product changes),
 ## 1. Summary
 
 P5 establishes the canonical hosted persistence and queue model that later
-Connector and Claudia execution phases will use. Approved users can now create
+Connector and Nexus execution phases will use. Approved users can now create
 and reopen **private conversations**, submit **persisted requests** from Nexus
 Chat, and see **real private tasks** in the Tasks workspace. Each submitted
 request creates a **queued task** ordered by a deterministic global sequence.
@@ -143,7 +143,7 @@ queue — there is no public query over the global indexes.
 
 ### User-visible queue behavior
 
-Truthful status only: **"Queued — waiting for the Claudia Connector."** No
+Truthful status only: **"Queued — waiting for the Console Connector."** No
 numerical global position is exposed (avoids any cross-user inference). Each
 user sees only their own tasks.
 
@@ -240,7 +240,7 @@ The Nexus Chat page is preserved; persistence was added without redesign.
 
 Availability moved from `connector_required` to a precise split:
 `persistence_available` ("Saved · execution pending") with an explicit
-"Execution waits for the Claudia Connector (not configured yet)" message.
+"Execution waits for the Console Connector (not configured yet)" message.
 Requests are saved and queued; no fake answer is shown. Config flag
 `P5_QUEUE.allowQueueWithoutConnector` (default `true`) governs accepting queued
 work before a Connector exists.
@@ -296,7 +296,7 @@ conversation) is left as an operator step against the linked deployment.
 - Worker execution wiring the internal mutations
   (`transitionTaskInternal`, `writeTaskResultInternal`,
   `replaceTaskSourcesInternal`, `appendTaskProgressInternal`,
-  `appendAssistantMessage`) to real Claudia results.
+  `appendAssistantMessage`) to real Nexus results.
 - `claimed`/`running`/`cancel_requested` user-visible flows.
 
 See `nexus_p5_data_privacy_and_queue_contract_v1.md` for the binding contract

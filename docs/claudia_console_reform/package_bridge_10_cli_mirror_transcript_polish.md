@@ -4,21 +4,21 @@
 |-------|-------|
 | **Package** | Bridge 10 — CLI Mirror Transcript Polish and Structured Event Cards |
 | **Date** | 2026-06-02 |
-| **Repo** | `claudia_console` |
+| **Repo** | `console` |
 
 ## Objective
 
-Improve the CLI Mirror operator transcript so Hermes PTY output is easier to read inside the polished Claudia Console UI — without changing backend architecture or Simple Chat.
+Improve the CLI Mirror operator transcript so Hermes PTY output is easier to read inside the polished legacy local console UI — without changing backend architecture or Simple Chat.
 
 ## Files changed
 
 | File | Change |
 |------|--------|
-| `static/js/claudiaCliMirrorHelpers.js` | Classification heuristics, ANSI/noise cleanup, dedup helpers, raw drawer formatting, improved error cards |
-| `static/js/claudiaCliMirror.js` | Dedup rendering, session list/attach UI, raw copy, actionable alerts, card metadata (time/seq) |
+| `static/js/nexusCliMirrorHelpers.js` | Classification heuristics, ANSI/noise cleanup, dedup helpers, raw drawer formatting, improved error cards |
+| `static/js/nexusCliMirror.js` | Dedup rendering, session list/attach UI, raw copy, actionable alerts, card metadata (time/seq) |
 | `static/style.css` | Structured card styles, session list, raw drawer toolbar, mobile refinements |
-| `tests/test_claudia_cli_mirror_ui.py` | Bridge 10 Node-eval tests + CSS/static checks |
-| `docs/claudia_console_reform/package_bridge_10_cli_mirror_transcript_polish.md` | This note |
+| `tests/test_nexus_cli_mirror_ui.py` | Bridge 10 Node-eval tests + CSS/static checks |
+| `docs/console_reform/package_bridge_10_cli_mirror_transcript_polish.md` | This note |
 
 ## Classification/cleanup logic added
 
@@ -82,7 +82,7 @@ Cards show label, optional local time, and `#seq` when present.
 
 - Admin required
 - Core not configured / unreachable
-- PTY disabled (with `CLAUDIA_ENABLE_HERMES_PTY=true` guidance)
+- PTY disabled (with `NEXUS_ENABLE_HERMES_PTY=true` guidance)
 - Session conflict / unknown session
 - Stream disconnected
 - Stop/interrupt failures
@@ -90,9 +90,9 @@ Cards show label, optional local time, and `#seq` when present.
 ## Tests/checks run
 
 ```bash
-cd claudia_console
-node --check static/js/claudiaCliMirror.js static/js/claudiaCliMirrorHelpers.js
-pytest tests/test_claudia_cli_mirror_ui.py tests/test_claudia_cli_relay.py tests/test_claudia_messages.py -q
+cd console
+node --check static/js/nexusCliMirror.js static/js/nexusCliMirrorHelpers.js
+pytest tests/test_nexus_cli_mirror_ui.py tests/test_nexus_cli_relay.py tests/test_nexus_messages.py -q
 ```
 
 Bridge 10 adds Node-eval tests for ANSI stripping, heartbeat hiding, error/warning/slash classification, noise hiding, dedup, and raw line formatting.
@@ -102,15 +102,15 @@ Bridge 10 adds Node-eval tests for ANSI stripping, heartbeat hiding, error/warni
 **Terminal 1 — Core:**
 
 ```bash
-cd /Users/bretthoffman/Documents/Claudia/claudia_system
-CLAUDIA_ENABLE_HERMES_PTY=true ./start-core-api.sh
+cd /Users/bretthoffman/Documents/Nexus/system
+NEXUS_ENABLE_HERMES_PTY=true ./start-core-api.sh
 ```
 
 **Terminal 2 — Console:**
 
 ```bash
-cd /Users/bretthoffman/Documents/Claudia/claudia_console
-CLAUDIA_CONSOLE_MODE=true CLAUDIA_CORE_URL=http://127.0.0.1:8080 ./start-macos.sh
+cd /Users/bretthoffman/Documents/Nexus/console
+NEXUS_CONSOLE_MODE=true NEXUS_CORE_URL=http://127.0.0.1:8080 ./start-macos.sh
 ```
 
 **Browser:**

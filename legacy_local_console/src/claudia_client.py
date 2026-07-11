@@ -1,7 +1,7 @@
-"""Thin HTTP client for Claudia Core — Gateway intake/health forwarding only.
+"""Thin HTTP client for Nexus Core — Gateway intake/health forwarding only.
 
 This module must not import agent_loop, task_scheduler, MCP, shell, or any
-Odysseus autonomous runtime. It only forwards packets to Claudia Core when configured.
+Odysseus autonomous runtime. It only forwards packets to Nexus Core when configured.
 """
 
 from __future__ import annotations
@@ -16,14 +16,14 @@ import httpx
 
 logger = logging.getLogger(__name__)
 
-ENV_CORE_URL = "CLAUDIA_CORE_URL"
-ENV_GATEWAY_SECRET = "CLAUDIA_GATEWAY_SHARED_SECRET"
-GATEWAY_SECRET_HEADER = "X-Claudia-Gateway-Secret"
+ENV_CORE_URL = "NEXUS_CORE_URL"
+ENV_GATEWAY_SECRET = "NEXUS_GATEWAY_SHARED_SECRET"
+GATEWAY_SECRET_HEADER = "X-Nexus-Gateway-Secret"
 DEFAULT_TIMEOUT_S = 5.0
 
 
 def get_core_base_url() -> str | None:
-    """Normalized Claudia Core base URL, or None if unset."""
+    """Normalized Nexus Core base URL, or None if unset."""
     raw = os.environ.get(ENV_CORE_URL, "").strip()
     if not raw:
         return None
@@ -91,7 +91,7 @@ def gateway_envelope(
 
 
 async def probe_core_health() -> tuple[bool, str | None, dict[str, Any] | None]:
-    """GET {CLAUDIA_CORE_URL}/health. Returns (reachable, error_message, core_json)."""
+    """GET {NEXUS_CORE_URL}/health. Returns (reachable, error_message, core_json)."""
     base = get_core_base_url()
     if not base:
         return False, "core_not_configured", None
@@ -111,10 +111,10 @@ async def probe_core_health() -> tuple[bool, str | None, dict[str, Any] | None]:
             body = {"raw": resp.text[:500]}
         return True, None, body
     except httpx.TimeoutException:
-        logger.info("Claudia Core health probe timed out")
+        logger.info("Nexus Core health probe timed out")
         return False, "core_timeout", None
     except httpx.RequestError as exc:
-        logger.info("Claudia Core health probe failed: %s", type(exc).__name__)
+        logger.info("Nexus Core health probe failed: %s", type(exc).__name__)
         return False, "core_unreachable", None
 
 
@@ -125,7 +125,7 @@ async def _forward_post_to_core(
     success_message: str,
     unconfigured_message: str,
 ) -> dict[str, Any]:
-    """POST normalized packet to ``{CLAUDIA_CORE_URL}{path}``; never executes locally."""
+    """POST normalized packet to ``{NEXUS_CORE_URL}{path}``; never executes locally."""
     trace_id = packet.get("trace_id")
     packet_id = packet.get("packet_id")
 
@@ -151,7 +151,7 @@ async def _forward_post_to_core(
         return gateway_envelope(
             ok=False,
             status="core_timeout",
-            message="Claudia Core did not respond in time; no local execution occurred.",
+            message="Nexus Core did not respond in time; no local execution occurred.",
             packet_id=packet_id,
             trace_id=trace_id,
             core_configured=True,
@@ -161,7 +161,7 @@ async def _forward_post_to_core(
         return gateway_envelope(
             ok=False,
             status="core_unreachable",
-            message="Claudia Core is unreachable; no local execution occurred.",
+            message="Nexus Core is unreachable; no local execution occurred.",
             packet_id=packet_id,
             trace_id=trace_id,
             core_configured=True,
@@ -180,7 +180,7 @@ async def _forward_post_to_core(
             ok=False,
             status="core_error",
             message=(
-                f"Claudia Core returned HTTP {resp.status_code} on {path}; "
+                f"Nexus Core returned HTTP {resp.status_code} on {path}; "
                 "no local execution occurred."
             ),
             packet_id=packet_id,
@@ -206,13 +206,13 @@ async def _forward_post_to_core(
 
 
 async def forward_intake(packet: dict[str, Any]) -> dict[str, Any]:
-    """POST normalized packet JSON to {CLAUDIA_CORE_URL}/intake."""
+    """POST normalized packet JSON to {NEXUS_CORE_URL}/intake."""
     return await _forward_post_to_core(
         "/intake",
         packet,
-        success_message="Intake forwarded to Claudia Core.",
+        success_message="Intake forwarded to Nexus Core.",
         unconfigured_message=(
-            "Claudia Core URL is not configured; intake was accepted by the "
+            "Nexus Core URL is not configured; intake was accepted by the "
             "Gateway but not forwarded or executed locally."
         ),
     )
@@ -242,7 +242,7 @@ async def _forward_with_intake_fallback(
             "/intake",
             packet,
             success_message=(
-                f"Packet forwarded to Claudia Core via /intake "
+                f"Packet forwarded to Nexus Core via /intake "
                 f"(POST {primary_path} returned 404)."
             ),
             unconfigured_message=primary.get("message", ""),
@@ -258,9 +258,9 @@ async def forward_message(packet: dict[str, Any]) -> dict[str, Any]:
     return await _forward_with_intake_fallback(
         "/messages",
         packet,
-        success_message="Message forwarded to Claudia Core.",
+        success_message="Message forwarded to Nexus Core.",
         unconfigured_message=(
-            "Claudia Core URL is not configured; message was accepted by the "
+            "Nexus Core URL is not configured; message was accepted by the "
             "Gateway but not forwarded or executed locally."
         ),
         forward_path_key="message_path",
@@ -272,9 +272,9 @@ async def forward_source_packet(packet: dict[str, Any]) -> dict[str, Any]:
     return await _forward_with_intake_fallback(
         "/source-packets",
         packet,
-        success_message="Source packet forwarded to Claudia Core.",
+        success_message="Source packet forwarded to Nexus Core.",
         unconfigured_message=(
-            "Claudia Core URL is not configured; source packet was accepted by the "
+            "Nexus Core URL is not configured; source packet was accepted by the "
             "Gateway but not forwarded or executed locally."
         ),
         forward_path_key="source_path",
@@ -286,9 +286,9 @@ async def forward_worker_output(packet: dict[str, Any]) -> dict[str, Any]:
     return await _forward_with_intake_fallback(
         "/worker-outputs",
         packet,
-        success_message="Worker output forwarded to Claudia Core.",
+        success_message="Worker output forwarded to Nexus Core.",
         unconfigured_message=(
-            "Claudia Core URL is not configured; worker output was accepted by the "
+            "Nexus Core URL is not configured; worker output was accepted by the "
             "Gateway but not forwarded or executed locally."
         ),
         forward_path_key="worker_output_path",
@@ -302,10 +302,10 @@ def gateway_packets_list_placeholder() -> dict[str, Any]:
         ok=True,
         status="core_not_configured" if not configured else "persistence_not_implemented",
         message=(
-            "Claudia Core URL is not configured; packet list is a Gateway placeholder."
+            "Nexus Core URL is not configured; packet list is a Gateway placeholder."
             if not configured
             else (
-                "Claudia Gateway local packet persistence is not implemented. "
+                "Nexus Gateway local packet persistence is not implemented. "
                 "This listing is not a source of truth."
             )
         ),
@@ -334,8 +334,8 @@ def gateway_read_placeholder(
         status="placeholder",
         message=message
         or (
-            f"Claudia Gateway read surface '{surface}' is a placeholder; "
-            "not implemented or not connected to Claudia Core yet."
+            f"Nexus Gateway read surface '{surface}' is a placeholder; "
+            "not implemented or not connected to Nexus Core yet."
         ),
         packet_id=None,
         trace_id=None,
@@ -364,11 +364,11 @@ def gateway_packet_detail_placeholder(packet_id: str) -> dict[str, Any]:
         ok=True,
         status="core_not_configured" if not configured else "persistence_not_implemented",
         message=(
-            "Claudia Core URL is not configured; packet detail is a Gateway placeholder."
+            "Nexus Core URL is not configured; packet detail is a Gateway placeholder."
             if not configured
             else (
-                "Claudia Gateway does not store packets locally; packet detail is not "
-                "available unless Claudia Core exposes it."
+                "Nexus Gateway does not store packets locally; packet detail is not "
+                "available unless Nexus Core exposes it."
             )
         ),
         packet_id=pid or None,
@@ -396,7 +396,7 @@ async def list_packets() -> dict[str, Any]:
             status="core_unreachable",
             message=result.get(
                 "message",
-                "Claudia Core is unreachable; packet list is unavailable.",
+                "Nexus Core is unreachable; packet list is unavailable.",
             ),
             packet_id=None,
             trace_id=None,
@@ -406,7 +406,7 @@ async def list_packets() -> dict[str, Any]:
             "packets": [],
             "items": [],
             "count": 0,
-            "source": "claudia_core",
+            "source": "nexus_core",
             "core_url": core_url,
         }
 
@@ -416,7 +416,7 @@ async def list_packets() -> dict[str, Any]:
             status="core_timeout",
             message=result.get(
                 "message",
-                "Claudia Core did not respond in time; packet list is unavailable.",
+                "Nexus Core did not respond in time; packet list is unavailable.",
             ),
             packet_id=None,
             trace_id=None,
@@ -426,7 +426,7 @@ async def list_packets() -> dict[str, Any]:
             "packets": [],
             "items": [],
             "count": 0,
-            "source": "claudia_core",
+            "source": "nexus_core",
             "core_url": core_url,
         }
 
@@ -436,7 +436,7 @@ async def list_packets() -> dict[str, Any]:
             status=result.get("status", "core_error"),
             message=result.get(
                 "message",
-                "Claudia Core packet list is unavailable; no local execution occurred.",
+                "Nexus Core packet list is unavailable; no local execution occurred.",
             ),
             packet_id=None,
             trace_id=None,
@@ -447,7 +447,7 @@ async def list_packets() -> dict[str, Any]:
             "packets": [],
             "items": [],
             "count": 0,
-            "source": "claudia_core",
+            "source": "nexus_core",
             "core_url": core_url,
         }
 
@@ -461,7 +461,7 @@ async def list_packets() -> dict[str, Any]:
     return gateway_envelope(
         ok=True,
         status="ok",
-        message="Packet list read from Claudia Core intake ledger.",
+        message="Packet list read from Nexus Core intake ledger.",
         packet_id=None,
         trace_id=None,
         core_configured=True,
@@ -471,7 +471,7 @@ async def list_packets() -> dict[str, Any]:
         "packets": tasks,
         "items": tasks,
         "count": count,
-        "source": "claudia_core",
+        "source": "nexus_core",
         "core_url": core_url,
         "read_only": True,
         "persistence": True,
@@ -508,7 +508,7 @@ async def get_packet_detail(packet_id: str) -> dict[str, Any]:
             "packet": None,
             "core_configured": True,
             "forwarded": True,
-            "source": "claudia_core",
+            "source": "nexus_core",
             "core_url": core_url,
         }
 
@@ -518,7 +518,7 @@ async def get_packet_detail(packet_id: str) -> dict[str, Any]:
             status=result.get("status", "core_unreachable"),
             message=result.get(
                 "message",
-                "Claudia Core is unavailable; packet detail is not available locally.",
+                "Nexus Core is unavailable; packet detail is not available locally.",
             ),
             packet_id=pid,
             trace_id=None,
@@ -526,7 +526,7 @@ async def get_packet_detail(packet_id: str) -> dict[str, Any]:
             forwarded=False,
         ) | {
             "packet": None,
-            "source": "claudia_core",
+            "source": "nexus_core",
             "core_url": core_url,
         }
 
@@ -536,7 +536,7 @@ async def get_packet_detail(packet_id: str) -> dict[str, Any]:
             status=result.get("status", "core_error"),
             message=result.get(
                 "message",
-                "Claudia Core packet detail is unavailable; no local execution occurred.",
+                "Nexus Core packet detail is unavailable; no local execution occurred.",
             ),
             packet_id=pid,
             trace_id=None,
@@ -545,7 +545,7 @@ async def get_packet_detail(packet_id: str) -> dict[str, Any]:
             core_status=result.get("core_status"),
         ) | {
             "packet": None,
-            "source": "claudia_core",
+            "source": "nexus_core",
             "core_url": core_url,
         }
 
@@ -553,7 +553,7 @@ async def get_packet_detail(packet_id: str) -> dict[str, Any]:
     return gateway_envelope(
         ok=True,
         status="ok",
-        message="Packet detail read from Claudia Core intake ledger.",
+        message="Packet detail read from Nexus Core intake ledger.",
         packet_id=pid,
         trace_id=task.get("trace_id") if isinstance(task, dict) else None,
         core_configured=True,
@@ -562,7 +562,7 @@ async def get_packet_detail(packet_id: str) -> dict[str, Any]:
     ) | {
         "packet": task,
         "task": task,
-        "source": "claudia_core",
+        "source": "nexus_core",
         "core_url": core_url,
         "read_only": True,
         "persistence": True,
@@ -570,13 +570,13 @@ async def get_packet_detail(packet_id: str) -> dict[str, Any]:
 
 
 async def _forward_get_to_core(path: str) -> dict[str, Any]:
-    """GET from Claudia Core; never executes locally."""
+    """GET from Nexus Core; never executes locally."""
     base = get_core_base_url()
     if not base:
         return gateway_envelope(
             ok=False,
             status="core_not_configured",
-            message="Claudia Core URL is not configured; no local execution occurred.",
+            message="Nexus Core URL is not configured; no local execution occurred.",
             packet_id=None,
             trace_id=None,
             core_configured=False,
@@ -593,7 +593,7 @@ async def _forward_get_to_core(path: str) -> dict[str, Any]:
         return gateway_envelope(
             ok=False,
             status="core_timeout",
-            message="Claudia Core did not respond in time; no local execution occurred.",
+            message="Nexus Core did not respond in time; no local execution occurred.",
             packet_id=None,
             trace_id=None,
             core_configured=True,
@@ -603,7 +603,7 @@ async def _forward_get_to_core(path: str) -> dict[str, Any]:
         return gateway_envelope(
             ok=False,
             status="core_unreachable",
-            message="Claudia Core is unreachable; no local execution occurred.",
+            message="Nexus Core is unreachable; no local execution occurred.",
             packet_id=None,
             trace_id=None,
             core_configured=True,
@@ -622,7 +622,7 @@ async def _forward_get_to_core(path: str) -> dict[str, Any]:
             ok=False,
             status="core_error",
             message=(
-                f"Claudia Core returned HTTP {resp.status_code} on GET {path}; "
+                f"Nexus Core returned HTTP {resp.status_code} on GET {path}; "
                 "no local execution occurred."
             ),
             packet_id=None,
@@ -636,7 +636,7 @@ async def _forward_get_to_core(path: str) -> dict[str, Any]:
     out = gateway_envelope(
         ok=True,
         status="forwarded",
-        message="Read forwarded from Claudia Core.",
+        message="Read forwarded from Nexus Core.",
         packet_id=None,
         trace_id=None,
         core_configured=True,
@@ -655,7 +655,7 @@ async def list_approvals() -> dict[str, Any]:
         return gateway_read_placeholder(
             "approvals",
             message=(
-                "Claudia Core is not configured; approval queue is not available "
+                "Nexus Core is not configured; approval queue is not available "
                 "and nothing was executed locally."
             ),
             extra={"pending_count": 0, "approvals": []},
@@ -679,7 +679,7 @@ async def list_approvals() -> dict[str, Any]:
     placeholder = gateway_read_placeholder(
         "approvals",
         message=(
-            "Claudia Core approvals list is unavailable; showing Gateway placeholder. "
+            "Nexus Core approvals list is unavailable; showing Gateway placeholder. "
             "No local execution occurred."
         ),
         extra={"pending_count": 0, "approvals": []},
@@ -713,7 +713,7 @@ async def get_model_config() -> dict[str, Any]:
             "ok": False,
             "status": "core_not_configured",
             "message": (
-                "Claudia Core URL is not configured; model config is unavailable from Gateway."
+                "Nexus Core URL is not configured; model config is unavailable from Gateway."
             ),
             "core_configured": False,
             "forwarded": False,
@@ -729,7 +729,7 @@ async def get_model_config() -> dict[str, Any]:
             "status": result.get("status"),
             "message": result.get(
                 "message",
-                "Claudia Core model config is unreachable; no local config was read.",
+                "Nexus Core model config is unreachable; no local config was read.",
             ),
             "core_configured": True,
             "forwarded": False,
@@ -745,7 +745,7 @@ async def get_model_config() -> dict[str, Any]:
             "status": result.get("status", "core_error"),
             "message": result.get(
                 "message",
-                "Claudia Core model config is unavailable; no local config was read.",
+                "Nexus Core model config is unavailable; no local config was read.",
             ),
             "core_configured": True,
             "forwarded": bool(result.get("forwarded")),
@@ -776,9 +776,9 @@ async def update_model_config(model_id: str) -> dict[str, Any]:
     result = await _forward_post_to_core(
         "/model-config",
         {"model": mid},
-        success_message="Model configuration forwarded to Claudia Core.",
+        success_message="Model configuration forwarded to Nexus Core.",
         unconfigured_message=(
-            "Claudia Core URL is not configured; Hermes model was not changed by Gateway."
+            "Nexus Core URL is not configured; Hermes model was not changed by Gateway."
         ),
     )
     return _merge_core_model_config_payload(result)
@@ -791,25 +791,25 @@ async def resolve_approval(approval_id: str, resolution: dict[str, Any]) -> dict
     return await _forward_post_to_core(
         path,
         resolution,
-        success_message="Approval resolution forwarded to Claudia Core.",
+        success_message="Approval resolution forwarded to Nexus Core.",
         unconfigured_message=(
-            "Claudia Core URL is not configured; approval was not resolved or "
+            "Nexus Core URL is not configured; approval was not resolved or "
             "executed locally."
         ),
     )
 
 
 async def stream_packet_events(packet_id: str) -> AsyncGenerator[str, None]:
-    """SSE for ``GET /api/claudia/v1/stream/{packet_id}`` — placeholder until Core streams exist."""
+    """SSE for ``GET /api/nexus/v1/stream/{packet_id}`` — placeholder until Core streams exist."""
     base = get_core_base_url()
     placeholder = {
-        "type": "claudia_stream_placeholder",
+        "type": "nexus_stream_placeholder",
         "packet_id": packet_id,
         "status": "pending" if base else "core_not_configured",
         "message": (
-            "Claudia Core event stream is not available yet; no local agent output was generated."
+            "Nexus Core event stream is not available yet; no local agent output was generated."
             if base
-            else "Claudia Core is not configured; no local agent output was generated."
+            else "Nexus Core is not configured; no local agent output was generated."
         ),
         "core_configured": bool(base),
         "forwarded": False,
@@ -841,9 +841,9 @@ async def cli_start_session(body: dict[str, Any]) -> dict[str, Any]:
     result = await _forward_post_to_core(
         "/hermes/sessions",
         body if isinstance(body, dict) else {},
-        success_message="CLI session start forwarded to Claudia Core.",
+        success_message="CLI session start forwarded to Nexus Core.",
         unconfigured_message=(
-            "Claudia Core URL is not configured; CLI session was not started locally."
+            "Nexus Core URL is not configured; CLI session was not started locally."
         ),
     )
     return _merge_core_cli_response(result, surface="cli_session")
@@ -860,9 +860,9 @@ async def cli_send_input(session_id: str, text: str) -> dict[str, Any]:
     result = await _forward_post_to_core(
         f"/hermes/sessions/{sid}/input",
         {"text": text},
-        success_message="CLI input forwarded to Claudia Core.",
+        success_message="CLI input forwarded to Nexus Core.",
         unconfigured_message=(
-            "Claudia Core URL is not configured; CLI input was not sent locally."
+            "Nexus Core URL is not configured; CLI input was not sent locally."
         ),
     )
     return _merge_core_cli_response(result, surface="cli_input")
@@ -891,9 +891,9 @@ async def cli_stop_session(session_id: str) -> dict[str, Any]:
     result = await _forward_post_to_core(
         f"/hermes/sessions/{sid}/stop",
         {},
-        success_message="CLI session stop forwarded to Claudia Core.",
+        success_message="CLI session stop forwarded to Nexus Core.",
         unconfigured_message=(
-            "Claudia Core URL is not configured; CLI session was not stopped locally."
+            "Nexus Core URL is not configured; CLI session was not stopped locally."
         ),
     )
     return _merge_core_cli_response(result, surface="cli_session")
@@ -904,9 +904,9 @@ async def cli_interrupt_session(session_id: str) -> dict[str, Any]:
     result = await _forward_post_to_core(
         f"/hermes/sessions/{sid}/interrupt",
         {},
-        success_message="CLI session interrupt forwarded to Claudia Core.",
+        success_message="CLI session interrupt forwarded to Nexus Core.",
         unconfigured_message=(
-            "Claudia Core URL is not configured; CLI interrupt was not sent locally."
+            "Nexus Core URL is not configured; CLI interrupt was not sent locally."
         ),
     )
     return _merge_core_cli_response(result, surface="cli_interrupt")
@@ -924,7 +924,7 @@ async def relay_cli_session_stream(
         payload = {
             "type": "error",
             "status": "core_not_configured",
-            "message": "Claudia Core is not configured; CLI stream relay unavailable.",
+            "message": "Nexus Core is not configured; CLI stream relay unavailable.",
             "session_id": sid,
             "core_configured": False,
             "forwarded": False,
@@ -955,7 +955,7 @@ async def relay_cli_session_stream(
                         "type": "error",
                         "status": "core_error",
                         "core_status": str(resp.status_code),
-                        "message": f"Claudia Core stream returned HTTP {resp.status_code}.",
+                        "message": f"Nexus Core stream returned HTTP {resp.status_code}.",
                         "session_id": sid,
                         "detail": detail,
                         "forwarded": True,
@@ -969,7 +969,7 @@ async def relay_cli_session_stream(
         payload = {
             "type": "error",
             "status": "core_timeout",
-            "message": "Claudia Core stream timed out.",
+            "message": "Nexus Core stream timed out.",
             "session_id": sid,
         }
         yield f"event: error\ndata: {json.dumps(payload)}\n\n"
@@ -977,7 +977,7 @@ async def relay_cli_session_stream(
         payload = {
             "type": "error",
             "status": "core_unreachable",
-            "message": "Claudia Core stream is unreachable.",
+            "message": "Nexus Core stream is unreachable.",
             "session_id": sid,
         }
         yield f"event: error\ndata: {json.dumps(payload)}\n\n"

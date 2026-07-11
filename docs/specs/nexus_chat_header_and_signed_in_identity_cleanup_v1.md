@@ -73,4 +73,4 @@ Clerk IDs and full email are not shown when a safer configured name exists.
 
 - Chat submission, history, conversation persistence, and task queue behavior.
 - Top horizontal application bar branding.
-- Claudia System repository.
+- Nexus System repository.

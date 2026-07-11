@@ -4,7 +4,7 @@
 
 ## Purpose
 
-Provide a native Nexus Google Keep–style notes experience backed by private Convex records. Notes work fully while the Claudia Connector is offline.
+Provide a native Nexus Google Keep–style notes experience backed by private Convex records. Notes work fully while the Console Connector is offline.
 
 ## Authority
 
@@ -15,7 +15,7 @@ Nexus Notes page
   → real-time UI subscriptions
 ```
 
-Convex owns CRUD, ownership, archive/pin/checklist state, labels, and due-date metadata. Claudia is not required for routine note operations.
+Convex owns CRUD, ownership, archive/pin/checklist state, labels, and due-date metadata. Nexus is not required for routine note operations.
 
 ## Schema (`nexusNotes`)
 

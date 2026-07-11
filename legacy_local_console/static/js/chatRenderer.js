@@ -1754,7 +1754,7 @@ export function displayMetrics(messageElement, metrics) {
           compactMsg.className = 'msg msg-ai';
           const compactRole = document.createElement('div');
           compactRole.className = 'role';
-          compactRole.textContent = 'Claudia';
+          compactRole.textContent = 'Nexus';
           const compactBody = document.createElement('div');
           compactBody.className = 'body';
           compactBody.innerHTML = 'Compacting context <span class="compact-wave">▁▂▃▅▂▁</span>';
@@ -1987,7 +1987,7 @@ export function addMessage(role, content, modelName, metadata) {
     const isSlash = metadata?.source === 'slash';
     const isCompacted = metadata?.compacted;
     const resolvedModel = modelName || metadata?.model;
-    var _roleText = role === 'user' ? 'You' : (isSlash || isCompacted || metadata?.claudia_bridge) ? 'Claudia' : shortModel(resolvedModel);
+    var _roleText = role === 'user' ? 'You' : (isSlash || isCompacted || metadata?.nexus_bridge) ? 'Nexus' : shortModel(resolvedModel);
     if (role === 'assistant' && (metadata?.research || metadata?.research_clarification)) {
       _roleText += ' (Research)';
     }

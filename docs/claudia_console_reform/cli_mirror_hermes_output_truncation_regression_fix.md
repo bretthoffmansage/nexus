@@ -1,7 +1,7 @@
 # CLI Mirror Hermes Output Truncation Regression Fix Pass
 
 **Date:** 2026-06-03  
-**Repo:** `/Users/bretthoffman/Documents/claudia_console`  
+**Repo:** `/Users/bretthoffman/Documents/console`  
 **Scope:** Console UI only — Live Hermes Transcript truncation regression
 
 ## Root cause found
@@ -16,11 +16,11 @@
 
 ## Files changed
 
-- `static/js/claudiaCliMirror.js` — immediate buffer append; removed live paint queue and visible dedupe
-- `static/js/claudiaCliMirrorHelpers.js` — relaxed noise filter; `appendTranscriptGroupBuffer`, `simulateTranscriptGroupSequence`, paint queue `flush()`
+- `static/js/nexusCliMirror.js` — immediate buffer append; removed live paint queue and visible dedupe
+- `static/js/nexusCliMirrorHelpers.js` — relaxed noise filter; `appendTranscriptGroupBuffer`, `simulateTranscriptGroupSequence`, paint queue `flush()`
 - `static/style.css` — explicit `max-height: none` / `overflow-y: visible` on stream bodies
-- `tests/test_claudia_cli_mirror_ui.py` — HERMES preservation and truncation regression tests
-- `docs/claudia_console_reform/cli_mirror_hermes_output_truncation_regression_fix.md` — this note
+- `tests/test_nexus_cli_mirror_ui.py` — HERMES preservation and truncation regression tests
+- `docs/console_reform/cli_mirror_hermes_output_truncation_regression_fix.md` — this note
 
 ## Behavior changed
 
@@ -44,7 +44,7 @@ Every non-empty visible HERMES event appends to the current HERMES group buffer.
 
 ## Deduplication policy
 
-Visible transcript deduplication **disabled** in `claudiaCliMirror.js`. Identical consecutive spinner redraws may repeat in the styled view; raw debug still captures all events. Helper `shouldCollapseDuplicate` remains for potential future use but is not applied to visible grouping.
+Visible transcript deduplication **disabled** in `nexusCliMirror.js`. Identical consecutive spinner redraws may repeat in the styled view; raw debug still captures all events. Helper `shouldCollapseDuplicate` remains for potential future use but is not applied to visible grouping.
 
 ## Paint queue policy
 
@@ -59,9 +59,9 @@ Stream group bodies: `max-height: none`, `overflow-y: visible`. Transcript conta
 ```bash
 bash -n start-macos.sh
 python3 -m compileall -q app.py core routes src
-node --check static/js/claudiaCliMirror.js
-node --check static/js/claudiaCliMirrorHelpers.js
-venv/bin/python -m pytest -q tests/test_claudia_cli_mirror_ui.py
+node --check static/js/nexusCliMirror.js
+node --check static/js/nexusCliMirrorHelpers.js
+venv/bin/python -m pytest -q tests/test_nexus_cli_mirror_ui.py
 ```
 
 ## Risks

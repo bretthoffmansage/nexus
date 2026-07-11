@@ -6,16 +6,16 @@ from pathlib import Path
 import pytest
 
 REPO = Path(__file__).resolve().parents[1]
-REFORM = REPO / "docs/claudia_console_reform"
+REFORM = REPO / "docs/console_reform"
 
 AUDIT = REFORM / "package_20_final_safety_audit_operator_handoff.md"
-HANDOFF = REFORM / "CLAUDIA_CONSOLE_OPERATOR_HANDOFF.md"
+HANDOFF = REFORM / "NEXUS_CONSOLE_OPERATOR_HANDOFF.md"
 CHECKLIST = REFORM / "final_console_gateway_checklist.md"
 PRIVATE_GUIDE = REFORM / "private_pwa_deployment_hardening.md"
 START_MACOS = REPO / "start-macos.sh"
 
-CONSOLE_PATH = "/Users/bretthoffman/Documents/claudia_console"
-CORE_PATH = "/Users/bretthoffman/Documents/claudia_system"
+CONSOLE_PATH = "/Users/bretthoffman/Documents/console"
+CORE_PATH = "/Users/bretthoffman/Documents/system"
 
 OLD_CHECKOUT_PATTERNS = (
     r"/Users/bretthoffman/Documents/odysseus",
@@ -66,13 +66,13 @@ def test_handoff_contains_launch_and_env():
     text = HANDOFF.read_text(encoding="utf-8")
     assert CONSOLE_PATH in text
     assert "./start-macos.sh" in text
-    assert "CLAUDIA_CONSOLE_MODE=true" in text
+    assert "NEXUS_CONSOLE_MODE=true" in text
     assert "AUTH_ENABLED=true" in text
     assert CORE_PATH in text
     assert "What this repo is not" in text
 
 
-def test_audit_documents_claudia_core_separation():
+def test_audit_documents_nexus_core_separation():
     text = AUDIT.read_text(encoding="utf-8")
     assert CORE_PATH in text
     assert "must not become Core" in text or "NOT started by Console" in text

@@ -6,8 +6,8 @@
 | **Pass type** | Architecture correction and implementation-readiness — **no implementation** |
 | **Date** | 2026-06-30 |
 | **Supersedes** | Target **implementation** recommendations in `nexus_hosted_console_architecture_audit_v1.md` |
-| **Repository** | `/Users/bretthoffman/Documents/claudia_console` |
-| **Related repo** | `/Users/bretthoffman/Documents/claudia_system` (connector — not modified in this pass) |
+| **Repository** | `/Users/bretthoffman/Documents/console` |
+| **Related repo** | `/Users/bretthoffman/Documents/system` (connector — not modified in this pass) |
 
 ---
 
@@ -25,7 +25,7 @@ This correction addendum:
 - Evaluates **migration vs rebuild**, frontend reuse, Convex schema, connector API placement, and a corrected implementation sequence.
 - Defines the **first implementation package** without executing it.
 
-**Not done in this pass:** Next.js scaffold, Convex deploy, Clerk tenant, Vercel project, application code changes, `claudia_system` changes.
+**Not done in this pass:** Next.js scaffold, Convex deploy, Clerk tenant, Vercel project, application code changes, `system` changes.
 
 ---
 
@@ -33,7 +33,7 @@ This correction addendum:
 
 | Audit v1 section | Status |
 |------------------|--------|
-| §1 Executive summary (current state) | **Retain** — Claudia Console = FastAPI + static SPA |
+| §1 Executive summary (current state) | **Retain** — legacy local console = FastAPI + static SPA |
 | §1 Audit recommendation (Railway/Postgres phases) | **Superseded** — see §12 |
 | §2 Current architecture | **Retain** — accurate as legacy/local reference |
 | §3 Request-flow diagrams | **Retain** — documents what must **not** be ported to Nexus |
@@ -67,13 +67,13 @@ This correction addendum:
 | 3 | Hosted persistence/coordination: **Convex** |
 | 4 | Hosted runtime: **Node.js/TypeScript**, preferably **Next.js** |
 | 5 | Human auth: **Clerk** |
-| 6 | **Claudia** = private local OS/authority; **Claudia Core** never inbound-public |
+| 6 | **Nexus** = private local OS/authority; **Nexus Core** never inbound-public |
 | 7 | **Console Connector** = outbound HTTPS to Nexus only |
 | 8 | FastAPI app is **not** the hosted Nexus runtime |
 | 9 | **No** Railway, Fly.io, hosted uvicorn worker, managed PostgreSQL for Nexus |
 | 10 | Preserve visual design/CSS/usable UX where practical |
 | 11 | **No** public CLI Mirror, shell, Hermes PTY, agent-loop, service control on Nexus MVP |
-| 12 | **Claudia** naming retained for Core, tools, connector, `CLAUDIA_*` local config |
+| 12 | **Nexus** naming retained for Core, tools, connector, `NEXUS_*` local config |
 
 ---
 
@@ -88,7 +88,7 @@ sequenceDiagram
   participant Clerk as Clerk
   participant Convex as Convex
   participant Conn as Console Connector
-  participant Core as Claudia Core
+  participant Core as Nexus Core
 
   User->>Vercel: HTTPS page load
   Vercel->>Clerk: Session middleware
@@ -116,7 +116,7 @@ sequenceDiagram
 
 ### 4.2 Responsibility by runtime zone
 
-| Concern | Browser | Next.js (Vercel) | Convex | Connector | Claudia Core |
+| Concern | Browser | Next.js (Vercel) | Convex | Connector | Nexus Core |
 |---------|---------|------------------|--------|-----------|--------------|
 | UI / layout / theme | ✓ client components | ✓ server components shell | — | — | — |
 | Clerk session UX | ✓ | ✓ middleware + server | — | — | — |
@@ -131,11 +131,11 @@ sequenceDiagram
 | Tool execution | — | **never** | **never** | ✓ allowlist | ✓ |
 | Hermes / PTY / shell | **never** | **never** | **never** | local ops only | local |
 
-### 4.3 No inbound path to Claudia
+### 4.3 No inbound path to Nexus
 
-Nexus **must not** call `CLAUDIA_CORE_URL`, open tunnels, or proxy to the Claudia Mac. All Claudia interaction is **connector-initiated outbound HTTPS** to Vercel.
+Nexus **must not** call `NEXUS_CORE_URL`, open tunnels, or proxy to the Nexus Mac. All Nexus interaction is **connector-initiated outbound HTTPS** to Vercel.
 
-Audit v1 flows (`claudia_client.forward_message`, CLI relay, browser chat bridge to Gateway) are **anti-patterns** for hosted Nexus.
+Audit v1 flows (`nexus_client.forward_message`, CLI relay, browser chat bridge to Gateway) are **anti-patterns** for hosted Nexus.
 
 ---
 
@@ -171,7 +171,7 @@ Create a **clean Nexus Next.js application** in a dedicated directory within thi
 **Suggested repo layout after Phase 2:**
 
 ```
-claudia_console/                    # GitHub repo (name may change later)
+console/                    # GitHub repo (name may change later)
 ├── nexus/                          # Vercel Root Directory (Next.js 15 App Router)
 │   ├── app/
 │   ├── components/
@@ -188,7 +188,7 @@ claudia_console/                    # GitHub repo (name may change later)
 │   ├── users.ts
 │   └── crons.ts
 ├── static/                         # Legacy SPA reference (unchanged until port complete)
-├── app.py                          # Legacy FastAPI — local Claudia Console only
+├── app.py                          # Legacy FastAPI — local legacy local console only
 ├── vercel.json                     # { "buildCommand": "cd nexus && ...", ... } or project UI
 └── docs/specs/
 ```
@@ -210,12 +210,12 @@ Vercel project setting: **Root Directory = `nexus`**, with Convex deployed via `
 | `static/js/sessions.js` | ~3,170 | **Partial port** | Task **history** sidebar pattern reusable; session CRUD tied to FastAPI `/api/session` → replace with Convex task threads |
 | `static/js/storage.js` | ~120 | **Reusable almost directly** | Port to `lib/storage.ts`; rename keys `odysseus-*` → `nexus-*` with dual-read migration |
 | `static/js/theme.js` | ~2,090 | **Reusable after module conversion** | Port theme presets + CSS variable application to React context/hook |
-| `static/js/claudiaBrowserChatBridge.js` | ~150 | **Obsolete for Nexus** | Replaced by Convex task mutations + queries; keep `extractAssistantContent` logic as reference for result rendering |
-| `static/js/claudiaConsoleMode.js` | ~170 | **Obsolete for Nexus** | Nexus is always "hosted safe mode"; no Gateway health flag |
-| `static/js/claudiaDashboard.js` | ~395 | **Partial port** | Presence + queue status UI → new `NexusStatusPanel`; drop Hermes runtime card, Gateway packet list |
-| `static/js/claudiaModelSelector.js` | ~160 | **Local-only — must not ship** | Model config writes prohibited on MVP |
-| `static/js/claudiaCliMirror.js` | ~1,370 | **Local-only — must not ship** | — |
-| `static/js/claudiaCliMirrorHelpers.js` | large | **Local-only — must not ship** | PTY parsing must not enter Nexus |
+| `static/js/nexusBrowserChatBridge.js` | ~150 | **Obsolete for Nexus** | Replaced by Convex task mutations + queries; keep `extractAssistantContent` logic as reference for result rendering |
+| `static/js/nexusConsoleMode.js` | ~170 | **Obsolete for Nexus** | Nexus is always "hosted safe mode"; no Gateway health flag |
+| `static/js/nexusDashboard.js` | ~395 | **Partial port** | Presence + queue status UI → new `NexusStatusPanel`; drop Hermes runtime card, Gateway packet list |
+| `static/js/nexusModelSelector.js` | ~160 | **Local-only — must not ship** | Model config writes prohibited on MVP |
+| `static/js/nexusCliMirror.js` | ~1,370 | **Local-only — must not ship** | — |
+| `static/js/nexusCliMirrorHelpers.js` | large | **Local-only — must not ship** | PTY parsing must not enter Nexus |
 | `static/manifest.json` | small | **Reusable after edit** | PWA optional on Vercel; rename to Nexus; Next.js `app/manifest.ts` preferred |
 | `static/sw.js` | ~145 | **Obsolete / redesign** | Vercel + Next caching strategy differs; defer PWA service worker to post-MVP |
 | `static/login.html` | ~575 | **Obsolete** | Replace with Clerk `<SignIn />` / hosted Clerk pages |
@@ -235,7 +235,7 @@ Vercel project setting: **Root Directory = `nexus`**, with Convex deployed via `
 1. Global layout + sidebar shell + theme variables  
 2. Chat input bar + message list (read-only mode)  
 3. Task status / result / sources panels  
-4. Presence chip (Claudia online/offline)  
+4. Presence chip (Nexus online/offline)  
 5. Task history list  
 6. Diagnostics drawer (expandable)
 
@@ -598,7 +598,7 @@ Server-only env: `CONNECTOR_HMAC_PEPPER`, lookup `secretHash` from Convex via in
 | Serverless timeout (10s hobby / 60s pro) | Connector calls are short; claim/result fit; no long poll on Vercel |
 | No persistent filesystem | Convex only — no SQLite |
 | Body size limits | Cap result payload (e.g. 256KB); store large excerpts as truncated |
-| Outbound polling | Connector on Claudia Mac — **not** Vercel long-poll |
+| Outbound polling | Connector on Nexus Mac — **not** Vercel long-poll |
 
 ### 9.5 Browser updates
 
@@ -657,29 +657,29 @@ Store **`clerkUserId`** as stable key (`user.id` from Clerk).
 
 | Current | Nexus target |
 |---------|--------------|
-| Claudia Console | **Nexus** |
-| Claudia Chat | **Nexus Chat** |
-| Message Claudia... | **Ask Nexus...** |
-| `manifest` Claudia | **Nexus** |
-| `<title>Claudia Console</title>` | `<title>Nexus</title>` |
+| legacy local console | **Nexus** |
+| Nexus Chat | **Nexus Chat** |
+| Message Nexus... | **Ask Nexus...** |
+| `manifest` Nexus | **Nexus** |
+| `<title>legacy local console</title>` | `<title>Nexus</title>` |
 | Login page | Clerk sign-in branded Nexus |
 
-### 11.2 Retain Claudia
+### 11.2 Retain Nexus
 
-- Claudia Core, Claudia tools, Claudia machine, Console Connector, `CLAUDIA_*` env vars
-- Source provenance labels: "Retrieved via Claudia · vault.agentic_retrieval"
-- Presence: "**Claudia** online" (machine), not "Nexus online"
+- Nexus Core, Nexus tools, Nexus machine, Console Connector, `NEXUS_*` env vars
+- Source provenance labels: "Retrieved via Nexus · vault.agentic_retrieval"
+- Presence: "**Nexus** online" (machine), not "Nexus online"
 
 ### 11.3 Internal / legacy docs
 
-Do not mass-rename `docs/claudia_console_reform/` or historical package names.
+Do not mass-rename `docs/console_reform/` or historical package names.
 
 ### 11.4 Next.js file naming
 
 | Legacy | Nexus |
 |--------|-------|
-| `claudiaDashboard.js` | `components/nexus/StatusPanel.tsx` |
-| `claudiaBrowserChatBridge.js` | `lib/tasks/submitTask.ts` + Convex |
+| `nexusDashboard.js` | `components/nexus/StatusPanel.tsx` |
+| `nexusBrowserChatBridge.js` | `lib/tasks/submitTask.ts` + Convex |
 | `odysseus-theme` localStorage | `nexus-theme` |
 
 ---
@@ -691,10 +691,10 @@ Do not mass-rename `docs/claudia_console_reform/` or historical package names.
 - Clerk sign-in (approved users only)
 - Read-only Chat mode (task-oriented Q&A, not agent loop)
 - Task submission → Convex `queued`
-- Offline/queued behavior (task persists when Claudia offline)
+- Offline/queued behavior (task persists when Nexus offline)
 - Task status + result + sources + warnings + partial flag
 - Task history (per user)
-- Claudia online/offline/reconnecting indicator (from `connectorPresence`)
+- Nexus online/offline/reconnecting indicator (from `connectorPresence`)
 - Expandable diagnostics (trace ID, attempt, latency, structured error)
 - Responsive layout ported from current CSS
 
@@ -704,7 +704,7 @@ Do not mass-rename `docs/claudia_console_reform/` or historical package names.
 - Arbitrary Agent mode execution
 - Model configuration writes
 - Service control, file browser, log deletion, retention cleanup
-- Raw Claudia credentials in browser
+- Raw Nexus credentials in browser
 - Direct Core HTTP forwarding
 - Cookbook, email, calendar, memory mutation, research jobs
 
@@ -736,7 +736,7 @@ Do not mass-rename `docs/claudia_console_reform/` or historical package names.
 | `CONNECTOR_HMAC_PEPPER` | Vercel server only | Signature verification |
 | `NEXUS_ENV` | Vercel | `production` \| `preview` |
 
-**No** `DATABASE_URL`, **no** `CLAUDIA_CORE_URL` on Vercel.
+**No** `DATABASE_URL`, **no** `NEXUS_CORE_URL` on Vercel.
 
 ### 13.3 What is explicitly absent on hosted Nexus
 
@@ -744,7 +744,7 @@ Do not mass-rename `docs/claudia_console_reform/` or historical package names.
 - SQLite / `data/auth.json`
 - Local filesystem persistence
 - Long-running Vercel background workers (use Convex crons)
-- Inbound Claudia tunnel
+- Inbound Nexus tunnel
 
 ### 13.4 Lease recovery
 
@@ -762,7 +762,7 @@ This document.
 
 | Package | **P2-nexus-shell** |
 |---------|-------------------|
-| Repo | `claudia_console` |
+| Repo | `console` |
 | Scope | `nexus/` Next 15 App Router, `convex/` bootstrap, Clerk middleware stub, env templates, Vercel config |
 | Prerequisites | Phase 1A |
 | Deliverables | Builds on Vercel; "Nexus" placeholder page; Convex connected; Clerk sign-in wall |
@@ -799,11 +799,11 @@ This document.
 | Scope | Route handlers + Convex connector mutations + crons + presence |
 | Prerequisites | P5 |
 
-### Phase 7 — Console Connector (`claudia_system`)
+### Phase 7 — Console Connector (`system`)
 
 | Package | **P7-connector-daemon** |
 |---------|-------------------------|
-| Repo | **`claudia_system`** — handoff |
+| Repo | **`system`** — handoff |
 | Scope | Outbound poll, HMAC sign, execute allowlisted tools |
 | Prerequisites | P6 |
 
@@ -811,9 +811,9 @@ This document.
 
 | Package | **P8-control-center-ui** |
 |---------|--------------------------|
-| Repo | `claudia_system` |
+| Repo | `system` |
 
-### Phase 9 — Read-only Claudia tools integration
+### Phase 9 — Read-only Nexus tools integration
 
 | Package | **P9-readonly-tools-e2e** |
 |---------|---------------------------|
@@ -847,7 +847,7 @@ This document.
 | Vercel config | `nexus/vercel.json` or documented Vercel UI root directory |
 | CSS preservation plan | `docs/specs/nexus_ui_port_plan.md` (optional one-pager) or section in README |
 | Legacy boundary doc | `nexus/README.md` — states FastAPI is not production Nexus |
-| Root pointer | Update root `README.md` with Nexus vs Claudia Console section |
+| Root pointer | Update root `README.md` with Nexus vs legacy local console section |
 
 ### Acceptance criteria
 
@@ -875,12 +875,12 @@ Delete `nexus/` and `convex/`; revert README pointer.
 | Role | Decision |
 |------|----------|
 | **Hosted Nexus production** | **Never** — FastAPI is not deployed to Vercel for Nexus |
-| **Local Claudia Console** | **Deprecated local-only compatibility** — retained for Claudia Mac operator workflows until UI port covers needed local surfaces |
+| **Local legacy local console** | **Deprecated local-only compatibility** — retained for Nexus Mac operator workflows until UI port covers needed local surfaces |
 | **Reference** | **Temporary reference** for CSS/UX and Gateway behavior during Phases 3–5 |
 | **Removal** | After Nexus MVP reaches parity for hosted read-only chat + tasks, FastAPI may move to `legacy/` or separate branch — **not Phase 2** |
-| **Naming** | Continue calling local app **Claudia Console** in docs; **only** the Vercel app is **Nexus** |
+| **Naming** | Continue calling local app **legacy local console** in docs; **only** the Vercel app is **Nexus** |
 
-**Avoid two products both branded Nexus:** Vercel deployment = Nexus; `./start-macos.sh` = Claudia Console (legacy/local) until explicitly retired.
+**Avoid two products both branded Nexus:** Vercel deployment = Nexus; `./start-macos.sh` = legacy local console (legacy/local) until explicitly retired.
 
 ---
 
@@ -906,13 +906,13 @@ Delete `nexus/` and `convex/`; revert README pointer.
 
 | ID | Question | Recommendation | Defer? |
 |----|----------|----------------|--------|
-| R1 | Rename GitHub repo `claudia_console` → `nexus` now? | **Defer** — rename after P2 shell; less churn during scaffold | Yes |
+| R1 | Rename GitHub repo `console` → `nexus` now? | **Defer** — rename after P2 shell; less churn during scaffold | Yes |
 | R2 | Human API prefix `/api/nexus/v1` immediately? | **Yes** — use from P5 onward | No |
 | R3 | Connector auth: HMAC vs Bearer+nonce? | **HMAC** (audit v1 option B) — worth complexity for public internet | No |
 | R4 | Source excerpt max chars? | **500** default in `TASK_POLICY` | Yes |
 | R5 | Disabled Agent toggle visible in MVP? | **Hidden by default**; placeholder behind flag | Yes |
 | R6 | Clerk: single org vs individual users? | **Single Clerk application, individual approved users** in Convex — not multi-tenant SaaS | No |
-| R7 | Is Claudia Core HTTP API ready for P9? | Still blocks connector execution — verify in `claudia_system` before P7 | Yes (operator verify) |
+| R7 | Is Nexus Core HTTP API ready for P9? | Still blocks connector execution — verify in `system` before P7 | Yes (operator verify) |
 | R8 | PWA service worker on Vercel? | **Defer** post-MVP | Yes |
 
 ---
@@ -921,7 +921,7 @@ Delete `nexus/` and `convex/`; revert README pointer.
 
 - Clerk session **never** authenticates `/api/connector/v1/*`.
 - Browser **never** receives connector secrets.
-- Nexus **never** calls Claudia Core HTTP.
+- Nexus **never** calls Nexus Core HTTP.
 - Convex mutations for tasks **never** trust client-supplied roles.
 - Tunables live in `convex/config.ts` + `systemConfig`, not scattered magic numbers.
 
@@ -941,7 +941,7 @@ Confirmed presence of required terms:
 - [x] lease
 - [x] outbound-only
 - [x] Nexus
-- [x] Claudia boundary
+- [x] Nexus boundary
 - [x] first implementation package (P2-nexus-shell)
 
 ---
@@ -952,9 +952,9 @@ Confirmed presence of required terms:
 - `static/index.html`, `static/style.css` (scale/structure)
 - `static/app.js`, `static/js/chat.js`, `static/js/sessions.js` (scale/coupling)
 - `static/js/storage.js`, `static/js/theme.js`
-- `static/js/claudiaBrowserChatBridge.js`, `static/js/claudiaConsoleMode.js`
-- `static/js/claudiaDashboard.js`, `static/js/claudiaModelSelector.js`
-- `static/js/claudiaCliMirror.js` (header)
+- `static/js/nexusBrowserChatBridge.js`, `static/js/nexusConsoleMode.js`
+- `static/js/nexusDashboard.js`, `static/js/nexusModelSelector.js`
+- `static/js/nexusCliMirror.js` (header)
 - `static/manifest.json`, `static/sw.js`, `static/login.html`
 
 ---
@@ -965,7 +965,7 @@ Confirmed presence of required terms:
 - No Convex deployment or schema creation in repo
 - No Clerk/Vercel/GitHub provisioning
 - No application code changes (except documentation)
-- No `claudia_system` modifications
+- No `system` modifications
 - No FastAPI deletion
 - No Phase 2 implementation start
 

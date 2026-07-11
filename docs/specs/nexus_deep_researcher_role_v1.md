@@ -96,7 +96,7 @@ re-evaluates active roles from Convex; no stale client role persists.
 
 Chat, Brain, Notes, Tasks, Status keep existing `knowledge_reader` behavior.
 Email, Calendar, Vault Library, Skills, Settings, Admin remain `nexus_admin`-only.
-No third permission system, no schema table changes, no Claudia System changes.
+No third permission system, no schema table changes, no Nexus System changes.
 
 ## Focused tests
 

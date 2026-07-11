@@ -9,7 +9,7 @@
 
 ## Reform context (reference only)
 
-Odysseus is being repurposed toward **Claudia Console UI** and **Claudia Gateway API** (`/api/claudia/v1/*` target namespace). **Claudia Core** lives separately at `/Users/bretthoffman/Documents/claudia_system` and must remain the authority for task control, decisions, worker/model routing, tool factory, housekeeping, audits, workspace writes, connector governance, and final authority. This package does not implement any of that; it only records the pre-reform state.
+Odysseus is being repurposed toward **legacy local console UI** and **Nexus Gateway API** (`/api/nexus/v1/*` target namespace). **Nexus Core** lives separately at `/Users/bretthoffman/Documents/system` and must remain the authority for task control, decisions, worker/model routing, tool factory, housekeeping, audits, workspace writes, connector governance, and final authority. This package does not implement any of that; it only records the pre-reform state.
 
 ## Install and launch
 
@@ -121,9 +121,9 @@ Under `routes/`: auth, upload, session, memory, skills, **chat**, research, hist
 - `mcp_servers/` — e.g. `email_server.py`, `image_gen_server.py`, `memory_server.py`, `rag_server.py`
 - In-process tool execution: `src/agent_tools.py`, `src/tool_implementations.py`
 
-## Autonomy risk entrypoints (competing authority vs future Claudia Core)
+## Autonomy risk entrypoints (competing authority vs future Nexus Core)
 
-These are **in-Odysseus** loops and executors that later packages should demote, gate, or proxy to Claudia Core — not modified in Package 0:
+These are **in-Odysseus** loops and executors that later packages should demote, gate, or proxy to Nexus Core — not modified in Package 0:
 
 | Risk area | Entry | Why it matters |
 |-----------|--------|----------------|
@@ -141,7 +141,7 @@ These are **in-Odysseus** loops and executors that later packages should demote,
 | **Webhooks** | `routes/webhook_routes.py` | External trigger → in-app handlers |
 | **Research** | `routes/research_routes.py`, `src/deep_research.py` | Long-running research jobs |
 | **Assistant routes** | `routes/assistant_routes.py` | Tied to `task_scheduler` |
-| **Cookbook / local model serve** | `routes/cookbook_routes.py`, `static/js/cookbook*.js` | Local model lifecycle (Ollama/llama.cpp); admin capability, not Claudia Core |
+| **Cookbook / local model serve** | `routes/cookbook_routes.py`, `static/js/cookbook*.js` | Local model lifecycle (Ollama/llama.cpp); admin capability, not Nexus Core |
 | **App API tool** | Agent loop `app_api` / OpenAPI loopback | Generic internal API invocation from agent |
 
 **Existing env kill switches (document only):**
@@ -151,7 +151,7 @@ These are **in-Odysseus** loops and executors that later packages should demote,
 
 ## Ollama / local model preservation note
 
-Local model support is deeply integrated and should be **preserved as optional admin/local capability** when reforming, not as independent Claudia authority:
+Local model support is deeply integrated and should be **preserved as optional admin/local capability** when reforming, not as independent Nexus authority:
 
 - Default Ollama URL: `127.0.0.1:11434` (`/v1` OpenAI-compatible and `/api` native paths)
 - `src/llm_core.py`, `src/model_discovery.py`, `src/endpoint_resolver.py` — provider detection and port `11434` heuristics
@@ -163,8 +163,8 @@ Local model support is deeply integrated and should be **preserved as optional a
 
 | File | Action |
 |------|--------|
-| `docs/claudia_console_reform/package_00_baseline_repo_state.md` | **Created** (this note) |
-| `docs/claudia_console_reform/` | **Created** (parent directory) |
+| `docs/console_reform/package_00_baseline_repo_state.md` | **Created** (this note) |
+| `docs/console_reform/` | **Created** (parent directory) |
 
 No application code, config, or data files were modified.
 
@@ -175,8 +175,8 @@ No application code, config, or data files were modified.
 ## Behavior intentionally unchanged
 
 - All FastAPI routes, startup hooks, schedulers, pollers, MCP, agent loop, auth, chat, email, shell, cookbook, and data on disk
-- No Claudia Gateway routes (`/api/claudia/v1/*`)
-- No `CLAUDIA_CONSOLE_MODE` or new kill switches (reserved for Package 1)
+- No Nexus Gateway routes (`/api/nexus/v1/*`)
+- No `NEXUS_CONSOLE_MODE` or new kill switches (reserved for Package 1)
 - No rebranding, Convex, Clerk, or auth changes
 
 ## Risks
@@ -186,21 +186,21 @@ No application code, config, or data files were modified.
 | Baseline drift | Low | Any commit or local `data/` change after this note requires re-baseline |
 | Pytest collection errors | Low | 2 tests fail at collect time in current tree; full suite not executed |
 | Dual port documentation | Info | Operators may use `7860` (start-macos) vs `7000` (README/Docker); document clearly in Package 1+ |
-| Autonomy surface area | High (future) | Many overlapping loops; Package 1+ must coordinate kill switches with Claudia Core boundary |
+| Autonomy surface area | High (future) | Many overlapping loops; Package 1+ must coordinate kill switches with Nexus Core boundary |
 | Sensitive local data | Info | `data/` contains runtime DB/auth; not copied into this note |
 
 ## Follow-ups
 
-1. **Package 1** — Introduce Claudia Console Mode flags and autonomy startup kill switches (extend/document `ODYSSEUS_INPROCESS_*` pattern).
+1. **Package 1** — Introduce legacy local console Mode flags and autonomy startup kill switches (extend/document `ODYSSEUS_INPROCESS_*` pattern).
 2. Map each autonomy risk row to a gateway/console demotion strategy.
 3. Optionally fix pytest collection errors unrelated to reform (out of scope unless requested).
-4. Add `/api/claudia/v1/*` gateway façade in a later package (not Package 0/1).
+4. Add `/api/nexus/v1/*` gateway façade in a later package (not Package 0/1).
 
 ## Next recommended package
 
-**Package 1 — Claudia Console Mode flags and autonomy startup kill switches**
+**Package 1 — legacy local console Mode flags and autonomy startup kill switches**
 
-Introduce environment/feature flags (e.g. `CLAUDIA_CONSOLE_MODE`) that default safely for reform work: disable or no-op in-process task scheduler, email pollers, bg monitor, and other competing autonomy at startup when console-only mode is enabled — without yet moving decision authority to Claudia Core.
+Introduce environment/feature flags (e.g. `NEXUS_CONSOLE_MODE`) that default safely for reform work: disable or no-op in-process task scheduler, email pollers, bg monitor, and other competing autonomy at startup when console-only mode is enabled — without yet moving decision authority to Nexus Core.
 
 ---
 

@@ -1,7 +1,7 @@
 # CLI Mirror Send Input Panel Compact Layout Pass
 
 **Date:** 2026-06-03  
-**Repo:** `/Users/bretthoffman/Documents/claudia_console`  
+**Repo:** `/Users/bretthoffman/Documents/console`  
 **Scope:** Console UI only — Send input panel layout polish
 
 ## Motivation
@@ -10,16 +10,16 @@ The Send input panel duplicated guidance already present in the textarea placeho
 
 ## Files changed
 
-- `static/js/claudiaCliMirror.js` — removed heading/helper; moved `db` toggle into input actions row
+- `static/js/nexusCliMirror.js` — removed heading/helper; moved `db` toggle into input actions row
 - `static/style.css` — compact panel padding, input actions row, bottom-aligned buttons
-- `tests/test_claudia_cli_mirror_ui.py` — compact layout tests
-- `docs/claudia_console_reform/cli_mirror_send_input_compact_layout.md` — this note
+- `tests/test_nexus_cli_mirror_ui.py` — compact layout tests
+- `docs/console_reform/cli_mirror_send_input_compact_layout.md` — this note
 
 ## Behavior changed
 
 - Removed visible “Send input to Hermes” label and helper paragraph above the textarea.
 - Placeholder and `aria-label` unchanged.
-- Raw debug toggle moved to `.claudia-cli-mirror-input-actions` beside Send button (Send left, `db` right).
+- Raw debug toggle moved to `.nexus-cli-mirror-input-actions` beside Send button (Send left, `db` right).
 - Toggle button shows lowercase **db** with amber styling and active glow when raw debug is visible.
 - Input panel uses symmetric compact padding (`10px 12px`).
 
@@ -49,9 +49,9 @@ Unchanged functionally: hidden by default, toggle shows/hides raw section, detai
 ```bash
 bash -n start-macos.sh
 python3 -m compileall -q app.py core routes src
-node --check static/js/claudiaCliMirror.js
-node --check static/js/claudiaCliMirrorHelpers.js
-venv/bin/python -m pytest -q tests/test_claudia_cli_mirror_ui.py
+node --check static/js/nexusCliMirror.js
+node --check static/js/nexusCliMirrorHelpers.js
+venv/bin/python -m pytest -q tests/test_nexus_cli_mirror_ui.py
 ```
 
 ## Risks

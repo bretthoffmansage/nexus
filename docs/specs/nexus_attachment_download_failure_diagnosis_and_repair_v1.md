@@ -1,7 +1,7 @@
 # Nexus Attachment Download Failure — Diagnosis and Repair v1
 
 **Package:** `nexus_attachment_download_failure_diagnosis_and_repair_v1`  
-**Repository:** `/Users/bretthoffman/Documents/claudia_console`  
+**Repository:** `/Users/bretthoffman/Documents/console`  
 **Branch at start:** `main`  
 **Starting HEAD:** `adcfc89` (Add canonical Connector allowed-tools update mutation)  
 **Related implementation:** `7be92ac` — Add Nexus Library Dropzone upload and attachment protocol  
@@ -9,11 +9,11 @@
 
 ## Purpose
 
-Diagnose and repair live Library attachment-download failures for `vault.dropzone.process_document` where queue/claim/start/lease succeed but Claudia reports `attachment_download_failed` before any staging files are created.
+Diagnose and repair live Library attachment-download failures for `vault.dropzone.process_document` where queue/claim/start/lease succeed but Nexus reports `attachment_download_failed` before any staging files are created.
 
 ## Repository baseline
 
-- Work performed only in `claudia_console`; `claudia_system` was not modified.
+- Work performed only in `console`; `system` was not modified.
 - Unrelated uncommitted work preserved (AppShell, TopAlertBanner, chat spec, etc.).
 - No live tasks, leases, attachment rows, document versions, or storage blobs were mutated.
 - No Connector secrets rotated; no live Retry executed.
@@ -25,12 +25,12 @@ Diagnose and repair live Library attachment-download failures for `vault.dropzon
 | Field | Value |
 |-------|-------|
 | Status | `failed` |
-| Terminal error | `attachment_execution_not_enabled` (Claudia transport-only mode) |
+| Terminal error | `attachment_execution_not_enabled` (Nexus transport-only mode) |
 | Byte length | 133 |
 | Attachment bound to task | Yes |
 | Storage / version match | Yes |
 
-**Interpretation:** Attachment download and verification succeeded; execution was intentionally blocked on the Claudia side. This is not the 487-byte success case.
+**Interpretation:** Attachment download and verification succeeded; execution was intentionally blocked on the Nexus side. This is not the 487-byte success case.
 
 ### Actual successful end-to-end task — `kd70b18xqwp1mbmz8757n0eben89q4xy`
 
@@ -48,7 +48,7 @@ Diagnose and repair live Library attachment-download failures for `vault.dropzon
 |-------|-------|
 | Lease ID | `4bf3b938-8501-42b1-b1ca-9570fe30c807` |
 | Status | `failed` |
-| Terminal error (Claudia-reported) | `attachment_download_failed` |
+| Terminal error (Nexus-reported) | `attachment_download_failed` |
 | Timeline | claimed/started ~20:11:44 ET; failed ~20:11:49 ET (~5 s) |
 | Byte length | 1352 |
 | Document version | `ks7cqgpx7z6gj3tdarfnt9egwx89rrcc` |
@@ -78,17 +78,17 @@ Diagnose and repair live Library attachment-download failures for `vault.dropzon
 | Storage ID matches version | Yes | Yes | Yes | Yes |
 | Storage readable now | Yes | Yes | Yes | Yes |
 | Nexus terminal status | `completed` | `failed` (execution gate) | `failed` | `failed` |
-| Claudia staging files | N/A (completed) | Created (transport-only stop) | None | None |
+| Nexus staging files | N/A (completed) | Created (transport-only stop) | None | None |
 
 ## Request receipt and HTTP findings
 
 Convex HTTP log search for `POST /api/connector/v1/attachment` around the failure windows was inconclusive (limited retention / search latency). **Definitive per-request HTTP audit rows were not available pre-repair.**
 
-Inference from code path + Claudia timing (~5 s ≈ 4 Connector attempts × ~1 s backoff):
+Inference from code path + Nexus timing (~5 s ≈ 4 Connector attempts × ~1 s backoff):
 
 | Question | Failed 1 | Failed 2 |
 |----------|----------|----------|
-| Request likely reached Nexus | **Probable** (claim/start/lease/progress succeeded; Claudia built signed requests) | **Probable** |
+| Request likely reached Nexus | **Probable** (claim/start/lease/progress succeeded; Nexus built signed requests) | **Probable** |
 | HMAC / Connector identity | Would pass if request arrived (same path as working claim/start) | Same |
 | Task / lease binding in DB | Valid at inspection | Valid at inspection |
 | First failing authority boundary (code) | **`authorizeAttachmentDownload` storage metadata read inside `internalQuery`** | Same |
@@ -100,7 +100,7 @@ Failure modes from that call site:
 1. **`getMetadata` throws** → caught as HTTP **500** `internal_error`
 2. **`getMetadata` returns null** → HTTP **404** `attachment_storage_unavailable`
 
-Both are retryable from Claudia’s Connector client (~3 transient retries + initial attempt ≈ 5 s), matching observed failure duration. No staging files were created because Claudia never received a complete 200 body.
+Both are retryable from Nexus’s Connector client (~3 transient retries + initial attempt ≈ 5 s), matching observed failure duration. No staging files were created because Nexus never received a complete 200 body.
 
 ## Retry behavior audit
 
@@ -172,14 +172,14 @@ Structured Convex console logs only. Fields: `requestId`, `taskId`, `attachmentI
 
 - Failed task rows not retried or mutated
 - No new live tasks created
-- No Claudia System changes
+- No Nexus System changes
 
 ## Operator next steps
 
 1. **Deploy** this repair to the dev (then prod) Convex deployment when ready.
 2. **Re-process** document version `ks7cqgpx7z6gj3tdarfnt9egwx89rrcc` from the Library UI (creates a new task + attachment row). Do **not** manually retry the failed task IDs in place.
 3. Watch Convex logs for `kind: "nexus_attachment_download"` — expect `authorized` → `response_sent` with `httpStatus: 200` and matching `bytesSent`.
-4. If failures persist after deploy, correlate `requestId` from Claudia with Nexus diagnostic stages (Claudia-side pass continues separately).
+4. If failures persist after deploy, correlate `requestId` from Nexus with Nexus diagnostic stages (Nexus-side pass continues separately).
 
 ## Rollback
 

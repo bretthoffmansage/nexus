@@ -8,8 +8,8 @@ from typing import List
 import logging
 from core.middleware import require_admin
 from src.auth_helpers import effective_user, get_current_user
-from src.console_mode import is_claudia_console_mode
-from src.claudia_upload_bridge import bridge_upload_to_claudia_source
+from src.console_mode import is_console_mode
+from src.nexus_upload_bridge import bridge_upload_to_nexus_source
 from src.upload_console_guard import console_mode_vision_disabled
 
 logger = logging.getLogger(__name__)
@@ -55,8 +55,8 @@ def setup_upload_routes(upload_handler):
                     "height": meta.get("height"),
                     "is_duplicate": meta.get("is_duplicate", False),
                 }
-                if is_claudia_console_mode():
-                    entry["claudia_source_packet"] = await bridge_upload_to_claudia_source(
+                if is_console_mode():
+                    entry["nexus_source_packet"] = await bridge_upload_to_nexus_source(
                         meta,
                         created_by=effective_user(request),
                     )
@@ -178,7 +178,7 @@ def setup_upload_routes(upload_handler):
         """Return the vision-model OCR/description for an uploaded image.
         Cached under UPLOAD_DIR/.vision/{file_id}.txt — first call computes,
         subsequent loads are instant. Pass force=1 to recompute."""
-        if is_claudia_console_mode():
+        if is_console_mode():
             return console_mode_vision_disabled()
         if not upload_handler.validate_upload_id(file_id):
             raise HTTPException(400, "Invalid file ID")

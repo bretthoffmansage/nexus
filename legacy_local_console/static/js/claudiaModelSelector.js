@@ -1,15 +1,15 @@
 /**
- * Claudia Core model selector — Gateway relay for Hermes model config.
- * Console UI reads/writes via /api/claudia/v1/model-config only; never touches
+ * Nexus Core model selector — Gateway relay for Hermes model config.
+ * Console UI reads/writes via /api/nexus/v1/model-config only; never touches
  * local Hermes config files or local model endpoints directly.
  */
 
-const MODEL_CONFIG_URL = '/api/claudia/v1/model-config';
+const MODEL_CONFIG_URL = '/api/nexus/v1/model-config';
 
 let _state = null;
 let _initPromise = null;
 
-/** True when Core URL is configured on Gateway (use Claudia selector path). */
+/** True when Core URL is configured on Gateway (use Nexus selector path). */
 export function useCoreSelector() {
   if (!_state) return false;
   return _state.core_configured !== false;
@@ -26,7 +26,7 @@ export async function refresh() {
       _state = {
         ok: false,
         status: 'auth_required',
-        message: 'Sign in to view Claudia Core model config.',
+        message: 'Sign in to view Nexus Core model config.',
         core_configured: true,
         available_models: [],
         model: null,

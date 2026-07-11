@@ -4,7 +4,7 @@
 |-------|-------|
 | **Package** | Bridge 11 — CLI Mirror Session Resume and Operator Controls |
 | **Date** | 2026-06-02 |
-| **Repo** | `claudia_console` (+ Core metadata in `claudia_system`) |
+| **Repo** | `console` (+ Core metadata in `system`) |
 
 ## Objective
 
@@ -14,13 +14,13 @@ Improve CLI Mirror session management so operator sessions are safer, easier to 
 
 | File | Change |
 |------|--------|
-| `static/js/claudiaCliMirrorHelpers.js` | Session list meta, time formatting, conflict mapping, attach helpers |
-| `static/js/claudiaCliMirror.js` | Operator warning, attach offer, session list polish, no auto-attach, stop/interrupt UX |
+| `static/js/nexusCliMirrorHelpers.js` | Session list meta, time formatting, conflict mapping, attach helpers |
+| `static/js/nexusCliMirror.js` | Operator warning, attach offer, session list polish, no auto-attach, stop/interrupt UX |
 | `static/style.css` | Operator warning, attach offer, session row, title input styles |
-| `tests/test_claudia_cli_mirror_ui.py` | Bridge 11 static/JS checks |
+| `tests/test_nexus_cli_mirror_ui.py` | Bridge 11 static/JS checks |
 | `scripts/README.md` | Bridge 11 reference |
 
-Core companion: `claudia_system` Bridge 11 (`bridge_11_core_cli_session_controls.md`).
+Core companion: `system` Bridge 11 (`bridge_11_core_cli_session_controls.md`).
 
 ## UI controls changed
 
@@ -50,16 +50,16 @@ Core companion: `claudia_system` Bridge 11 (`bridge_11_core_cli_session_controls
 
 ## Operator warning
 
-> CLI Mirror mirrors a live Hermes session owned by Claudia Core. Commands may trigger tools, file operations, or external actions depending on Hermes configuration.
+> CLI Mirror mirrors a live Hermes session owned by Nexus Core. Commands may trigger tools, file operations, or external actions depending on Hermes configuration.
 
 Labels consistently use **Operator Mode**, **CLI Mirror**, and **admin/operator access**.
 
 ## Tests/checks run
 
 ```bash
-cd claudia_console
-node --check static/js/claudiaCliMirror.js static/js/claudiaCliMirrorHelpers.js
-pytest tests/test_claudia_cli_mirror_ui.py tests/test_claudia_cli_relay.py tests/test_claudia_messages.py -q
+cd console
+node --check static/js/nexusCliMirror.js static/js/nexusCliMirrorHelpers.js
+pytest tests/test_nexus_cli_mirror_ui.py tests/test_nexus_cli_relay.py tests/test_nexus_messages.py -q
 ```
 
 ## Manual smoke instructions
@@ -67,15 +67,15 @@ pytest tests/test_claudia_cli_mirror_ui.py tests/test_claudia_cli_relay.py tests
 **Terminal 1 — Core:**
 
 ```bash
-cd /Users/bretthoffman/Documents/Claudia/claudia_system
-CLAUDIA_ENABLE_HERMES_PTY=true ./start-core-api.sh
+cd /Users/bretthoffman/Documents/Nexus/system
+NEXUS_ENABLE_HERMES_PTY=true ./start-core-api.sh
 ```
 
 **Terminal 2 — Console:**
 
 ```bash
-cd /Users/bretthoffman/Documents/Claudia/claudia_console
-CLAUDIA_CONSOLE_MODE=true CLAUDIA_CORE_URL=http://127.0.0.1:8080 ./start-macos.sh
+cd /Users/bretthoffman/Documents/Nexus/console
+NEXUS_CONSOLE_MODE=true NEXUS_CORE_URL=http://127.0.0.1:8080 ./start-macos.sh
 ```
 
 **Browser:**

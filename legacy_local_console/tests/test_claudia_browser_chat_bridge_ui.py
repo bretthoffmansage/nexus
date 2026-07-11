@@ -1,15 +1,15 @@
-"""Static checks for Claudia Console browser chat bridge UI (direct JSON path)."""
+"""Static checks for legacy local console browser chat bridge UI (direct JSON path)."""
 
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
 CHAT = REPO / "static/js/chat.js"
-BRIDGE = REPO / "static/js/claudiaBrowserChatBridge.js"
+BRIDGE = REPO / "static/js/nexusBrowserChatBridge.js"
 SESSIONS = REPO / "static/js/sessions.js"
 RENDERER = REPO / "static/js/chatRenderer.js"
 APP = REPO / "static/app.js"
-NOTE = REPO / "docs/claudia_console_reform/browser_chat_direct_json_bridge_fix.md"
-LEGACY_NOTE = REPO / "docs/claudia_console_reform/browser_chat_bridge_ui_fix.md"
+NOTE = REPO / "docs/console_reform/browser_chat_direct_json_bridge_fix.md"
+LEGACY_NOTE = REPO / "docs/console_reform/browser_chat_bridge_ui_fix.md"
 
 LEGACY_WARNING = "No chat session active"
 EMPTY_FALLBACK = "no assistant content was returned"
@@ -19,12 +19,12 @@ def test_direct_json_implementation_note_exists():
     assert NOTE.is_file()
     body = NOTE.read_text(encoding="utf-8")
     assert "Browser chat transport" in body
-    assert "/api/claudia/v1/messages" in body
+    assert "/api/nexus/v1/messages" in body
 
 
 def test_bridge_module_uses_messages_endpoint():
     text = BRIDGE.read_text(encoding="utf-8")
-    assert "/api/claudia/v1/messages" in text
+    assert "/api/nexus/v1/messages" in text
     assert "sendBridgeMessage" in text
     assert "resolveAssistantContent" in text
     assert EMPTY_FALLBACK in text.lower()
@@ -45,7 +45,7 @@ def test_empty_content_fallback_is_non_empty():
 
 def test_sessions_has_bridge_session_helper():
     text = SESSIONS.read_text(encoding="utf-8")
-    assert "ensureClaudiaBridgeSession" in text
+    assert "ensureNexusBridgeSession" in text
     assert "skip_validation" in text
 
 
@@ -62,7 +62,7 @@ def test_chat_js_uses_send_bridge_message_before_chat_stream():
 
 def test_chat_js_bridge_path_does_not_reference_chat_stream():
     text = CHAT.read_text(encoding="utf-8")
-    marker = "// --- Claudia Console direct JSON bridge"
+    marker = "// --- legacy local console direct JSON bridge"
     start = text.index(marker)
     end = text.index("const abortCtrl = new AbortController();", start)
     block = text[start:end]
@@ -84,7 +84,7 @@ def test_chat_renderer_dismiss_button():
 
 def test_app_preserves_model_picker_when_bridge_active():
     text = APP.read_text(encoding="utf-8")
-    assert "claudiaBrowserChatBridge" in text
+    assert "nexusBrowserChatBridge" in text
     assert "model-picker-autohide" in text
 
 
@@ -98,12 +98,12 @@ def test_chat_finally_refreshes_model_picker():
 
 def test_frontend_no_direct_hermes_or_config_paths():
     for rel in (
-        "static/js/claudiaBrowserChatBridge.js",
-        "static/js/claudiaModelSelector.js",
+        "static/js/nexusBrowserChatBridge.js",
+        "static/js/nexusModelSelector.js",
     ):
         text = (REPO / rel).read_text(encoding="utf-8")
         assert "~/.hermes/config.yaml" not in text
-        assert "hermes" not in text.lower() or "/api/claudia/" in text
+        assert "hermes" not in text.lower() or "/api/nexus/" in text
 
 
 def test_prior_bridge_note_still_exists():

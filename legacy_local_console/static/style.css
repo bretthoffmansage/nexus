@@ -21211,52 +21211,52 @@ body:not(.welcome-ready) #welcome-screen {
   }
 }
 
-/* ── Claudia Console dashboard (Package 9) ── */
-.claudia-dashboard-modal-content {
+/* ── legacy local console dashboard (Package 9) ── */
+.nexus-dashboard-modal-content {
   max-width: 920px;
   width: min(920px, 94vw);
   background: var(--bg);
   font-size: 12px;
 }
-.claudia-dash-intro {
+.nexus-dash-intro {
   margin: 0 0 12px;
   opacity: 0.75;
   line-height: 1.45;
 }
-.claudia-dash-grid {
+.nexus-dash-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   gap: 10px;
 }
-.claudia-dash-card h2 {
+.nexus-dash-card h2 {
   font-size: 13px;
   margin: 0 0 8px;
   font-weight: 600;
 }
-.claudia-dash-kv {
+.nexus-dash-kv {
   display: flex;
   flex-direction: column;
   gap: 6px;
   margin-bottom: 8px;
 }
-.claudia-dash-kv > div {
+.nexus-dash-kv > div {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
 }
-.claudia-dash-kv span:first-child {
+.nexus-dash-kv span:first-child {
   opacity: 0.65;
 }
-.claudia-dash-msg,
-.claudia-dash-muted,
-.claudia-dash-foot {
+.nexus-dash-msg,
+.nexus-dash-muted,
+.nexus-dash-foot {
   margin: 0;
   font-size: 11px;
   line-height: 1.4;
   opacity: 0.72;
 }
-.claudia-dash-badge {
+.nexus-dash-badge {
   display: inline-block;
   padding: 1px 7px;
   border-radius: 999px;
@@ -21264,36 +21264,36 @@ body:not(.welcome-ready) #welcome-screen {
   font-size: 10px;
   text-transform: lowercase;
 }
-.claudia-dash-badge-ok { border-color: color-mix(in srgb, var(--accent-primary) 40%, var(--border)); }
-.claudia-dash-badge-warn { border-color: color-mix(in srgb, var(--accent-error) 35%, var(--border)); }
-.claudia-dash-badge-muted { opacity: 0.7; }
-.claudia-dash-card-wide { grid-column: 1 / -1; }
-.claudia-dash-deploy-warnings {
+.nexus-dash-badge-ok { border-color: color-mix(in srgb, var(--accent-primary) 40%, var(--border)); }
+.nexus-dash-badge-warn { border-color: color-mix(in srgb, var(--accent-error) 35%, var(--border)); }
+.nexus-dash-badge-muted { opacity: 0.7; }
+.nexus-dash-card-wide { grid-column: 1 / -1; }
+.nexus-dash-deploy-warnings {
   margin-top: 10px;
   padding-top: 10px;
   border-top: 1px solid var(--border);
 }
-.claudia-dash-subhead {
+.nexus-dash-subhead {
   font-size: 11px;
   font-weight: 600;
   margin: 0 0 6px;
   opacity: 0.85;
 }
-.claudia-deploy-warn-list {
+.nexus-deploy-warn-list {
   margin: 0;
   padding-left: 18px;
   font-size: 11px;
   list-style: disc;
 }
-.claudia-deploy-warn {
+.nexus-deploy-warn {
   margin-bottom: 4px;
 }
-.claudia-approvals-list {
+.nexus-approvals-list {
   margin: 0 0 10px;
   padding-left: 18px;
   font-size: 11px;
 }
-.claudia-approval-resolve {
+.nexus-approval-resolve {
   margin-top: 10px;
   padding-top: 10px;
   border-top: 1px solid var(--border);
@@ -21301,19 +21301,19 @@ body:not(.welcome-ready) #welcome-screen {
   flex-direction: column;
   gap: 8px;
 }
-.claudia-approval-field {
+.nexus-approval-field {
   display: flex;
   flex-direction: column;
   gap: 4px;
   font-size: 11px;
   opacity: 0.85;
 }
-.claudia-approval-field input,
-.claudia-approval-field select {
+.nexus-approval-field input,
+.nexus-approval-field select {
   font-size: 12px;
   padding: 4px 8px;
 }
-.claudia-approval-result {
+.nexus-approval-result {
   margin: 0;
   max-height: 120px;
   overflow: auto;
@@ -35573,18 +35573,18 @@ body.theme-frosted .modal {
   .doc-email-richbody.doc-font-m { font-size: 16px !important; }
 }
 
-/* Claudia Console Mode — hide local-execution UI (Package 15) */
-body.claudia-console-mode .claudia-console-hide,
-body.claudia-console-mode #bash-toggle-btn,
-body.claudia-console-mode #rail-research,
-body.claudia-console-mode #tool-research-btn,
-body.claudia-console-mode #research-start-btn,
-body.claudia-console-mode [data-act="ai-reply"],
-body.claudia-console-mode [data-act="summarize"],
-body.claudia-console-mode .task-card-run-btn {
+/* legacy local console Mode — hide local-execution UI (Package 15) */
+body.nexus-console-mode .nexus-console-hide,
+body.nexus-console-mode #bash-toggle-btn,
+body.nexus-console-mode #rail-research,
+body.nexus-console-mode #tool-research-btn,
+body.nexus-console-mode #research-start-btn,
+body.nexus-console-mode [data-act="ai-reply"],
+body.nexus-console-mode [data-act="summarize"],
+body.nexus-console-mode .task-card-run-btn {
   display: none !important;
 }
-.claudia-console-mode-banner {
+.nexus-console-mode-banner {
   position: relative;
   flex-shrink: 0;
   margin: 8px 12px 0;
@@ -35598,12 +35598,12 @@ body.claudia-console-mode .task-card-run-btn {
   flex-direction: column;
   gap: 4px;
 }
-.claudia-console-mode-banner-content {
+.nexus-console-mode-banner-content {
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
-.claudia-console-mode-banner-dismiss {
+.nexus-console-mode-banner-dismiss {
   position: absolute;
   top: 6px;
   right: 6px;
@@ -35622,42 +35622,42 @@ body.claudia-console-mode .task-card-run-btn {
   align-items: center;
   justify-content: center;
 }
-.claudia-console-mode-banner-dismiss:hover,
-.claudia-console-mode-banner-dismiss:focus-visible {
+.nexus-console-mode-banner-dismiss:hover,
+.nexus-console-mode-banner-dismiss:focus-visible {
   opacity: 1;
   background: color-mix(in srgb, var(--accent-primary, var(--red)) 15%, transparent);
   outline: none;
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-primary, var(--red)) 35%, transparent);
 }
-.claudia-console-mode-banner-title {
+.nexus-console-mode-banner-title {
   font-weight: 600;
   color: var(--accent-primary, var(--red));
 }
-.claudia-console-mode-banner-text {
+.nexus-console-mode-banner-text {
   opacity: 0.75;
 }
 
-/* Claudia CLI Mirror operator shell (Bridge 09) */
-body.claudia-console-mode .chat-top-bar {
+/* Nexus CLI Mirror operator shell (Bridge 09) */
+body.nexus-console-mode .chat-top-bar {
   justify-content: flex-end;
   align-items: center;
   gap: 10px;
   flex-wrap: wrap;
 }
-body.claudia-console-mode .chat-top-bar .chat-meta-overlay {
+body.nexus-console-mode .chat-top-bar .chat-meta-overlay {
   margin-right: auto;
 }
-body.claudia-console-mode .claudia-interaction-mode-toggle {
+body.nexus-console-mode .nexus-interaction-mode-toggle {
   display: inline-flex !important;
   flex-shrink: 0;
 }
-.claudia-interaction-mode-toggle {
+.nexus-interaction-mode-toggle {
   display: none;
 }
-.claudia-cli-mirror-hidden {
+.nexus-cli-mirror-hidden {
   display: none !important;
 }
-.chat-container.claudia-cli-mirror-active {
+.chat-container.nexus-cli-mirror-active {
   display: flex;
   flex-direction: column;
   min-height: 0;
@@ -35668,10 +35668,10 @@ body.claudia-console-mode .claudia-interaction-mode-toggle {
   -webkit-overflow-scrolling: touch;
   padding-bottom: max(16px, env(safe-area-inset-bottom, 0px));
 }
-.chat-container.claudia-cli-mirror-active.welcome-active #welcome-screen {
+.chat-container.nexus-cli-mirror-active.welcome-active #welcome-screen {
   display: none !important;
 }
-.claudia-cli-mirror-panel {
+.nexus-cli-mirror-panel {
   flex: 0 0 auto;
   min-height: min-content;
   display: flex;
@@ -35680,32 +35680,32 @@ body.claudia-console-mode .claudia-interaction-mode-toggle {
   padding: 0 12px 20px;
   overflow: visible;
 }
-.claudia-cli-mirror-panel > .admin-card,
-.claudia-cli-mirror-panel > details,
-.claudia-cli-mirror-alerts {
+.nexus-cli-mirror-panel > .admin-card,
+.nexus-cli-mirror-panel > details,
+.nexus-cli-mirror-alerts {
   flex-shrink: 0;
 }
-.claudia-cli-mirror-panel.hidden {
+.nexus-cli-mirror-panel.hidden {
   display: none !important;
 }
-.claudia-cli-mirror-header-row {
+.nexus-cli-mirror-header-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
   flex-wrap: wrap;
 }
-.claudia-cli-mirror-header h2 {
+.nexus-cli-mirror-header h2 {
   font-size: 15px;
   font-weight: 600;
   margin: 0;
 }
-.claudia-cli-mirror-desc {
+.nexus-cli-mirror-desc {
   margin: 6px 0 0;
   font-size: 12px;
   opacity: 0.72;
 }
-.claudia-cli-mirror-status-chip {
+.nexus-cli-mirror-status-chip {
   font-size: 11px;
   font-weight: 600;
   padding: 3px 8px;
@@ -35714,42 +35714,42 @@ body.claudia-console-mode .claudia-interaction-mode-toggle {
   background: var(--panel);
   white-space: nowrap;
 }
-.claudia-cli-mirror-status-chip.tone-ok {
+.nexus-cli-mirror-status-chip.tone-ok {
   border-color: color-mix(in srgb, #2ecc71 40%, var(--border));
   color: #2ecc71;
 }
-.claudia-cli-mirror-status-chip.tone-warn {
+.nexus-cli-mirror-status-chip.tone-warn {
   border-color: color-mix(in srgb, #f1c40f 45%, var(--border));
   color: #d4ac0d;
 }
-.claudia-cli-mirror-status-chip.tone-danger {
+.nexus-cli-mirror-status-chip.tone-danger {
   border-color: color-mix(in srgb, var(--color-error, #e74c3c) 45%, var(--border));
   color: var(--color-error, #e74c3c);
 }
-.claudia-cli-mirror-status-chip.tone-muted {
+.nexus-cli-mirror-status-chip.tone-muted {
   opacity: 0.75;
 }
-.claudia-cli-mirror-control-row {
+.nexus-cli-mirror-control-row {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
   margin-bottom: 10px;
 }
-.claudia-cli-mirror-btn-primary {
+.nexus-cli-mirror-btn-primary {
   background: color-mix(in srgb, var(--accent-primary, var(--red)) 18%, var(--panel));
   border-color: color-mix(in srgb, var(--accent-primary, var(--red)) 35%, var(--border));
 }
-.claudia-cli-mirror-session-row {
+.nexus-cli-mirror-session-row {
   display: flex;
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
   font-size: 12px;
 }
-.claudia-cli-mirror-session-label {
+.nexus-cli-mirror-session-label {
   opacity: 0.7;
 }
-.claudia-cli-mirror-session-id {
+.nexus-cli-mirror-session-id {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 11px;
   padding: 2px 6px;
@@ -35759,7 +35759,7 @@ body.claudia-console-mode .claudia-interaction-mode-toggle {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.claudia-cli-mirror-transcript {
+.nexus-cli-mirror-transcript {
   flex: 0 1 auto;
   min-height: 140px;
   max-height: clamp(160px, 36vh, 400px);
@@ -35774,34 +35774,34 @@ body.claudia-console-mode .claudia-interaction-mode-toggle {
   border: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
   background: color-mix(in srgb, var(--panel) 92%, var(--bg));
 }
-.claudia-cli-mirror-panel.is-transcript-expanded {
+.nexus-cli-mirror-panel.is-transcript-expanded {
   flex: 1 1 auto;
   min-height: 0;
 }
-.claudia-cli-mirror-panel.is-transcript-expanded .claudia-cli-mirror-header,
-.claudia-cli-mirror-panel.is-transcript-expanded .claudia-cli-mirror-section-setup {
+.nexus-cli-mirror-panel.is-transcript-expanded .nexus-cli-mirror-header,
+.nexus-cli-mirror-panel.is-transcript-expanded .nexus-cli-mirror-section-setup {
   display: none !important;
 }
-.claudia-cli-mirror-panel.is-transcript-expanded .claudia-cli-mirror-section-transcript {
+.nexus-cli-mirror-panel.is-transcript-expanded .nexus-cli-mirror-section-transcript {
   flex: 1 1 auto;
   min-height: 0;
 }
-.claudia-cli-mirror-panel.is-transcript-expanded .claudia-cli-mirror-transcript-shell {
+.nexus-cli-mirror-panel.is-transcript-expanded .nexus-cli-mirror-transcript-shell {
   flex: 1 1 auto;
   min-height: 0;
 }
-.claudia-cli-mirror-panel.is-transcript-expanded .claudia-cli-mirror-transcript {
+.nexus-cli-mirror-panel.is-transcript-expanded .nexus-cli-mirror-transcript {
   flex: 1 1 auto;
   min-height: clamp(240px, 52vh, 72vh);
   max-height: none;
 }
-.claudia-cli-mirror-card {
+.nexus-cli-mirror-card {
   border-radius: 8px;
   padding: 8px 10px;
   border: 1px solid var(--border);
   background: var(--panel);
 }
-.claudia-cli-mirror-card-label {
+.nexus-cli-mirror-card-label {
   font-size: 10px;
   font-weight: 600;
   text-transform: uppercase;
@@ -35809,7 +35809,7 @@ body.claudia-console-mode .claudia-interaction-mode-toggle {
   opacity: 0.65;
   margin-bottom: 4px;
 }
-.claudia-cli-mirror-card-body {
+.nexus-cli-mirror-card-body {
   margin: 0;
   display: block;
   min-height: 1em;
@@ -35820,93 +35820,93 @@ body.claudia-console-mode .claudia-interaction-mode-toggle {
   line-height: 1.45;
   font-family: inherit;
 }
-.claudia-cli-mirror-card-input,
-.claudia-cli-mirror-card-output,
-.claudia-cli-mirror-card-final {
+.nexus-cli-mirror-card-input,
+.nexus-cli-mirror-card-output,
+.nexus-cli-mirror-card-final {
   border-color: color-mix(in srgb, var(--border) 85%, transparent);
 }
-.claudia-cli-mirror-card-input {
+.nexus-cli-mirror-card-input {
   border-color: color-mix(in srgb, var(--accent-primary, var(--red)) 28%, var(--border));
 }
-.claudia-cli-mirror-card-status {
+.nexus-cli-mirror-card-status {
   border-style: dashed;
   opacity: 0.9;
 }
-.claudia-cli-mirror-card-head {
+.nexus-cli-mirror-card-head {
   display: flex;
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
   margin-bottom: 4px;
 }
-.claudia-cli-mirror-card-time,
-.claudia-cli-mirror-card-seq {
+.nexus-cli-mirror-card-time,
+.nexus-cli-mirror-card-seq {
   font-size: 10px;
   opacity: 0.55;
   font-weight: 500;
   margin-left: auto;
 }
-.claudia-cli-mirror-card-seq {
+.nexus-cli-mirror-card-seq {
   margin-left: 0;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
-.claudia-cli-mirror-collapsed-note {
+.nexus-cli-mirror-collapsed-note {
   margin-top: 6px;
   font-size: 10px;
   opacity: 0.6;
   font-style: italic;
 }
-.claudia-cli-mirror-card-slash,
-.claudia-cli-mirror-card-command {
+.nexus-cli-mirror-card-slash,
+.nexus-cli-mirror-card-command {
   border-color: color-mix(in srgb, var(--accent-primary, var(--red)) 28%, var(--border));
 }
-.claudia-cli-mirror-card-tool {
+.nexus-cli-mirror-card-tool {
   border-color: color-mix(in srgb, #3498db 30%, var(--border));
   background: color-mix(in srgb, #3498db 6%, var(--panel));
 }
-.claudia-cli-mirror-card-shell {
+.nexus-cli-mirror-card-shell {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 12px;
 }
-.claudia-cli-mirror-card-final {
+.nexus-cli-mirror-card-final {
   border-color: color-mix(in srgb, #2ecc71 28%, var(--border));
 }
-.claudia-cli-mirror-card-warning {
+.nexus-cli-mirror-card-warning {
   border-color: color-mix(in srgb, #f1c40f 35%, var(--border));
 }
-.claudia-cli-mirror-card-error {
+.nexus-cli-mirror-card-error {
   border-color: color-mix(in srgb, var(--color-error, #e74c3c) 40%, var(--border));
 }
-.claudia-cli-mirror-stream-group {
+.nexus-cli-mirror-stream-group {
   border-radius: 8px;
   padding: 8px 10px;
   border: 1px solid transparent;
   background: var(--panel);
   margin-bottom: 8px;
 }
-.claudia-cli-mirror-stream-head {
+.nexus-cli-mirror-stream-head {
   display: flex;
   align-items: center;
   gap: 8px;
   margin-bottom: 6px;
 }
-.claudia-cli-mirror-stream-label {
+.nexus-cli-mirror-stream-label {
   font-size: 10px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   opacity: 0.65;
 }
-.claudia-cli-mirror-stream-time,
-.claudia-cli-mirror-stream-seq {
+.nexus-cli-mirror-stream-time,
+.nexus-cli-mirror-stream-seq {
   font-size: 10px;
   opacity: 0.55;
   font-weight: 500;
 }
-.claudia-cli-mirror-stream-seq {
+.nexus-cli-mirror-stream-seq {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
-.claudia-cli-mirror-stream-body {
+.nexus-cli-mirror-stream-body {
   margin: 0;
   display: block;
   min-height: 1em;
@@ -35921,10 +35921,10 @@ body.claudia-console-mode .claudia-interaction-mode-toggle {
   line-height: 1.4;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
-.claudia-cli-mirror-stream-hermes {
+.nexus-cli-mirror-stream-hermes {
   border-color: transparent;
 }
-.claudia-cli-mirror-stream-hermes .claudia-cli-mirror-stream-body {
+.nexus-cli-mirror-stream-hermes .nexus-cli-mirror-stream-body {
   white-space: pre;
   overflow-x: auto;
   overflow-y: visible;
@@ -35933,49 +35933,49 @@ body.claudia-console-mode .claudia-interaction-mode-toggle {
   -moz-tab-size: 4;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
-.claudia-cli-mirror-stream-response {
+.nexus-cli-mirror-stream-response {
   border-color: transparent;
 }
-.claudia-cli-mirror-stream-response .claudia-cli-mirror-stream-body {
+.nexus-cli-mirror-stream-response .nexus-cli-mirror-stream-body {
   white-space: pre-wrap;
   font-family: inherit;
   font-size: 13px;
   line-height: 1.45;
 }
-.claudia-cli-mirror-stream-user {
+.nexus-cli-mirror-stream-user {
   border-color: transparent;
 }
-.claudia-cli-mirror-stream-system {
+.nexus-cli-mirror-stream-system {
   border-color: transparent;
   opacity: 0.9;
 }
-.claudia-cli-mirror-stream-error {
+.nexus-cli-mirror-stream-error {
   border-color: transparent;
 }
-.claudia-cli-mirror-stream-warning {
+.nexus-cli-mirror-stream-warning {
   border-color: transparent;
   opacity: 0.92;
 }
-.claudia-cli-mirror-stream-warning .claudia-cli-mirror-stream-body {
+.nexus-cli-mirror-stream-warning .nexus-cli-mirror-stream-body {
   color: var(--admin-warning-text, #c9a227);
 }
-.claudia-cli-mirror-stream-session {
+.nexus-cli-mirror-stream-session {
   border-color: transparent;
 }
-.claudia-cli-mirror-session-note {
+.nexus-cli-mirror-session-note {
   margin: 8px 0 6px;
   font-size: 11px;
   opacity: 0.72;
   line-height: 1.35;
 }
-.claudia-cli-mirror-session-list {
+.nexus-cli-mirror-session-list {
   display: flex;
   flex-direction: column;
   gap: 6px;
   max-height: 120px;
   overflow-y: auto;
 }
-.claudia-cli-mirror-session-section-title {
+.nexus-cli-mirror-session-section-title {
   font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
@@ -35983,36 +35983,36 @@ body.claudia-console-mode .claudia-interaction-mode-toggle {
   opacity: 0.7;
   margin: 8px 0 4px;
 }
-.claudia-cli-mirror-session-section-title:first-child {
+.nexus-cli-mirror-session-section-title:first-child {
   margin-top: 0;
 }
-.claudia-cli-mirror-multi-console-note {
+.nexus-cli-mirror-multi-console-note {
   margin: 0 0 10px;
   font-size: 11px;
   line-height: 1.4;
   opacity: 0.72;
 }
-.claudia-cli-mirror-session-resume-note {
+.nexus-cli-mirror-session-resume-note {
   margin-top: 4px;
   font-size: 10px;
   line-height: 1.35;
   opacity: 0.65;
   font-style: italic;
 }
-.claudia-cli-mirror-transcript-pagination {
+.nexus-cli-mirror-transcript-pagination {
   display: flex;
   justify-content: center;
   padding: 4px 0 8px;
 }
-.claudia-cli-mirror-transcript-pagination.hidden {
+.nexus-cli-mirror-transcript-pagination.hidden {
   display: none !important;
 }
-.claudia-cli-mirror-session-empty {
+.nexus-cli-mirror-session-empty {
   font-size: 12px;
   opacity: 0.7;
   padding: 6px 0;
 }
-.claudia-cli-mirror-session-item {
+.nexus-cli-mirror-session-item {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -36022,10 +36022,10 @@ body.claudia-console-mode .claudia-interaction-mode-toggle {
   border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
   background: color-mix(in srgb, var(--fg) 3%, transparent);
 }
-.claudia-cli-mirror-session-item.is-attached {
+.nexus-cli-mirror-session-item.is-attached {
   border-color: color-mix(in srgb, var(--accent-primary, var(--red)) 35%, var(--border));
 }
-.claudia-cli-mirror-session-status {
+.nexus-cli-mirror-session-status {
   font-size: 10px;
   font-weight: 600;
   text-transform: uppercase;
@@ -36033,11 +36033,11 @@ body.claudia-console-mode .claudia-interaction-mode-toggle {
   border-radius: 999px;
   border: 1px solid var(--border);
 }
-.claudia-cli-mirror-session-status.tone-ok {
+.nexus-cli-mirror-session-status.tone-ok {
   color: #2ecc71;
   border-color: color-mix(in srgb, #2ecc71 35%, var(--border));
 }
-.claudia-cli-mirror-session-item-id {
+.nexus-cli-mirror-session-item-id {
   flex: 1 1 auto;
   min-width: 0;
   font-size: 10px;
@@ -36045,37 +36045,37 @@ body.claudia-console-mode .claudia-interaction-mode-toggle {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.claudia-cli-mirror-raw-hint {
+.nexus-cli-mirror-raw-hint {
   font-weight: 400;
   opacity: 0.65;
   font-size: 11px;
 }
-.claudia-cli-mirror-raw-toolbar {
+.nexus-cli-mirror-raw-toolbar {
   margin: 8px 0 4px;
 }
-.claudia-cli-mirror-alert-action {
+.nexus-cli-mirror-alert-action {
   margin-top: 6px;
   font-size: 11px;
   opacity: 0.8;
   font-style: italic;
 }
-.claudia-cli-mirror-operator-warning {
+.nexus-cli-mirror-operator-warning {
   border-color: color-mix(in srgb, #f1c40f 35%, var(--border));
   background: color-mix(in srgb, #f1c40f 8%, var(--panel));
   padding: 10px 12px;
 }
-.claudia-cli-mirror-operator-warning-title {
+.nexus-cli-mirror-operator-warning-title {
   font-size: 12px;
   font-weight: 600;
   margin-bottom: 4px;
 }
-.claudia-cli-mirror-operator-warning-body {
+.nexus-cli-mirror-operator-warning-body {
   margin: 0;
   font-size: 12px;
   line-height: 1.4;
   opacity: 0.85;
 }
-.claudia-cli-mirror-attach-offer {
+.nexus-cli-mirror-attach-offer {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -36083,28 +36083,28 @@ body.claudia-console-mode .claudia-interaction-mode-toggle {
   flex-wrap: wrap;
   border-color: color-mix(in srgb, var(--accent-primary, var(--red)) 30%, var(--border));
 }
-.claudia-cli-mirror-attach-offer.hidden {
+.nexus-cli-mirror-attach-offer.hidden {
   display: none !important;
 }
-.claudia-cli-mirror-attach-text {
+.nexus-cli-mirror-attach-text {
   font-size: 12px;
   line-height: 1.35;
 }
-.claudia-cli-mirror-title-label,
-.claudia-cli-mirror-field-label {
+.nexus-cli-mirror-title-label,
+.nexus-cli-mirror-field-label {
   display: block;
   font-size: 11px;
   font-weight: 600;
   opacity: 0.85;
   margin-bottom: 4px;
 }
-.claudia-cli-mirror-field-hint {
+.nexus-cli-mirror-field-hint {
   margin: 0 0 8px;
   font-size: 11px;
   line-height: 1.35;
   opacity: 0.65;
 }
-.claudia-cli-mirror-section-title {
+.nexus-cli-mirror-section-title {
   margin: 0 0 10px;
   font-size: 12px;
   font-weight: 600;
@@ -36112,70 +36112,70 @@ body.claudia-console-mode .claudia-interaction-mode-toggle {
   text-transform: uppercase;
   opacity: 0.75;
 }
-.claudia-cli-mirror-section-setup .claudia-cli-mirror-control-row {
+.nexus-cli-mirror-section-setup .nexus-cli-mirror-control-row {
   margin-top: 4px;
 }
-.claudia-cli-mirror-section-setup.has-active-session .claudia-cli-mirror-setup-inactive-labels {
+.nexus-cli-mirror-section-setup.has-active-session .nexus-cli-mirror-setup-inactive-labels {
   display: none;
 }
-.claudia-cli-mirror-section-setup.is-minimized .claudia-cli-mirror-setup-header {
+.nexus-cli-mirror-section-setup.is-minimized .nexus-cli-mirror-setup-header {
   display: none;
 }
-.claudia-cli-mirror-section-setup.has-active-session:not(.is-minimized) .claudia-cli-mirror-setup-header {
+.nexus-cli-mirror-section-setup.has-active-session:not(.is-minimized) .nexus-cli-mirror-setup-header {
   cursor: pointer;
 }
-.claudia-cli-mirror-section-setup.has-active-session.is-minimized {
+.nexus-cli-mirror-section-setup.has-active-session.is-minimized {
   cursor: pointer;
 }
-.claudia-cli-mirror-section-setup.has-active-session.is-minimized input,
-.claudia-cli-mirror-section-setup.has-active-session.is-minimized button {
+.nexus-cli-mirror-section-setup.has-active-session.is-minimized input,
+.nexus-cli-mirror-section-setup.has-active-session.is-minimized button {
   cursor: auto;
 }
-.claudia-cli-mirror-section-setup.is-minimized #claudia-cli-mirror-start,
-.claudia-cli-mirror-section-setup.is-minimized #claudia-cli-mirror-refresh,
-.claudia-cli-mirror-section-setup.is-minimized #claudia-cli-mirror-interrupt,
-.claudia-cli-mirror-section-setup.is-minimized .claudia-cli-mirror-session-row,
-.claudia-cli-mirror-section-setup.is-minimized .claudia-cli-mirror-session-note,
-.claudia-cli-mirror-section-setup.is-minimized .claudia-cli-mirror-session-list {
+.nexus-cli-mirror-section-setup.is-minimized #nexus-cli-mirror-start,
+.nexus-cli-mirror-section-setup.is-minimized #nexus-cli-mirror-refresh,
+.nexus-cli-mirror-section-setup.is-minimized #nexus-cli-mirror-interrupt,
+.nexus-cli-mirror-section-setup.is-minimized .nexus-cli-mirror-session-row,
+.nexus-cli-mirror-section-setup.is-minimized .nexus-cli-mirror-session-note,
+.nexus-cli-mirror-section-setup.is-minimized .nexus-cli-mirror-session-list {
   display: none !important;
 }
-.claudia-cli-mirror-section-setup.is-minimized .claudia-cli-mirror-control-row {
+.nexus-cli-mirror-section-setup.is-minimized .nexus-cli-mirror-control-row {
   flex-direction: row;
   justify-content: flex-start;
   align-items: center;
   gap: 8px;
   margin-top: 0;
 }
-.claudia-cli-mirror-section-setup.is-minimized #claudia-cli-mirror-stop {
+.nexus-cli-mirror-section-setup.is-minimized #nexus-cli-mirror-stop {
   width: auto;
   flex: 0 0 auto;
   align-self: flex-start;
 }
-.claudia-cli-mirror-section-setup.is-minimized .claudia-cli-mirror-title-input {
+.nexus-cli-mirror-section-setup.is-minimized .nexus-cli-mirror-title-input {
   margin-bottom: 8px;
 }
-#claudia-cli-mirror-start:disabled {
+#nexus-cli-mirror-start:disabled {
   opacity: 0.55;
   cursor: not-allowed;
 }
-.claudia-cli-mirror-title-input.is-session-active,
-.claudia-cli-mirror-title-input:disabled {
+.nexus-cli-mirror-title-input.is-session-active,
+.nexus-cli-mirror-title-input:disabled {
   opacity: 0.55;
   cursor: not-allowed;
 }
-.claudia-cli-mirror-section-transcript {
+.nexus-cli-mirror-section-transcript {
   display: flex;
   flex-direction: column;
   gap: 8px;
   min-height: 0;
 }
-.claudia-cli-mirror-transcript-heading {
+.nexus-cli-mirror-transcript-heading {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
 }
-.claudia-cli-mirror-transcript-expand-btn {
+.nexus-cli-mirror-transcript-expand-btn {
   width: 24px;
   height: 24px;
   padding: 0;
@@ -36188,16 +36188,16 @@ body.claudia-console-mode .claudia-interaction-mode-toggle {
   cursor: pointer;
   flex-shrink: 0;
 }
-.claudia-cli-mirror-transcript-expand-btn:hover {
+.nexus-cli-mirror-transcript-expand-btn:hover {
   background: color-mix(in srgb, var(--fg) 6%, var(--panel));
 }
-.claudia-cli-mirror-transcript-shell {
+.nexus-cli-mirror-transcript-shell {
   position: relative;
   display: flex;
   flex-direction: column;
   min-height: 0;
 }
-.claudia-cli-mirror-transcript-meta {
+.nexus-cli-mirror-transcript-meta {
   position: absolute;
   top: 6px;
   right: 16px;
@@ -36209,14 +36209,14 @@ body.claudia-console-mode .claudia-interaction-mode-toggle {
   pointer-events: none;
   padding-right: 4px;
 }
-.claudia-cli-mirror-panel.is-transcript-expanded .claudia-cli-mirror-transcript-meta {
+.nexus-cli-mirror-panel.is-transcript-expanded .nexus-cli-mirror-transcript-meta {
   right: 18px;
   padding-right: 6px;
 }
-.claudia-cli-mirror-transcript-meta.hidden {
+.nexus-cli-mirror-transcript-meta.hidden {
   display: none !important;
 }
-.claudia-cli-mirror-transcript-meta-title {
+.nexus-cli-mirror-transcript-meta-title {
   font-size: 11px;
   font-weight: 600;
   opacity: 0.85;
@@ -36226,23 +36226,23 @@ body.claudia-console-mode .claudia-interaction-mode-toggle {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.claudia-cli-mirror-raw-section.hidden {
+.nexus-cli-mirror-raw-section.hidden {
   display: none !important;
 }
-.claudia-cli-mirror-raw-drawer {
+.nexus-cli-mirror-raw-drawer {
   border-color: color-mix(in srgb, #f1c40f 35%, var(--border));
   background: color-mix(in srgb, #f1c40f 6%, var(--panel));
 }
-.claudia-cli-mirror-section-input.admin-card {
+.nexus-cli-mirror-section-input.admin-card {
   padding: 10px 12px;
 }
-.claudia-cli-mirror-input-actions {
+.nexus-cli-mirror-input-actions {
   display: flex;
   align-items: flex-end;
   gap: 6px;
   flex-shrink: 0;
 }
-.claudia-cli-mirror-raw-toggle {
+.nexus-cli-mirror-raw-toggle {
   width: 28px;
   height: 28px;
   padding: 0;
@@ -36261,14 +36261,14 @@ body.claudia-console-mode .claudia-interaction-mode-toggle {
   justify-content: center;
   text-transform: lowercase;
 }
-.claudia-cli-mirror-raw-toggle.is-active {
+.nexus-cli-mirror-raw-toggle.is-active {
   box-shadow: 0 0 0 2px color-mix(in srgb, #f1c40f 35%, transparent);
   background: color-mix(in srgb, #f1c40f 42%, var(--panel));
 }
-.claudia-cli-mirror-raw-toggle:hover {
+.nexus-cli-mirror-raw-toggle:hover {
   background: color-mix(in srgb, #f1c40f 32%, var(--panel));
 }
-.claudia-cli-mirror-title-input {
+.nexus-cli-mirror-title-input {
   width: 100%;
   margin-bottom: 10px;
   padding: 6px 8px;
@@ -36278,28 +36278,28 @@ body.claudia-console-mode .claudia-interaction-mode-toggle {
   color: var(--fg);
   font-size: 12px;
 }
-.claudia-cli-mirror-session-item-main {
+.nexus-cli-mirror-session-item-main {
   flex: 1 1 auto;
   min-width: 0;
 }
-.claudia-cli-mirror-session-item-title {
+.nexus-cli-mirror-session-item-title {
   font-size: 12px;
   font-weight: 600;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.claudia-cli-mirror-session-item-meta {
+.nexus-cli-mirror-session-item-meta {
   font-size: 10px;
   opacity: 0.65;
   margin-top: 2px;
 }
-.claudia-cli-mirror-raw-drawer summary {
+.nexus-cli-mirror-raw-drawer summary {
   cursor: pointer;
   font-size: 12px;
   font-weight: 500;
 }
-.claudia-cli-mirror-raw-pre {
+.nexus-cli-mirror-raw-pre {
   margin-top: 8px;
   max-height: 160px;
   overflow: auto;
@@ -36310,14 +36310,14 @@ body.claudia-console-mode .claudia-interaction-mode-toggle {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   opacity: 0.85;
 }
-.claudia-cli-mirror-input-bar {
+.nexus-cli-mirror-input-bar {
   display: flex;
   gap: 8px;
   align-items: flex-end;
   flex-shrink: 0;
   scroll-margin-bottom: 12px;
 }
-.claudia-cli-mirror-input {
+.nexus-cli-mirror-input {
   flex: 1;
   min-height: 44px;
   resize: vertical;
@@ -36329,28 +36329,28 @@ body.claudia-console-mode .claudia-interaction-mode-toggle {
   font-size: 13px;
   font-family: inherit;
 }
-.claudia-cli-mirror-input:disabled {
+.nexus-cli-mirror-input:disabled {
   opacity: 0.5;
 }
-.claudia-cli-mirror-section-input .claudia-cli-mirror-input-bar {
+.nexus-cli-mirror-section-input .nexus-cli-mirror-input-bar {
   margin: 0;
 }
-.claudia-cli-mirror-alerts {
+.nexus-cli-mirror-alerts {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
-.claudia-cli-mirror-alert-title {
+.nexus-cli-mirror-alert-title {
   font-weight: 600;
   font-size: 13px;
   margin-bottom: 4px;
 }
-.claudia-cli-mirror-alert-body {
+.nexus-cli-mirror-alert-body {
   font-size: 12px;
   line-height: 1.4;
   opacity: 0.85;
 }
-.claudia-cli-mirror-alert-dismiss {
+.nexus-cli-mirror-alert-dismiss {
   margin-top: 8px;
   font-size: 11px;
   padding: 4px 8px;
@@ -36361,47 +36361,47 @@ body.claudia-console-mode .claudia-interaction-mode-toggle {
   cursor: pointer;
 }
 @media (max-width: 768px) {
-  .chat-container.claudia-cli-mirror-active {
+  .chat-container.nexus-cli-mirror-active {
     padding-bottom: max(20px, env(safe-area-inset-bottom, 0px));
   }
-  .claudia-cli-mirror-transcript {
+  .nexus-cli-mirror-transcript {
     max-height: clamp(140px, 32vh, 320px);
     min-height: 120px;
   }
-  .claudia-cli-mirror-control-row .admin-btn-sm {
+  .nexus-cli-mirror-control-row .admin-btn-sm {
     flex: 1 1 calc(50% - 8px);
   }
-  .claudia-cli-mirror-header-row h2 {
+  .nexus-cli-mirror-header-row h2 {
     font-size: 14px;
   }
-  .claudia-cli-mirror-status-chip {
+  .nexus-cli-mirror-status-chip {
     font-size: 10px;
   }
-  .claudia-cli-mirror-session-id {
+  .nexus-cli-mirror-session-id {
     max-width: min(100%, 160px);
   }
-  .claudia-cli-mirror-input-bar {
+  .nexus-cli-mirror-input-bar {
     flex-direction: column;
     align-items: stretch;
   }
-  .claudia-cli-mirror-input-actions {
+  .nexus-cli-mirror-input-actions {
     justify-content: flex-end;
   }
-  .claudia-cli-mirror-input-bar .send-btn {
+  .nexus-cli-mirror-input-bar .send-btn {
     flex: 1 1 auto;
     width: auto;
   }
-  .claudia-cli-mirror-raw-pre {
+  .nexus-cli-mirror-raw-pre {
     max-height: 120px;
   }
-  .claudia-cli-mirror-session-list {
+  .nexus-cli-mirror-session-list {
     max-height: 96px;
   }
 }
 
 /* Bridge 11A — short laptop viewports: keep transcript bounded, page scrolls */
 @media (max-height: 820px) {
-  .claudia-cli-mirror-transcript {
+  .nexus-cli-mirror-transcript {
     max-height: clamp(140px, 30vh, 280px);
   }
 }

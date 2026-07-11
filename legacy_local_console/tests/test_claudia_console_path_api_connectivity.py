@@ -11,28 +11,28 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 REPO = Path(__file__).resolve().parents[1]
-REFORM = REPO / "docs/claudia_console_reform"
+REFORM = REPO / "docs/console_reform"
 
-CONSOLE_PATH = "/Users/bretthoffman/Documents/claudia_console"
-CORE_PATH = "/Users/bretthoffman/Documents/claudia_system"
+CONSOLE_PATH = "/Users/bretthoffman/Documents/console"
+CORE_PATH = "/Users/bretthoffman/Documents/system"
 CORE_API_URL = "http://127.0.0.1:8080"
 
 NESTED_OLD_PATH_PATTERNS = (
-    r"/Users/bretthoffman/Documents/claudia/claudia_system",
-    r"/Users/bretthoffman/Documents/claudia/claudia_console",
-    r"/Users/bretthoffman/Documents/Claudia/claudia_system",
-    r"/Users/bretthoffman/Documents/Claudia/claudia_console",
-    r"Documents/claudia/claudia_system",
-    r"Documents/claudia/claudia_console",
-    r"cd ~/Documents/claudia/claudia_system",
-    r"cd ~/Documents/claudia/claudia_console",
+    r"/Users/bretthoffman/Documents/nexus/system",
+    r"/Users/bretthoffman/Documents/nexus/console",
+    r"/Users/bretthoffman/Documents/Nexus/system",
+    r"/Users/bretthoffman/Documents/Nexus/console",
+    r"Documents/nexus/system",
+    r"Documents/nexus/console",
+    r"cd ~/Documents/nexus/system",
+    r"cd ~/Documents/nexus/console",
 )
 
 ACTIVE_OPERATOR_FILES = (
     REPO / "README.md",
     REPO / "start-macos.sh",
     REPO / ".env.example",
-    REFORM / "CLAUDIA_CONSOLE_OPERATOR_HANDOFF.md",
+    REFORM / "NEXUS_CONSOLE_OPERATOR_HANDOFF.md",
     REFORM / "final_console_gateway_checklist.md",
     REFORM / "private_pwa_deployment_hardening.md",
     REFORM / "package_20_final_safety_audit_operator_handoff.md",
@@ -59,11 +59,11 @@ def _has_nested_old_path(text: str) -> bool:
 def test_active_operator_files_have_no_nested_old_paths(path):
     assert path.is_file(), f"missing active file: {path}"
     text = path.read_text(encoding="utf-8")
-    assert not _has_nested_old_path(text), f"{path} still references nested claudia/ layout"
+    assert not _has_nested_old_path(text), f"{path} still references nested nexus/ layout"
 
 
 @pytest.mark.parametrize("path", ACTIVE_OPERATOR_FILES, ids=lambda p: p.name)
-def test_active_operator_files_document_claudia_console_path(path):
+def test_active_operator_files_document_console_path(path):
     text = path.read_text(encoding="utf-8")
     assert CONSOLE_PATH in text, f"{path} should document {CONSOLE_PATH}"
 
@@ -75,7 +75,7 @@ def test_env_example_documents_core_api_default_port():
 
 
 def test_handoff_documents_core_path_and_api_url():
-    text = (REFORM / "CLAUDIA_CONSOLE_OPERATOR_HANDOFF.md").read_text(encoding="utf-8")
+    text = (REFORM / "NEXUS_CONSOLE_OPERATOR_HANDOFF.md").read_text(encoding="utf-8")
     assert CORE_PATH in text
     assert CORE_API_URL in text
 
@@ -105,9 +105,9 @@ def test_bridge_package_notes_may_retain_nested_paths_as_historical():
 
 
 def _reload_client(monkeypatch):
-    monkeypatch.delenv("CLAUDIA_GATEWAY_SHARED_SECRET", raising=False)
-    sys.modules.pop("src.claudia_client", None)
-    return importlib.import_module("src.claudia_client")
+    monkeypatch.delenv("NEXUS_GATEWAY_SHARED_SECRET", raising=False)
+    sys.modules.pop("src.nexus_client", None)
+    return importlib.import_module("src.nexus_client")
 
 
 def _mock_post_sequence(responses: list):
@@ -142,9 +142,9 @@ def _resp(status_code: int, body: dict | None = None):
 )
 async def test_core_404_falls_back_to_intake(monkeypatch, forward_fn, primary_path, key):
     mod = _reload_client(monkeypatch)
-    monkeypatch.setenv("CLAUDIA_CORE_URL", CORE_API_URL)
+    monkeypatch.setenv("NEXUS_CORE_URL", CORE_API_URL)
 
-    from src.claudia_packets import (
+    from src.nexus_packets import (
         create_chat_message_packet,
         normalize_source_packet,
         normalize_worker_output_packet,
@@ -170,7 +170,7 @@ async def test_core_404_falls_back_to_intake(monkeypatch, forward_fn, primary_pa
         ]
     )
 
-    with patch("src.claudia_client.httpx.AsyncClient", return_value=mock_client):
+    with patch("src.nexus_client.httpx.AsyncClient", return_value=mock_client):
         result = await getattr(mod, forward_fn)(packet)
 
     assert result["forwarded"] is True
@@ -183,7 +183,7 @@ async def test_core_404_falls_back_to_intake(monkeypatch, forward_fn, primary_pa
 @pytest.mark.asyncio
 async def test_list_approvals_honest_placeholder_when_core_missing(monkeypatch):
     mod = _reload_client(monkeypatch)
-    monkeypatch.setenv("CLAUDIA_CORE_URL", CORE_API_URL)
+    monkeypatch.setenv("NEXUS_CORE_URL", CORE_API_URL)
 
     mock_client = AsyncMock()
     mock_resp = _resp(404, {"detail": "not implemented"})
@@ -191,7 +191,7 @@ async def test_list_approvals_honest_placeholder_when_core_missing(monkeypatch):
     mock_client.__aenter__ = AsyncMock(return_value=mock_client)
     mock_client.__aexit__ = AsyncMock(return_value=None)
 
-    with patch("src.claudia_client.httpx.AsyncClient", return_value=mock_client):
+    with patch("src.nexus_client.httpx.AsyncClient", return_value=mock_client):
         result = await mod.list_approvals()
 
     assert result["surface"] == "approvals"
@@ -204,18 +204,18 @@ async def test_list_approvals_honest_placeholder_when_core_missing(monkeypatch):
 @pytest.mark.asyncio
 async def test_probe_core_health_targets_health_endpoint(monkeypatch):
     mod = _reload_client(monkeypatch)
-    monkeypatch.setenv("CLAUDIA_CORE_URL", CORE_API_URL)
+    monkeypatch.setenv("NEXUS_CORE_URL", CORE_API_URL)
 
     mock_client = AsyncMock()
-    mock_resp = _resp(200, {"ok": True, "service": "claudia-core"})
+    mock_resp = _resp(200, {"ok": True, "service": "nexus-core"})
     mock_client.get = AsyncMock(return_value=mock_resp)
     mock_client.__aenter__ = AsyncMock(return_value=mock_client)
     mock_client.__aexit__ = AsyncMock(return_value=None)
 
-    with patch("src.claudia_client.httpx.AsyncClient", return_value=mock_client):
+    with patch("src.nexus_client.httpx.AsyncClient", return_value=mock_client):
         reachable, err, body = await mod.probe_core_health()
 
     assert reachable is True
     assert err is None
-    assert body == {"ok": True, "service": "claudia-core"}
+    assert body == {"ok": True, "service": "nexus-core"}
     assert mock_client.get.await_args[0][0] == f"{CORE_API_URL}/health"

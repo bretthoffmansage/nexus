@@ -1,4 +1,4 @@
-"""Tests for Claudia CLI Mirror UI (Bridge 09 shell + Bridge 10 transcript polish)."""
+"""Tests for Nexus CLI Mirror UI (Bridge 09 shell + Bridge 10 transcript polish)."""
 
 from __future__ import annotations
 
@@ -10,17 +10,17 @@ from pathlib import Path
 import pytest
 
 REPO = Path(__file__).resolve().parents[1]
-HELPERS_JS = REPO / "static/js/claudiaCliMirrorHelpers.js"
-MIRROR_JS = REPO / "static/js/claudiaCliMirror.js"
-CONSOLE_MODE_JS = REPO / "static/js/claudiaConsoleMode.js"
-BRIDGE_09_DOC = REPO / "docs/claudia_console_reform/package_bridge_09_console_cli_mirror_ui_shell.md"
-BRIDGE_10_DOC = REPO / "docs/claudia_console_reform/package_bridge_10_cli_mirror_transcript_polish.md"
-BRIDGE_11_DOC = REPO / "docs/claudia_console_reform/package_bridge_11_cli_mirror_session_resume_operator_controls.md"
-BRIDGE_11A_DOC = REPO / "docs/claudia_console_reform/package_bridge_11a_cli_mirror_viewport_scroll_fix.md"
-BRIDGE_11B_DOC = REPO / "docs/claudia_console_reform/package_bridge_11b_cli_mirror_mode_switch_input_clarity_reattach.md"
-BRIDGE_13_DOC = REPO / "docs/claudia_console_reform/package_bridge_13_cli_registry_transcript_pagination_ui_alignment.md"
+HELPERS_JS = REPO / "static/js/nexusCliMirrorHelpers.js"
+MIRROR_JS = REPO / "static/js/nexusCliMirror.js"
+CONSOLE_MODE_JS = REPO / "static/js/nexusConsoleMode.js"
+BRIDGE_09_DOC = REPO / "docs/console_reform/package_bridge_09_console_cli_mirror_ui_shell.md"
+BRIDGE_10_DOC = REPO / "docs/console_reform/package_bridge_10_cli_mirror_transcript_polish.md"
+BRIDGE_11_DOC = REPO / "docs/console_reform/package_bridge_11_cli_mirror_session_resume_operator_controls.md"
+BRIDGE_11A_DOC = REPO / "docs/console_reform/package_bridge_11a_cli_mirror_viewport_scroll_fix.md"
+BRIDGE_11B_DOC = REPO / "docs/console_reform/package_bridge_11b_cli_mirror_mode_switch_input_clarity_reattach.md"
+BRIDGE_13_DOC = REPO / "docs/console_reform/package_bridge_13_cli_registry_transcript_pagination_ui_alignment.md"
 
-GATEWAY_CLI_PREFIX = "/api/claudia/v1/cli/sessions"
+GATEWAY_CLI_PREFIX = "/api/nexus/v1/cli/sessions"
 FORBIDDEN_JS_PATTERNS = (
     "agent_loop",
     "stream_agent_loop",
@@ -104,7 +104,7 @@ def test_cli_mirror_ui_module_uses_gateway_only():
     combined = mirror_src + helpers_src
     assert GATEWAY_CLI_PREFIX in combined
     assert "EventSource" in mirror_src
-    assert "claudiaCliMirrorHelpers.js" in mirror_src
+    assert "nexusCliMirrorHelpers.js" in mirror_src
     for forbidden in FORBIDDEN_JS_PATTERNS:
         assert forbidden not in combined, f"CLI mirror UI must not reference {forbidden}"
 
@@ -116,18 +116,18 @@ def test_cli_mirror_modules_no_core_fetch_urls():
 
 def test_console_mode_wires_cli_mirror_init():
     src = CONSOLE_MODE_JS.read_text(encoding="utf-8")
-    assert "initClaudiaCliMirror" in src
-    assert "claudiaCliMirror.js" in src
+    assert "initNexusCliMirror" in src
+    assert "nexusCliMirror.js" in src
 
 
 def test_cli_mirror_css_present():
     css = (REPO / "static/style.css").read_text(encoding="utf-8")
-    assert ".claudia-cli-mirror-panel" in css
-    assert ".claudia-cli-mirror-card-tool" in css
-    assert ".claudia-cli-mirror-card-error" in css
-    assert ".claudia-cli-mirror-session-list" in css
-    assert ".claudia-cli-mirror-operator-warning" in css
-    assert ".claudia-cli-mirror-attach-offer" in css
+    assert ".nexus-cli-mirror-panel" in css
+    assert ".nexus-cli-mirror-card-tool" in css
+    assert ".nexus-cli-mirror-card-error" in css
+    assert ".nexus-cli-mirror-session-list" in css
+    assert ".nexus-cli-mirror-operator-warning" in css
+    assert ".nexus-cli-mirror-attach-offer" in css
 
 
 def test_bridge_11_operator_controls_in_ui_js():
@@ -144,10 +144,10 @@ def test_cli_mirror_header_copy_cleanup():
     mirror = MIRROR_JS.read_text(encoding="utf-8")
     assert "Mirrors the Core-owned Hermes session." in mirror
     assert "Operator Mode — admin/operator access" not in mirror
-    assert "claudia-cli-mirror-operator-warning" not in mirror
+    assert "nexus-cli-mirror-operator-warning" not in mirror
     assert "Commands may trigger tools, file operations, or external actions" not in mirror
     console = CONSOLE_MODE_JS.read_text(encoding="utf-8")
-    assert "Local execution and canonical writes are routed through Claudia Core" in console
+    assert "Local execution and canonical writes are routed through Nexus Core" in console
 
 
 def test_bridge_11_no_auto_attach_on_refresh():
@@ -157,20 +157,20 @@ def test_bridge_11_no_auto_attach_on_refresh():
 
 def test_bridge_11a_cli_mirror_viewport_scroll_css():
     css = (REPO / "static/style.css").read_text(encoding="utf-8")
-    active_block = css.split(".chat-container.claudia-cli-mirror-active {", 1)[1].split("}", 1)[0]
+    active_block = css.split(".chat-container.nexus-cli-mirror-active {", 1)[1].split("}", 1)[0]
     assert "overflow-y: auto" in active_block
     assert "overflow-x: hidden" in active_block
 
-    panel_block = css.split(".claudia-cli-mirror-panel {", 1)[1].split("}", 1)[0]
+    panel_block = css.split(".nexus-cli-mirror-panel {", 1)[1].split("}", 1)[0]
     assert "overflow: visible" in panel_block
     assert "min-height: min-content" in panel_block
 
-    transcript_block = css.split(".claudia-cli-mirror-transcript {", 1)[1].split("}", 1)[0]
+    transcript_block = css.split(".nexus-cli-mirror-transcript {", 1)[1].split("}", 1)[0]
     assert "overflow-y: auto" in transcript_block
     assert "max-height:" in transcript_block
     assert "clamp(" in transcript_block
 
-    input_block = css.split(".claudia-cli-mirror-input-bar {", 1)[1].split("}", 1)[0]
+    input_block = css.split(".nexus-cli-mirror-input-bar {", 1)[1].split("}", 1)[0]
     assert "flex-shrink: 0" in input_block
 
 
@@ -183,7 +183,7 @@ def test_bridge_11a_simple_chat_container_still_overflow_hidden():
 def test_bridge_10_ansi_escape_stripping():
     out = _node_eval(
         """
-        import { sanitizeTranscriptText } from './static/js/claudiaCliMirrorHelpers.js';
+        import { sanitizeTranscriptText } from './static/js/nexusCliMirrorHelpers.js';
         const raw = '\\x1b[31mhello\\x1b[0m\\x1b[2K';
         console.log(JSON.stringify({ cleaned: sanitizeTranscriptText(raw) }));
         """
@@ -194,7 +194,7 @@ def test_bridge_10_ansi_escape_stripping():
 def test_bridge_10_heartbeat_hidden_from_main_transcript():
     out = _node_eval(
         """
-        import { classifyStreamEvent } from './static/js/claudiaCliMirrorHelpers.js';
+        import { classifyStreamEvent } from './static/js/nexusCliMirrorHelpers.js';
         const meta = classifyStreamEvent('heartbeat', { type: 'heartbeat' });
         console.log(JSON.stringify({ visible: meta.visible, category: meta.category }));
         """
@@ -206,7 +206,7 @@ def test_bridge_10_heartbeat_hidden_from_main_transcript():
 def test_bridge_10_error_and_warning_classification():
     out = _node_eval(
         """
-        import { classifyStreamEvent, classifyContentCategory } from './static/js/claudiaCliMirrorHelpers.js';
+        import { classifyStreamEvent, classifyContentCategory } from './static/js/nexusCliMirrorHelpers.js';
         const err = classifyStreamEvent('hermes_output', { text: 'Traceback (most recent call last): Error: failed' });
         const warn = classifyContentCategory('Warning: deprecated API', { source: 'output' });
         const slash = classifyContentCategory('/help', { source: 'input' });
@@ -221,7 +221,7 @@ def test_bridge_10_error_and_warning_classification():
 def test_bridge_10_noise_hidden_from_main_transcript():
     out = _node_eval(
         """
-        import { classifyStreamEvent, isRawNoise } from './static/js/claudiaCliMirrorHelpers.js';
+        import { classifyStreamEvent, isRawNoise } from './static/js/nexusCliMirrorHelpers.js';
         const noise = isRawNoise('⠋', '⠋');
         const meta = classifyStreamEvent('hermes_output', { text: '⠋', raw: '\\x1b[2K⠋' });
         console.log(JSON.stringify({ noise, visible: meta.visible, category: meta.category }));
@@ -234,7 +234,7 @@ def test_bridge_10_noise_hidden_from_main_transcript():
 def test_bridge_10_repeated_chunk_collapse():
     out = _node_eval(
         """
-        import { shouldCollapseDuplicate } from './static/js/claudiaCliMirrorHelpers.js';
+        import { shouldCollapseDuplicate } from './static/js/nexusCliMirrorHelpers.js';
         const yes = shouldCollapseDuplicate('same line', 'same line', 'hermes_output', 'hermes_output');
         const no = shouldCollapseDuplicate('a', 'b', 'hermes_output', 'hermes_output');
         console.log(JSON.stringify({ yes, no }));
@@ -247,7 +247,7 @@ def test_bridge_10_repeated_chunk_collapse():
 def test_bridge_10_raw_drawer_line_includes_seq_and_event():
     out = _node_eval(
         """
-        import { formatRawDrawerLine } from './static/js/claudiaCliMirrorHelpers.js';
+        import { formatRawDrawerLine } from './static/js/nexusCliMirrorHelpers.js';
         const line = formatRawDrawerLine('hermes_output', { seq: 7, ts: '2026-06-02T12:00:00Z', raw: 'hello' });
         console.log(JSON.stringify({ line }));
         """
@@ -302,8 +302,8 @@ def test_no_agent_loop_in_cli_mirror_modules():
 
 def test_local_storage_mode_key_documented():
     src = HELPERS_JS.read_text(encoding="utf-8")
-    assert "claudia_console_interaction_mode" in src
-    assert "claudia_console_cli_mirror_session_id" in src
+    assert "console_interaction_mode" in src
+    assert "console_cli_mirror_session_id" in src
 
 
 def test_bridge_11b_implementation_note_exists():
@@ -324,9 +324,9 @@ def test_bridge_11b_implementation_note_exists():
 def test_bridge_11b_mode_toggle_in_chat_top_bar():
     mirror = MIRROR_JS.read_text(encoding="utf-8")
     assert "chat-top-bar" in mirror
-    assert "claudia-interaction-mode-toggle" in mirror
-    assert "claudia-mode-simple-chat" in mirror
-    assert "claudia-mode-cli-mirror" in mirror
+    assert "nexus-interaction-mode-toggle" in mirror
+    assert "nexus-mode-simple-chat" in mirror
+    assert "nexus-mode-cli-mirror" in mirror
     assert "chat-input-right" not in mirror
 
 
@@ -351,15 +351,15 @@ def test_bridge_11b_input_clarity_labels_and_helpers():
     css = (REPO / "static/style.css").read_text(encoding="utf-8")
     assert "Session setup" in mirror
     assert "Used only to name the CLI Mirror session before starting it." in mirror
-    assert 'for="claudia-cli-mirror-input">Send input to Hermes</label>' not in mirror
+    assert 'for="nexus-cli-mirror-input">Send input to Hermes</label>' not in mirror
     assert "This sends text into the live Core-owned Hermes CLI session." not in mirror
     assert "Send input to Hermes (/help, commands, or instructions…)" in mirror
     assert 'aria-label="Send input to Hermes"' in mirror
-    assert "claudia-cli-mirror-setup-inactive-labels" in mirror
-    assert "claudia-cli-mirror-setup-header" in mirror
+    assert "nexus-cli-mirror-setup-inactive-labels" in mirror
+    assert "nexus-cli-mirror-setup-header" in mirror
     assert "Active session title:" not in mirror
-    assert ".claudia-cli-mirror-section-setup" in css
-    assert ".claudia-cli-mirror-section-input" in css
+    assert ".nexus-cli-mirror-section-setup" in css
+    assert ".nexus-cli-mirror-section-input" in css
 
 
 def test_cli_mirror_active_session_setup_ui():
@@ -373,19 +373,19 @@ def test_cli_mirror_active_session_setup_ui():
     assert "_setupPanelMinimized" in mirror
     assert "has-active-session" in mirror
     assert "is-minimized" in mirror
-    assert "claudia-cli-mirror-setup-header" in mirror
-    assert "claudia-cli-mirror-setup-inactive-labels" in mirror
-    assert "claudia-cli-mirror-setup-minimize" not in mirror
-    assert "claudia-cli-mirror-setup-expand" not in mirror
+    assert "nexus-cli-mirror-setup-header" in mirror
+    assert "nexus-cli-mirror-setup-inactive-labels" in mirror
+    assert "nexus-cli-mirror-setup-minimize" not in mirror
+    assert "nexus-cli-mirror-setup-expand" not in mirror
     assert "setup-toggle" not in mirror
     assert "Active session title:" not in mirror
-    assert "claudia-cli-mirror-active-title" not in mirror
+    assert "nexus-cli-mirror-active-title" not in mirror
     assert "titleInput.value = ''" in mirror
     assert "aria-expanded" in mirror
     assert "has-active-session" in css
     assert "is-minimized" in css
-    assert ".claudia-cli-mirror-section-setup.is-minimized .claudia-cli-mirror-setup-header" in css
-    assert "#claudia-cli-mirror-start:disabled" in css
+    assert ".nexus-cli-mirror-section-setup.is-minimized .nexus-cli-mirror-setup-header" in css
+    assert "#nexus-cli-mirror-start:disabled" in css
     stop_block = mirror.split("async function _stopSession()", 1)[1].split("async function _interruptSession", 1)[0]
     assert "_updateSetupPanelUi" in stop_block
     assert "Start session" in mirror
@@ -398,10 +398,10 @@ def test_cli_mirror_active_session_setup_ui():
 
 def test_cli_mirror_minimized_panel_shows_stop_only():
     css = (REPO / "static/style.css").read_text(encoding="utf-8")
-    assert ".claudia-cli-mirror-section-setup.is-minimized #claudia-cli-mirror-refresh" in css
-    assert ".claudia-cli-mirror-section-setup.is-minimized .claudia-cli-mirror-session-row" in css
-    assert ".claudia-cli-mirror-section-setup.is-minimized #claudia-cli-mirror-stop" in css
-    assert "flex-direction: row" in css.split(".claudia-cli-mirror-section-setup.is-minimized .claudia-cli-mirror-control-row", 1)[1].split("}", 1)[0]
+    assert ".nexus-cli-mirror-section-setup.is-minimized #nexus-cli-mirror-refresh" in css
+    assert ".nexus-cli-mirror-section-setup.is-minimized .nexus-cli-mirror-session-row" in css
+    assert ".nexus-cli-mirror-section-setup.is-minimized #nexus-cli-mirror-stop" in css
+    assert "flex-direction: row" in css.split(".nexus-cli-mirror-section-setup.is-minimized .nexus-cli-mirror-control-row", 1)[1].split("}", 1)[0]
     mirror = MIRROR_JS.read_text(encoding="utf-8")
     assert "_setupPanelMinimized = false" in mirror
     click_block = mirror.split("function _onSetupPanelClick", 1)[1].split("function _updateInputState", 1)[0]
@@ -442,7 +442,7 @@ def test_bridge_11b_session_persistence_helpers_roundtrip():
           clearPersistedSessionId,
           loadPersistedInteractionMode,
           CLI_MIRROR_MODES,
-        } from './static/js/claudiaCliMirrorHelpers.js';
+        } from './static/js/nexusCliMirrorHelpers.js';
 
         const store = {};
         globalThis.localStorage = {
@@ -455,7 +455,7 @@ def test_bridge_11b_session_persistence_helpers_roundtrip():
         const loaded = loadPersistedSessionId();
         clearPersistedSessionId();
         const cleared = loadPersistedSessionId();
-        globalThis.localStorage.setItem('claudia_console_interaction_mode', CLI_MIRROR_MODES.CLI_MIRROR);
+        globalThis.localStorage.setItem('console_interaction_mode', CLI_MIRROR_MODES.CLI_MIRROR);
         const mode = loadPersistedInteractionMode();
         console.log(JSON.stringify({ loaded, cleared, mode }));
         """
@@ -483,7 +483,7 @@ def test_bridge_13_session_list_sections_and_copy():
     css = (REPO / "static/style.css").read_text(encoding="utf-8")
     assert "Active session" in mirror
     assert "Stopped / viewable" in mirror
-    assert "claudia-cli-mirror-session-section-title" in mirror
+    assert "nexus-cli-mirror-session-section-title" in mirror
     assert "resume_unavailable_reason" in mirror
     assert "Load older transcript" in mirror
     assert "before_seq" in mirror
@@ -499,8 +499,8 @@ def test_cli_mirror_session_status_copy_cleanup():
     assert "Multiple Console clients may attach to the same active session" not in helpers
     assert "Idle cleanup not enabled" not in mirror
     assert "Idle cleanup not enabled" not in helpers
-    assert "claudia-cli-mirror-multi-console-note" not in mirror
-    assert "claudia-cli-mirror-session-empty" not in mirror
+    assert "nexus-cli-mirror-multi-console-note" not in mirror
+    assert "nexus-cli-mirror-session-empty" not in mirror
     assert "Start session" in mirror
     assert "Refresh sessions" in mirror
     assert "Stop session" in mirror
@@ -517,7 +517,7 @@ def test_bridge_13_transcript_pagination_helpers():
 def test_transcript_extracts_common_event_fields():
     out = _node_eval(
         """
-        import { extractTranscriptText, classifyStreamEvent } from './static/js/claudiaCliMirrorHelpers.js';
+        import { extractTranscriptText, classifyStreamEvent } from './static/js/nexusCliMirrorHelpers.js';
         const fromContent = extractTranscriptText({ content: 'Hello from Hermes.' });
         const fromDelta = extractTranscriptText({ delta: 'chunk text' });
         const fromPayload = extractTranscriptText({ payload: { content: 'nested content' } });
@@ -541,11 +541,11 @@ def test_transcript_skips_empty_label_only_rows():
     assert "hasVisibleTranscriptText" in helpers
     assert "_appendTranscriptEvent" in mirror
     assert "if (!chunkRaw && !alwaysShow.has(meta.category))" in mirror
-    assert "claudia-cli-mirror-card-body body" not in mirror
+    assert "nexus-cli-mirror-card-body body" not in mirror
     assert "msg-ai" not in helpers.split("CATEGORY_STYLES")[1].split("function _styleForCategory")[0]
     out = _node_eval(
         """
-        import { classifyStreamEvent } from './static/js/claudiaCliMirrorHelpers.js';
+        import { classifyStreamEvent } from './static/js/nexusCliMirrorHelpers.js';
         const hermes = classifyStreamEvent('hermes_output', { type: 'output' });
         const response = classifyStreamEvent('output', { content: '   ' });
         console.log(JSON.stringify({ hermesVisible: hermes.visible, responseVisible: response.visible }));
@@ -556,7 +556,7 @@ def test_transcript_skips_empty_label_only_rows():
 
 
 def test_continuous_transcript_stream_implementation_note_exists():
-    doc = REPO / "docs/claudia_console_reform/cli_mirror_continuous_transcript_stream_rendering.md"
+    doc = REPO / "docs/console_reform/cli_mirror_continuous_transcript_stream_rendering.md"
     assert doc.is_file()
     text = doc.read_text(encoding="utf-8")
     for phrase in (
@@ -578,7 +578,7 @@ def test_continuous_transcript_grouping_helpers():
           classifyStreamEvent,
           getTranscriptGroupLabel,
           TRANSCRIPT_GROUP_ROLES,
-        } from './static/js/claudiaCliMirrorHelpers.js';
+        } from './static/js/nexusCliMirrorHelpers.js';
 
         const h1 = classifyStreamEvent('hermes_output', { text: 'line one' });
         const h2 = classifyStreamEvent('hermes_output', { text: 'line two' });
@@ -622,7 +622,7 @@ def test_continuous_transcript_grouping_helpers():
 
 
 def test_response_role_grouping_refinement_implementation_note_exists():
-    doc = REPO / "docs/claudia_console_reform/cli_mirror_response_role_grouping_refinement.md"
+    doc = REPO / "docs/console_reform/cli_mirror_response_role_grouping_refinement.md"
     assert doc.is_file()
     text = doc.read_text(encoding="utf-8")
     for phrase in (
@@ -641,7 +641,7 @@ def test_response_role_grouping_refinement():
           normalizeTranscriptGroupRole,
           shouldAppendToTranscriptGroup,
           classifyStreamEvent,
-        } from './static/js/claudiaCliMirrorHelpers.js';
+        } from './static/js/nexusCliMirrorHelpers.js';
 
         const prose = 'Welcome to Hermes! Ask me anything and I will help you get started today.';
         const h1 = classifyStreamEvent('hermes_output', { text: 'Hermes Agent v0.15.1' });
@@ -689,7 +689,7 @@ def test_response_role_grouping_refinement():
 def test_continuous_transcript_split_word_and_newline_normalization():
     out = _node_eval(
         """
-        import { normalizeTerminalText, extractTranscriptChunkRaw } from './static/js/claudiaCliMirrorHelpers.js';
+        import { normalizeTerminalText, extractTranscriptChunkRaw } from './static/js/nexusCliMirrorHelpers.js';
 
         const splitWord = normalizeTerminalText('ski' + 'lls');
         const joined = normalizeTerminalText('first' + 'second');
@@ -718,7 +718,7 @@ def test_continuous_transcript_split_word_and_newline_normalization():
 def test_continuous_transcript_paint_queue_ordering():
     out = _node_eval(
         """
-        import { createTranscriptPaintQueue } from './static/js/claudiaCliMirrorHelpers.js';
+        import { createTranscriptPaintQueue } from './static/js/nexusCliMirrorHelpers.js';
 
         const flushed = [];
         const q = createTranscriptPaintQueue({
@@ -741,7 +741,7 @@ def test_continuous_transcript_paint_queue_ordering():
 def test_continuous_transcript_paint_queue_clears_on_reset():
     out = _node_eval(
         """
-        import { createTranscriptPaintQueue } from './static/js/claudiaCliMirrorHelpers.js';
+        import { createTranscriptPaintQueue } from './static/js/nexusCliMirrorHelpers.js';
 
         const flushed = [];
         const q = createTranscriptPaintQueue({
@@ -769,16 +769,16 @@ def test_continuous_transcript_stream_ui_static():
         "_appendTranscriptEvent",
         "_transcriptGroup",
         "appendTranscriptGroupBuffer",
-        "claudia-cli-mirror-stream-body",
+        "nexus-cli-mirror-stream-body",
         "extractTranscriptChunkRaw",
         "normalizeTerminalText",
         "shouldAppendToTranscriptGroup",
     ):
         assert needle in mirror or needle in helpers or needle in css
 
-    body_block = css.split(".claudia-cli-mirror-stream-body", 1)[1].split("}", 1)[0]
-    hermes_body_block = css.split(".claudia-cli-mirror-stream-hermes .claudia-cli-mirror-stream-body", 1)[1].split("}", 1)[0]
-    response_body_block = css.split(".claudia-cli-mirror-stream-response .claudia-cli-mirror-stream-body", 1)[1].split("}", 1)[0]
+    body_block = css.split(".nexus-cli-mirror-stream-body", 1)[1].split("}", 1)[0]
+    hermes_body_block = css.split(".nexus-cli-mirror-stream-hermes .nexus-cli-mirror-stream-body", 1)[1].split("}", 1)[0]
+    response_body_block = css.split(".nexus-cli-mirror-stream-response .nexus-cli-mirror-stream-body", 1)[1].split("}", 1)[0]
     assert "max-height: none" in body_block
     assert "white-space:pre" in hermes_body_block.replace(" ", "")
     assert "overflow-x: auto" in hermes_body_block
@@ -788,7 +788,7 @@ def test_continuous_transcript_stream_ui_static():
 
 
 def test_transcript_layout_polish_implementation_note_exists():
-    doc = REPO / "docs/claudia_console_reform/cli_mirror_transcript_layout_polish_debug_toggle.md"
+    doc = REPO / "docs/console_reform/cli_mirror_transcript_layout_polish_debug_toggle.md"
     assert doc.is_file()
     text = doc.read_text(encoding="utf-8")
     for phrase in (
@@ -802,44 +802,44 @@ def test_transcript_layout_polish_implementation_note_exists():
 
 def test_transcript_layout_polish_terminal_formatting_css():
     css = (REPO / "static/style.css").read_text(encoding="utf-8")
-    hermes = css.split(".claudia-cli-mirror-stream-hermes .claudia-cli-mirror-stream-body", 1)[1].split("}", 1)[0]
-    response = css.split(".claudia-cli-mirror-stream-response .claudia-cli-mirror-stream-body", 1)[1].split("}", 1)[0]
+    hermes = css.split(".nexus-cli-mirror-stream-hermes .nexus-cli-mirror-stream-body", 1)[1].split("}", 1)[0]
+    response = css.split(".nexus-cli-mirror-stream-response .nexus-cli-mirror-stream-body", 1)[1].split("}", 1)[0]
     assert "white-space:pre" in hermes.replace(" ", "")
     assert "tab-size: 4" in hermes
     assert "font-variant-ligatures: none" in hermes
     assert "white-space: pre-wrap" in response
-    assert "overflow-y: visible" in css.split(".claudia-cli-mirror-stream-body", 1)[1].split("}", 1)[0]
+    assert "overflow-y: visible" in css.split(".nexus-cli-mirror-stream-body", 1)[1].split("}", 1)[0]
 
 
 def test_transcript_layout_polish_raw_debug_toggle():
     mirror = MIRROR_JS.read_text(encoding="utf-8")
     css = (REPO / "static/style.css").read_text(encoding="utf-8")
-    assert "claudia-cli-mirror-raw-toggle" in mirror
-    assert "claudia-cli-mirror-raw-section" in mirror
-    assert "claudia-cli-mirror-input-actions" in mirror
+    assert "nexus-cli-mirror-raw-toggle" in mirror
+    assert "nexus-cli-mirror-raw-section" in mirror
+    assert "nexus-cli-mirror-input-actions" in mirror
     assert ">db</button>" in mirror.replace(" ", "")
     assert "_setRawDebugVisible" in mirror
     assert "_toggleRawDebugVisible" in mirror
     assert "_setRawDebugVisible(false)" in mirror
-    assert "claudia-cli-mirror-raw-toggle.is-active" in css
-    assert "claudia-cli-mirror-raw-section.hidden" in css
-    assert 'id="claudia-cli-mirror-raw-pre"' in mirror
+    assert "nexus-cli-mirror-raw-toggle.is-active" in css
+    assert "nexus-cli-mirror-raw-section.hidden" in css
+    assert 'id="nexus-cli-mirror-raw-pre"' in mirror
     assert "formatRawDrawerLine" in HELPERS_JS.read_text(encoding="utf-8")
-    input_block = mirror.split("claudia-cli-mirror-input-actions", 1)[1].split("</div>", 1)[0]
-    assert "claudia-cli-mirror-send-btn" in input_block
-    assert "claudia-cli-mirror-raw-toggle" in input_block
+    input_block = mirror.split("nexus-cli-mirror-input-actions", 1)[1].split("</div>", 1)[0]
+    assert "nexus-cli-mirror-send-btn" in input_block
+    assert "nexus-cli-mirror-raw-toggle" in input_block
 
 
 def test_transcript_layout_polish_expand_minimize():
     mirror = MIRROR_JS.read_text(encoding="utf-8")
     css = (REPO / "static/style.css").read_text(encoding="utf-8")
-    assert "claudia-cli-mirror-transcript-expand" in mirror
+    assert "nexus-cli-mirror-transcript-expand" in mirror
     assert "_setTranscriptExpanded" in mirror
     assert "_toggleTranscriptExpanded" in mirror
-    assert "claudia-cli-mirror-transcript-meta" in mirror
+    assert "nexus-cli-mirror-transcript-meta" in mirror
     assert "is-transcript-expanded" in css
-    assert ".claudia-cli-mirror-panel.is-transcript-expanded .claudia-cli-mirror-header" in css
-    assert ".claudia-cli-mirror-panel.is-transcript-expanded .claudia-cli-mirror-section-setup" in css
+    assert ".nexus-cli-mirror-panel.is-transcript-expanded .nexus-cli-mirror-header" in css
+    assert ".nexus-cli-mirror-panel.is-transcript-expanded .nexus-cli-mirror-section-setup" in css
     assert "_setTranscriptExpanded(false)" in mirror
 
 
@@ -854,22 +854,22 @@ def test_hermes_grouping_truncation_tests_still_present():
 def test_send_input_compact_layout():
     mirror = MIRROR_JS.read_text(encoding="utf-8")
     css = (REPO / "static/style.css").read_text(encoding="utf-8")
-    assert 'for="claudia-cli-mirror-input">Send input to Hermes</label>' not in mirror
+    assert 'for="nexus-cli-mirror-input">Send input to Hermes</label>' not in mirror
     assert "This sends text into the live Core-owned Hermes CLI session." not in mirror
     assert "Send input to Hermes (/help, commands, or instructions…)" in mirror
-    assert "claudia-cli-mirror-input-actions" in mirror
+    assert "nexus-cli-mirror-input-actions" in mirror
     assert ">db</button>" in mirror.replace(" ", "")
-    assert "claudia-cli-mirror-send-btn" in mirror
-    assert "claudia-cli-mirror-raw-toggle.is-active" in css
-    assert ".claudia-cli-mirror-section-input.admin-card" in css
-    assert "align-items: flex-end" in css.split(".claudia-cli-mirror-input-actions", 1)[1].split("}", 1)[0]
+    assert "nexus-cli-mirror-send-btn" in mirror
+    assert "nexus-cli-mirror-raw-toggle.is-active" in css
+    assert ".nexus-cli-mirror-section-input.admin-card" in css
+    assert "align-items: flex-end" in css.split(".nexus-cli-mirror-input-actions", 1)[1].split("}", 1)[0]
     assert "Start session" in mirror
     assert "Raw transcript" in mirror
     assert "Live Hermes transcript" in mirror
 
 
 def test_send_input_compact_layout_implementation_note_exists():
-    doc = REPO / "docs/claudia_console_reform/cli_mirror_send_input_compact_layout.md"
+    doc = REPO / "docs/console_reform/cli_mirror_send_input_compact_layout.md"
     assert doc.is_file()
     text = doc.read_text(encoding="utf-8")
     for phrase in (
@@ -882,7 +882,7 @@ def test_send_input_compact_layout_implementation_note_exists():
 
 
 def test_transcript_border_metadata_polish_implementation_note_exists():
-    doc = REPO / "docs/claudia_console_reform/cli_mirror_transcript_border_metadata_polish.md"
+    doc = REPO / "docs/console_reform/cli_mirror_transcript_border_metadata_polish.md"
     assert doc.is_file()
     text = doc.read_text(encoding="utf-8")
     for phrase in (
@@ -896,23 +896,23 @@ def test_transcript_border_metadata_polish_implementation_note_exists():
 
 def test_transcript_stream_group_borders_hidden():
     css = (REPO / "static/style.css").read_text(encoding="utf-8")
-    group_block = css.split(".claudia-cli-mirror-stream-group {", 1)[1].split("}", 1)[0]
+    group_block = css.split(".nexus-cli-mirror-stream-group {", 1)[1].split("}", 1)[0]
     assert "border:" in group_block
     assert "transparent" in group_block
     for role in ("hermes", "response", "user", "system", "error", "session"):
-        role_block = css.split(f".claudia-cli-mirror-stream-{role} {{", 1)[1].split("}", 1)[0]
+        role_block = css.split(f".nexus-cli-mirror-stream-{role} {{", 1)[1].split("}", 1)[0]
         assert "border-color:transparent" in role_block.replace(" ", "")
-    assert "#2ecc71" not in css.split(".claudia-cli-mirror-stream-response {", 1)[1].split("}", 1)[0]
-    transcript_block = css.split(".claudia-cli-mirror-transcript {", 1)[1].split("}", 1)[0]
+    assert "#2ecc71" not in css.split(".nexus-cli-mirror-stream-response {", 1)[1].split("}", 1)[0]
+    transcript_block = css.split(".nexus-cli-mirror-transcript {", 1)[1].split("}", 1)[0]
     assert "border:" in transcript_block
     assert "border-color:transparent" not in transcript_block.replace(" ", "")
 
 
 def test_transcript_expanded_metadata_inset():
     css = (REPO / "static/style.css").read_text(encoding="utf-8")
-    meta_block = css.split(".claudia-cli-mirror-transcript-meta {", 1)[1].split("}", 1)[0]
+    meta_block = css.split(".nexus-cli-mirror-transcript-meta {", 1)[1].split("}", 1)[0]
     expanded_meta = css.split(
-        ".claudia-cli-mirror-panel.is-transcript-expanded .claudia-cli-mirror-transcript-meta {", 1
+        ".nexus-cli-mirror-panel.is-transcript-expanded .nexus-cli-mirror-transcript-meta {", 1
     )[1].split("}", 1)[0]
     assert "right:" in meta_block
     assert "16px" in meta_block
@@ -922,8 +922,8 @@ def test_transcript_expanded_metadata_inset():
 
 def test_transcript_role_formatting_unchanged_after_border_polish():
     css = (REPO / "static/style.css").read_text(encoding="utf-8")
-    hermes = css.split(".claudia-cli-mirror-stream-hermes .claudia-cli-mirror-stream-body", 1)[1].split("}", 1)[0]
-    response = css.split(".claudia-cli-mirror-stream-response .claudia-cli-mirror-stream-body", 1)[1].split("}", 1)[0]
+    hermes = css.split(".nexus-cli-mirror-stream-hermes .nexus-cli-mirror-stream-body", 1)[1].split("}", 1)[0]
+    response = css.split(".nexus-cli-mirror-stream-response .nexus-cli-mirror-stream-body", 1)[1].split("}", 1)[0]
     assert "white-space:pre" in hermes.replace(" ", "")
     assert "overflow-x:auto" in hermes.replace(" ", "")
     assert "white-space: pre-wrap" in response
@@ -931,7 +931,7 @@ def test_transcript_role_formatting_unchanged_after_border_polish():
 
 
 def test_hermes_output_truncation_regression_implementation_note_exists():
-    doc = REPO / "docs/claudia_console_reform/cli_mirror_hermes_output_truncation_regression_fix.md"
+    doc = REPO / "docs/console_reform/cli_mirror_hermes_output_truncation_regression_fix.md"
     assert doc.is_file()
     text = doc.read_text(encoding="utf-8")
     for phrase in (
@@ -949,7 +949,7 @@ def test_hermes_startup_chunks_append_into_one_group():
         import {
           classifyStreamEvent,
           simulateTranscriptGroupSequence,
-        } from './static/js/claudiaCliMirrorHelpers.js';
+        } from './static/js/nexusCliMirrorHelpers.js';
 
         const chunk1 = 'Hermes Agent v0.15.1\\nAvailable Tools\\nbrowser: browser_back, browser_click,\\n';
         const chunk2 = 'browser_dialog, clarify: clarify\\ncode_execution: execute_code\\n';
@@ -981,7 +981,7 @@ def test_hermes_ansi_split_across_chunks():
         import {
           classifyStreamEvent,
           simulateTranscriptGroupSequence,
-        } from './static/js/claudiaCliMirrorHelpers.js';
+        } from './static/js/nexusCliMirrorHelpers.js';
 
         const chunk1 = '\\u001b[38;5;136mAvailable Ski';
         const chunk2 = 'lls\\u001b[0m\\napple: apple-notes\\n';
@@ -1005,7 +1005,7 @@ def test_response_boundary_does_not_truncate_hermes():
         import {
           classifyStreamEvent,
           simulateTranscriptGroupSequence,
-        } from './static/js/claudiaCliMirrorHelpers.js';
+        } from './static/js/nexusCliMirrorHelpers.js';
 
         const h1 = 'Hermes Agent v0.15.1\\nAvailable Tools\\n';
         const h2 = 'browser: browser_back, browser_click,\\n';
@@ -1038,7 +1038,7 @@ def test_hermes_after_response_is_new_group():
         import {
           classifyStreamEvent,
           simulateTranscriptGroupSequence,
-        } from './static/js/claudiaCliMirrorHelpers.js';
+        } from './static/js/nexusCliMirrorHelpers.js';
 
         const h1 = 'Hermes Agent v0.15.1\\n';
         const response = 'Welcome to Hermes Agent! Ask me anything and I will help you get started today.';
@@ -1065,7 +1065,7 @@ def test_hermes_after_response_is_new_group():
 def test_paint_queue_flush_preserves_pending_text():
     out = _node_eval(
         """
-        import { createTranscriptPaintQueue } from './static/js/claudiaCliMirrorHelpers.js';
+        import { createTranscriptPaintQueue } from './static/js/nexusCliMirrorHelpers.js';
 
         const flushed = [];
         const q = createTranscriptPaintQueue({
@@ -1091,7 +1091,7 @@ def test_hermes_similar_chunks_not_deduped_in_mirror():
 
 
 def test_send_echo_empty_response_fix_implementation_note_exists():
-    doc = REPO / "docs/claudia_console_reform/cli_mirror_send_echo_empty_response_fix.md"
+    doc = REPO / "docs/console_reform/cli_mirror_send_echo_empty_response_fix.md"
     assert doc.is_file()
     text = doc.read_text(encoding="utf-8")
     for phrase in (
@@ -1110,7 +1110,7 @@ def test_user_input_echo_dedupe():
           shouldSuppressUserInputEcho,
           classifyStreamEvent,
           simulateTranscriptGroupSequence,
-        } from './static/js/claudiaCliMirrorHelpers.js';
+        } from './static/js/nexusCliMirrorHelpers.js';
 
         const text = 'say hi! and tell me your name';
         const lastOptimistic = { text, sessionId: 'sess-1', at: Date.now() };
@@ -1156,7 +1156,7 @@ def test_empty_hermes_event_does_not_create_visible_group():
           classifyStreamEvent,
           simulateTranscriptGroupSequence,
           resolveTranscriptChunkRaw,
-        } from './static/js/claudiaCliMirrorHelpers.js';
+        } from './static/js/nexusCliMirrorHelpers.js';
 
         const empty = classifyStreamEvent('hermes_output', { type: 'hermes_output' });
         const emptyPayload = classifyStreamEvent('hermes_output', { type: 'hermes_output', payload: {} });
@@ -1190,7 +1190,7 @@ def test_nested_payload_extraction_renders_hermes_and_response():
           classifyStreamEvent,
           simulateTranscriptGroupSequence,
           extractTranscriptChunkRaw,
-        } from './static/js/claudiaCliMirrorHelpers.js';
+        } from './static/js/nexusCliMirrorHelpers.js';
 
         const hMeta = classifyStreamEvent('hermes_output', { type: 'hermes_output', payload: { output: 'hello' } });
         const rMeta = classifyStreamEvent('response', { payload: { content: 'Hi Brett' } });
@@ -1241,7 +1241,7 @@ def test_transcript_rendering_cleanup_static():
 
 
 def test_hermes_answer_output_classification_implementation_note_exists():
-    doc = REPO / "docs/claudia_console_reform/cli_mirror_hermes_answer_output_classification.md"
+    doc = REPO / "docs/console_reform/cli_mirror_hermes_answer_output_classification.md"
     assert doc.is_file()
     text = doc.read_text(encoding="utf-8")
     for phrase in (
@@ -1269,7 +1269,7 @@ def test_realish_hermes_output_answer_sequence_renders_response():
           classifyStreamEvent,
           simulateTranscriptGroupSequence,
           createHermesOutputClassifier,
-        } from './static/js/claudiaCliMirrorHelpers.js';
+        } from './static/js/nexusCliMirrorHelpers.js';
 
         const userText = 'say hi! and tell me your name';
         const lastOptimisticUser = { text: userText, sessionId: 'sess-1', at: Date.now() };
@@ -1321,7 +1321,7 @@ def test_hermes_answer_box_content_classifies_as_response():
         import {
           classifyStreamEvent,
           createHermesOutputClassifier,
-        } from './static/js/claudiaCliMirrorHelpers.js';
+        } from './static/js/nexusCliMirrorHelpers.js';
 
         const classifier = createHermesOutputClassifier();
         const opts = { outputClassifier: classifier, lastOptimisticUser: null };
@@ -1349,7 +1349,7 @@ def test_output_user_echo_suppressed_by_classifier():
         import {
           classifyStreamEvent,
           createHermesOutputClassifier,
-        } from './static/js/claudiaCliMirrorHelpers.js';
+        } from './static/js/nexusCliMirrorHelpers.js';
 
         const classifier = createHermesOutputClassifier();
         const lastOptimisticUser = {
@@ -1375,7 +1375,7 @@ def test_status_progress_visible_as_hermes_not_response():
         import {
           classifyStreamEvent,
           createHermesOutputClassifier,
-        } from './static/js/claudiaCliMirrorHelpers.js';
+        } from './static/js/nexusCliMirrorHelpers.js';
 
         const classifier = createHermesOutputClassifier();
         const status = classifyStreamEvent(
@@ -1422,7 +1422,7 @@ def test_startup_banner_remains_hermes_with_classifier():
           classifyStreamEvent,
           simulateTranscriptGroupSequence,
           createHermesOutputClassifier,
-        } from './static/js/claudiaCliMirrorHelpers.js';
+        } from './static/js/nexusCliMirrorHelpers.js';
 
         const classifier = createHermesOutputClassifier();
         const opts = { outputClassifier: classifier };
@@ -1453,7 +1453,7 @@ def test_auxiliary_title_warning_not_response():
         import {
           classifyStreamEvent,
           createHermesOutputClassifier,
-        } from './static/js/claudiaCliMirrorHelpers.js';
+        } from './static/js/nexusCliMirrorHelpers.js';
 
         const classifier = createHermesOutputClassifier();
         const meta = classifyStreamEvent(
@@ -1485,7 +1485,7 @@ def test_control_only_chunks_skip_without_blank_groups():
           classifyStreamEvent,
           simulateTranscriptGroupSequence,
           createHermesOutputClassifier,
-        } from './static/js/claudiaCliMirrorHelpers.js';
+        } from './static/js/nexusCliMirrorHelpers.js';
 
         const classifier = createHermesOutputClassifier();
         const ansiOnly = classifyStreamEvent(
@@ -1521,7 +1521,7 @@ def test_prompt_status_redraws_do_not_create_blank_groups():
 
 
 def test_transcript_classification_regression_stabilization_implementation_note_exists():
-    doc = REPO / "docs/claudia_console_reform/cli_mirror_transcript_classification_regression_stabilization.md"
+    doc = REPO / "docs/console_reform/cli_mirror_transcript_classification_regression_stabilization.md"
     assert doc.is_file()
     text = doc.read_text(encoding="utf-8")
     for phrase in (
@@ -1542,7 +1542,7 @@ def test_startup_banner_stays_hermes_with_classifier():
           classifyStreamEvent,
           simulateTranscriptGroupSequence,
           createHermesOutputClassifier,
-        } from './static/js/claudiaCliMirrorHelpers.js';
+        } from './static/js/nexusCliMirrorHelpers.js';
 
         const classifier = createHermesOutputClassifier();
         const opts = { outputClassifier: classifier };
@@ -1584,7 +1584,7 @@ def test_startup_welcome_and_tip_separate_from_hermes_banner():
           classifyStreamEvent,
           simulateTranscriptGroupSequence,
           createHermesOutputClassifier,
-        } from './static/js/claudiaCliMirrorHelpers.js';
+        } from './static/js/nexusCliMirrorHelpers.js';
 
         const classifier = createHermesOutputClassifier();
         const opts = { outputClassifier: classifier };
@@ -1620,7 +1620,7 @@ def test_answer_box_inactive_before_user_input():
         import {
           classifyStreamEvent,
           createHermesOutputClassifier,
-        } from './static/js/claudiaCliMirrorHelpers.js';
+        } from './static/js/nexusCliMirrorHelpers.js';
 
         const classifier = createHermesOutputClassifier();
         const opts = { outputClassifier: classifier };
@@ -1656,7 +1656,7 @@ def test_user_input_stability_sequence():
           simulateTranscriptGroupSequence,
           createHermesOutputClassifier,
           shouldSuppressUserInputEcho,
-        } from './static/js/claudiaCliMirrorHelpers.js';
+        } from './static/js/nexusCliMirrorHelpers.js';
 
         const userText = 'say hi! and tell me your name';
         const lastOptimisticUser = { text: userText, sessionId: 'sess-1', at: Date.now() };
@@ -1693,7 +1693,7 @@ def test_user_input_stability_sequence():
 
 
 def test_answer_box_state_persistence_implementation_note_exists():
-    doc = REPO / "docs/claudia_console_reform/cli_mirror_answer_box_state_persistence_startup_prose_fix.md"
+    doc = REPO / "docs/console_reform/cli_mirror_answer_box_state_persistence_startup_prose_fix.md"
     assert doc.is_file()
     text = doc.read_text(encoding="utf-8")
     for phrase in (
@@ -1714,7 +1714,7 @@ def test_answer_box_state_survives_chrome_and_delayed_input_echo():
           classifyStreamEvent,
           simulateTranscriptGroupSequence,
           createHermesOutputClassifier,
-        } from './static/js/claudiaCliMirrorHelpers.js';
+        } from './static/js/nexusCliMirrorHelpers.js';
 
         const userText = 'say hello! and what is your name';
         const lastOptimisticUser = { text: userText, sessionId: 'sess-1', at: Date.now() };
@@ -1758,7 +1758,7 @@ def test_answer_box_state_survives_chrome_and_delayed_input_echo():
 
 
 def test_full_fidelity_transcript_visibility_implementation_note_exists():
-    doc = REPO / "docs/claudia_console_reform/cli_mirror_full_fidelity_transcript_visibility.md"
+    doc = REPO / "docs/console_reform/cli_mirror_full_fidelity_transcript_visibility.md"
     assert doc.is_file()
     text = doc.read_text(encoding="utf-8")
     for phrase in (
@@ -1780,7 +1780,7 @@ def test_full_fidelity_hermes_activity_visibility():
           classifyStreamEvent,
           simulateTranscriptGroupSequence,
           createHermesOutputClassifier,
-        } from './static/js/claudiaCliMirrorHelpers.js';
+        } from './static/js/nexusCliMirrorHelpers.js';
 
         const userText = 'say hello! and what is your name';
         const lastOptimisticUser = { text: userText, sessionId: 'sess-1', at: Date.now() };
@@ -1831,7 +1831,7 @@ def test_answer_box_with_visible_hermes_between_answer_lines():
           classifyStreamEvent,
           simulateTranscriptGroupSequence,
           createHermesOutputClassifier,
-        } from './static/js/claudiaCliMirrorHelpers.js';
+        } from './static/js/nexusCliMirrorHelpers.js';
 
         const userText = 'say hello! and what is your name';
         const lastOptimisticUser = { text: userText, sessionId: 'sess-1', at: Date.now() };
@@ -1876,7 +1876,7 @@ def test_startup_tip_with_glyph_classifies_as_response():
         import {
           classifyStreamEvent,
           createHermesOutputClassifier,
-        } from './static/js/claudiaCliMirrorHelpers.js';
+        } from './static/js/nexusCliMirrorHelpers.js';
 
         const classifier = createHermesOutputClassifier();
         const tip = '✦ Tip: context.engine in config.yaml can be set to a plugin name for alternative context management strategies.';
@@ -1897,7 +1897,7 @@ def test_startup_welcome_and_glyph_tip_merge_as_response():
           classifyStreamEvent,
           simulateTranscriptGroupSequence,
           createHermesOutputClassifier,
-        } from './static/js/claudiaCliMirrorHelpers.js';
+        } from './static/js/nexusCliMirrorHelpers.js';
 
         const classifier = createHermesOutputClassifier();
         const opts = { outputClassifier: classifier };
@@ -1933,7 +1933,7 @@ def test_readable_pty_extraction_control_debris_suppression():
           classifyStreamEvent,
           simulateTranscriptGroupSequence,
           createHermesOutputClassifier,
-        } from './static/js/claudiaCliMirrorHelpers.js';
+        } from './static/js/nexusCliMirrorHelpers.js';
 
         const raw25h = '\\u001b[?12l\\u001b[?25h';
         const extracted = extractReadablePtyText(raw25h);
@@ -1971,7 +1971,7 @@ def test_meaningful_status_extraction_with_ansi():
           extractReadablePtyText,
           classifyStreamEvent,
           createHermesOutputClassifier,
-        } from './static/js/claudiaCliMirrorHelpers.js';
+        } from './static/js/nexusCliMirrorHelpers.js';
 
         const raw = '\\x1b[38;5;136m\\x1b[38;5;173mgpt-5.3-chat │ ctx -- │ [░░░░░░░░░░] -- │ 11s │ ⏲ 0s\\x1b[0m';
         const display = extractReadablePtyText(raw);
@@ -1994,7 +1994,7 @@ def test_synthesizing_line_extraction():
         import {
           classifyStreamEvent,
           createHermesOutputClassifier,
-        } from './static/js/claudiaCliMirrorHelpers.js';
+        } from './static/js/nexusCliMirrorHelpers.js';
 
         const classifier = createHermesOutputClassifier();
         classifier.noteUserInput('hi');
@@ -2019,7 +2019,7 @@ def test_answer_prose_extraction_persists_through_status_in_box():
           classifyStreamEvent,
           simulateTranscriptGroupSequence,
           createHermesOutputClassifier,
-        } from './static/js/claudiaCliMirrorHelpers.js';
+        } from './static/js/nexusCliMirrorHelpers.js';
 
         const classifier = createHermesOutputClassifier();
         classifier.noteUserInput('hi! im brett. what is your name');
@@ -2056,7 +2056,7 @@ def test_real_debug_post_send_sequence_readable_extraction():
           classifyStreamEvent,
           simulateTranscriptGroupSequence,
           createHermesOutputClassifier,
-        } from './static/js/claudiaCliMirrorHelpers.js';
+        } from './static/js/nexusCliMirrorHelpers.js';
 
         const classifier = createHermesOutputClassifier();
         const userText = 'hi! im brett. what is your name';
@@ -2112,7 +2112,7 @@ def test_startup_still_works_with_readable_extraction():
           classifyStreamEvent,
           simulateTranscriptGroupSequence,
           createHermesOutputClassifier,
-        } from './static/js/claudiaCliMirrorHelpers.js';
+        } from './static/js/nexusCliMirrorHelpers.js';
 
         const classifier = createHermesOutputClassifier();
         const opts = { outputClassifier: classifier };
@@ -2142,7 +2142,7 @@ def test_startup_still_works_with_readable_extraction():
 
 
 def test_readable_pty_extraction_stabilization_implementation_note_exists():
-    doc = REPO / "docs/claudia_console_reform/cli_mirror_readable_pty_extraction_stabilization.md"
+    doc = REPO / "docs/console_reform/cli_mirror_readable_pty_extraction_stabilization.md"
     assert doc.is_file()
     text = doc.read_text(encoding="utf-8")
     for phrase in (
@@ -2166,7 +2166,7 @@ def test_resolve_best_pty_payload_text_prefers_readable_field_over_control_text(
           extractTranscriptChunkRaw,
           classifyStreamEvent,
           createHermesOutputClassifier,
-        } from './static/js/claudiaCliMirrorHelpers.js';
+        } from './static/js/nexusCliMirrorHelpers.js';
 
         const payload = {
           text: '\\u001b[?12l\\u001b[?25h',
@@ -2205,7 +2205,7 @@ def test_post_send_render_drop_fixture_with_split_payload_fields():
           diagnoseTranscriptEvent,
           simulateTranscriptGroupSequence,
           createHermesOutputClassifier,
-        } from './static/js/claudiaCliMirrorHelpers.js';
+        } from './static/js/nexusCliMirrorHelpers.js';
 
         const userText = 'hi! im brett. what is your name';
         const classifier = createHermesOutputClassifier();
@@ -2266,7 +2266,7 @@ def test_diagnose_transcript_event_reports_skip_reasons():
         import {
           diagnoseTranscriptEvent,
           createHermesOutputClassifier,
-        } from './static/js/claudiaCliMirrorHelpers.js';
+        } from './static/js/nexusCliMirrorHelpers.js';
 
         const classifier = createHermesOutputClassifier();
         classifier.noteUserInput('hi');
@@ -2296,7 +2296,7 @@ def test_diagnose_transcript_event_reports_skip_reasons():
 
 
 def test_post_send_render_drop_implementation_note_exists():
-    doc = REPO / "docs/claudia_console_reform/cli_mirror_post_send_render_drop_root_cause_fix.md"
+    doc = REPO / "docs/console_reform/cli_mirror_post_send_render_drop_root_cause_fix.md"
     assert doc.is_file()
     text = doc.read_text(encoding="utf-8")
     for phrase in (

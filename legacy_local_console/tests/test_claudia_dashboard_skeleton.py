@@ -1,4 +1,4 @@
-"""Tests for Claudia Console dashboard skeleton (Package 9)."""
+"""Tests for legacy local console dashboard skeleton (Package 9)."""
 
 import ast
 import sys
@@ -36,28 +36,28 @@ def _token_middleware(scopes: list[str]):
 
 
 def _build_gateway_app(middleware_cls=None):
-    sys.modules.pop("routes.claudia_routes", None)
-    from routes.claudia_routes import setup_claudia_routes
+    sys.modules.pop("routes.nexus_routes", None)
+    from routes.nexus_routes import setup_nexus_routes
 
     app = FastAPI()
     if middleware_cls:
         app.add_middleware(middleware_cls)
-    app.include_router(setup_claudia_routes())
+    app.include_router(setup_nexus_routes())
     return app
 
 
 @pytest.mark.parametrize(
     "path",
     [
-        "/api/claudia/v1/workers",
-        "/api/claudia/v1/tools",
-        "/api/claudia/v1/connectors",
-        "/api/claudia/v1/housekeeping",
-        "/api/claudia/v1/approvals",
+        "/api/nexus/v1/workers",
+        "/api/nexus/v1/tools",
+        "/api/nexus/v1/connectors",
+        "/api/nexus/v1/housekeeping",
+        "/api/nexus/v1/approvals",
     ],
 )
 def test_dashboard_placeholder_routes_read_only(monkeypatch, path):
-    monkeypatch.delenv("CLAUDIA_CORE_URL", raising=False)
+    monkeypatch.delenv("NEXUS_CORE_URL", raising=False)
     monkeypatch.setenv("AUTH_ENABLED", "false")
     app = _build_gateway_app()
     with TestClient(app) as client:
@@ -69,48 +69,48 @@ def test_dashboard_placeholder_routes_read_only(monkeypatch, path):
     assert data["items"] == []
 
 
-def test_dashboard_placeholder_requires_claudia_read_bearer(monkeypatch):
-    monkeypatch.delenv("CLAUDIA_CORE_URL", raising=False)
+def test_dashboard_placeholder_requires_nexus_read_bearer(monkeypatch):
+    monkeypatch.delenv("NEXUS_CORE_URL", raising=False)
     monkeypatch.setenv("AUTH_ENABLED", "true")
-    app = _build_gateway_app(_token_middleware(["claudia_intake"]))
+    app = _build_gateway_app(_token_middleware(["nexus_intake"]))
     with TestClient(app) as client:
         resp = client.get(
-            "/api/claudia/v1/approvals",
+            "/api/nexus/v1/approvals",
             headers={"Authorization": "Bearer ody_fake"},
         )
     assert resp.status_code == 403
 
 
 def test_health_still_unauthenticated(monkeypatch):
-    monkeypatch.delenv("CLAUDIA_CORE_URL", raising=False)
+    monkeypatch.delenv("NEXUS_CORE_URL", raising=False)
     app = _build_gateway_app()
     with TestClient(app) as client:
-        resp = client.get("/api/claudia/v1/health")
+        resp = client.get("/api/nexus/v1/health")
     assert resp.status_code == 200
     assert resp.json()["status"] == "gateway_ok"
 
 
 def test_static_dashboard_files_exist():
-    assert (REPO / "static/js/claudiaDashboard.js").is_file()
+    assert (REPO / "static/js/nexusDashboard.js").is_file()
     html = (REPO / "static/index.html").read_text(encoding="utf-8")
-    assert "tool-claudia-dashboard-btn" in html
+    assert "tool-nexus-dashboard-btn" in html
     app_js = (REPO / "static/app.js").read_text(encoding="utf-8")
-    assert "claudiaDashboard" in app_js
+    assert "nexusDashboard" in app_js
 
 
 def test_dashboard_js_avoids_dangerous_routes():
-    src = (REPO / "static/js/claudiaDashboard.js").read_text(encoding="utf-8")
+    src = (REPO / "static/js/nexusDashboard.js").read_text(encoding="utf-8")
     for pattern in FORBIDDEN_DASHBOARD_PATTERNS:
         assert pattern not in src, f"dashboard must not reference {pattern}"
-    assert "/api/claudia/v1" in src
+    assert "/api/nexus/v1" in src
     assert "/approvals/" in src and "/resolve" in src
     assert "method: 'POST'" in src or 'method: "POST"' in src
     for legacy in ("/api/chat_stream", "/api/shell", "/api/tasks/"):
         assert legacy not in src, f"dashboard must not call {legacy}"
 
 
-def test_claudia_routes_no_agent_imports():
-    tree = ast.parse((REPO / "routes/claudia_routes.py").read_text(encoding="utf-8"))
+def test_nexus_routes_no_agent_imports():
+    tree = ast.parse((REPO / "routes/nexus_routes.py").read_text(encoding="utf-8"))
     for node in ast.walk(tree):
         if isinstance(node, ast.ImportFrom):
             mod = node.module or ""

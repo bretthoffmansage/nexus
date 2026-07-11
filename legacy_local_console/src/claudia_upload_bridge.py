@@ -1,6 +1,6 @@
-"""Console Mode upload → Claudia source packet bridge (Package 8).
+"""Console Mode upload → Nexus source packet bridge (Package 8).
 
-Forwards staged upload metadata to Claudia Core via Gateway source packet path.
+Forwards staged upload metadata to Nexus Core via Gateway source packet path.
 Does not import agent_loop, task scheduler, MCP, shell, or local models.
 """
 
@@ -8,8 +8,8 @@ from __future__ import annotations
 
 from typing import Any
 
-from src.claudia_client import forward_source_packet
-from src.claudia_packets import PacketNormalizeError, create_upload_source_packet
+from src.nexus_client import forward_source_packet
+from src.nexus_packets import PacketNormalizeError, create_upload_source_packet
 
 
 def _safe_upload_response_snapshot(meta: dict[str, Any]) -> dict[str, Any]:
@@ -37,7 +37,7 @@ def build_upload_source_packet(
     *,
     created_by: str | None = None,
 ) -> dict[str, Any]:
-    """Create a normalized Claudia source packet from ``save_upload`` metadata."""
+    """Create a normalized Nexus source packet from ``save_upload`` metadata."""
     return create_upload_source_packet(
         upload_id=str(meta["id"]),
         filename=str(meta.get("name") or meta["id"]),
@@ -49,7 +49,7 @@ def build_upload_source_packet(
     )
 
 
-def claudia_source_packet_status(result: dict[str, Any]) -> dict[str, Any]:
+def nexus_source_packet_status(result: dict[str, Any]) -> dict[str, Any]:
     """Compact status object for upload API responses."""
     return {
         "ok": result.get("ok"),
@@ -63,12 +63,12 @@ def claudia_source_packet_status(result: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-async def bridge_upload_to_claudia_source(
+async def bridge_upload_to_nexus_source(
     meta: dict[str, Any],
     *,
     created_by: str | None = None,
 ) -> dict[str, Any]:
-    """Forward one staged upload to Claudia Core as a source packet (no local execution)."""
+    """Forward one staged upload to Nexus Core as a source packet (no local execution)."""
     try:
         packet = build_upload_source_packet(meta, created_by=created_by)
     except PacketNormalizeError as exc:
@@ -83,4 +83,4 @@ async def bridge_upload_to_claudia_source(
             "field": exc.field,
         }
     result = await forward_source_packet(packet)
-    return claudia_source_packet_status(result)
+    return nexus_source_packet_status(result)

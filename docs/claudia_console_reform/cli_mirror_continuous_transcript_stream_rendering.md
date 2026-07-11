@@ -1,7 +1,7 @@
 # CLI Mirror Continuous Transcript Stream Rendering Pass
 
 **Date:** 2026-06-03  
-**Repo:** `/Users/bretthoffman/Documents/claudia_console`  
+**Repo:** `/Users/bretthoffman/Documents/console`  
 **Scope:** Console UI only (Live Hermes Transcript rendering)
 
 ## Root cause
@@ -10,11 +10,11 @@ The Live Hermes Transcript rendered one bordered card per PTY stream event via `
 
 ## Files changed
 
-- `static/js/claudiaCliMirrorHelpers.js` — chunk raw extraction, terminal normalization, group roles, paint queue
-- `static/js/claudiaCliMirror.js` — consecutive group append renderer (`_appendTranscriptEvent`)
-- `static/style.css` — `.claudia-cli-mirror-stream-*` terminal-style groups
-- `tests/test_claudia_cli_mirror_ui.py` — grouping, normalization, paint queue tests
-- `docs/claudia_console_reform/cli_mirror_continuous_transcript_stream_rendering.md` — this note
+- `static/js/nexusCliMirrorHelpers.js` — chunk raw extraction, terminal normalization, group roles, paint queue
+- `static/js/nexusCliMirror.js` — consecutive group append renderer (`_appendTranscriptEvent`)
+- `static/style.css` — `.nexus-cli-mirror-stream-*` terminal-style groups
+- `tests/test_nexus_cli_mirror_ui.py` — grouping, normalization, paint queue tests
+- `docs/console_reform/cli_mirror_continuous_transcript_stream_rendering.md` — this note
 
 ## Behavior changed
 
@@ -66,7 +66,7 @@ Label-only / whitespace / spinner noise events remain hidden from the styled tra
 
 ## CSS / terminal rendering
 
-- One border per role group (`.claudia-cli-mirror-stream-group`)
+- One border per role group (`.nexus-cli-mirror-stream-group`)
 - Body: `white-space: pre-wrap`, monospace, `overflow-x: auto`, no per-chunk borders
 
 ## Tests / checks run
@@ -74,9 +74,9 @@ Label-only / whitespace / spinner noise events remain hidden from the styled tra
 ```bash
 bash -n start-macos.sh
 python3 -m compileall -q app.py core routes src
-venv/bin/python -m pytest -q tests/test_claudia_cli_mirror_ui.py
-node --check static/js/claudiaCliMirror.js
-node --check static/js/claudiaCliMirrorHelpers.js
+venv/bin/python -m pytest -q tests/test_nexus_cli_mirror_ui.py
+node --check static/js/nexusCliMirror.js
+node --check static/js/nexusCliMirrorHelpers.js
 ```
 
 ## Risks

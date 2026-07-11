@@ -1,4 +1,4 @@
-"""Tests for Claudia Gateway CLI Mirror relay (Bridge 08)."""
+"""Tests for Nexus Gateway CLI Mirror relay (Bridge 08)."""
 
 from __future__ import annotations
 
@@ -16,39 +16,39 @@ from starlette.middleware.base import BaseHTTPMiddleware
 
 
 def _build_cli_app(middleware_cls=None):
-    sys.modules.pop("routes.claudia_routes", None)
-    sys.modules.pop("src.claudia_client", None)
-    from routes.claudia_routes import setup_claudia_routes
+    sys.modules.pop("routes.nexus_routes", None)
+    sys.modules.pop("src.nexus_client", None)
+    from routes.nexus_routes import setup_nexus_routes
 
     app = FastAPI()
     if middleware_cls:
         app.add_middleware(middleware_cls)
-    app.include_router(setup_claudia_routes())
+    app.include_router(setup_nexus_routes())
     return app
 
 
 class _AdminMw(BaseHTTPMiddleware):
     async def dispatch(self, request, call_next):
         request.state.api_token = True
-        request.state.api_token_scopes = {"claudia_admin"}
+        request.state.api_token_scopes = {"nexus_admin"}
         request.state.current_user = "admin"
         request.app.state.auth_manager = MagicMock(is_admin=lambda _u: True)
         return await call_next(request)
 
 
 def test_cli_sessions_core_not_configured(monkeypatch):
-    monkeypatch.delenv("CLAUDIA_CORE_URL", raising=False)
+    monkeypatch.delenv("NEXUS_CORE_URL", raising=False)
     monkeypatch.setenv("AUTH_ENABLED", "false")
     app = _build_cli_app(_AdminMw)
     with TestClient(app) as client:
-        resp = client.get("/api/claudia/v1/cli/sessions")
+        resp = client.get("/api/nexus/v1/cli/sessions")
     data = resp.json()
     assert data["status"] == "core_not_configured"
     assert data["forwarded"] is False
 
 
 def test_cli_start_forwards_to_core(monkeypatch):
-    monkeypatch.setenv("CLAUDIA_CORE_URL", "http://core.test:9000")
+    monkeypatch.setenv("NEXUS_CORE_URL", "http://core.test:9000")
     monkeypatch.setenv("AUTH_ENABLED", "false")
 
     core_body = {
@@ -68,10 +68,10 @@ def test_cli_start_forwards_to_core(monkeypatch):
     mock_client.__aexit__ = AsyncMock(return_value=None)
 
     app = _build_cli_app(_AdminMw)
-    with patch("src.claudia_client.httpx.AsyncClient", return_value=mock_client):
+    with patch("src.nexus_client.httpx.AsyncClient", return_value=mock_client):
         with TestClient(app) as client:
             resp = client.post(
-                "/api/claudia/v1/cli/sessions",
+                "/api/nexus/v1/cli/sessions",
                 json={"title": "relay test"},
             )
 
@@ -83,7 +83,7 @@ def test_cli_start_forwards_to_core(monkeypatch):
 
 
 def test_cli_input_forwards_to_core(monkeypatch):
-    monkeypatch.setenv("CLAUDIA_CORE_URL", "http://core.test:9000")
+    monkeypatch.setenv("NEXUS_CORE_URL", "http://core.test:9000")
     monkeypatch.setenv("AUTH_ENABLED", "false")
 
     mock_resp = type(
@@ -97,10 +97,10 @@ def test_cli_input_forwards_to_core(monkeypatch):
     mock_client.__aexit__ = AsyncMock(return_value=None)
 
     app = _build_cli_app(_AdminMw)
-    with patch("src.claudia_client.httpx.AsyncClient", return_value=mock_client):
+    with patch("src.nexus_client.httpx.AsyncClient", return_value=mock_client):
         with TestClient(app) as client:
             resp = client.post(
-                "/api/claudia/v1/cli/sessions/s1/input",
+                "/api/nexus/v1/cli/sessions/s1/input",
                 json={"text": "/help"},
             )
 
@@ -110,7 +110,7 @@ def test_cli_input_forwards_to_core(monkeypatch):
 
 
 def test_cli_transcript_forwards_to_core(monkeypatch):
-    monkeypatch.setenv("CLAUDIA_CORE_URL", "http://core.test:9000")
+    monkeypatch.setenv("NEXUS_CORE_URL", "http://core.test:9000")
     monkeypatch.setenv("AUTH_ENABLED", "false")
 
     mock_resp = type(
@@ -128,16 +128,16 @@ def test_cli_transcript_forwards_to_core(monkeypatch):
     mock_client.__aexit__ = AsyncMock(return_value=None)
 
     app = _build_cli_app(_AdminMw)
-    with patch("src.claudia_client.httpx.AsyncClient", return_value=mock_client):
+    with patch("src.nexus_client.httpx.AsyncClient", return_value=mock_client):
         with TestClient(app) as client:
-            resp = client.get("/api/claudia/v1/cli/sessions/s1/transcript")
+            resp = client.get("/api/nexus/v1/cli/sessions/s1/transcript")
 
     assert resp.status_code == 200
     assert resp.json()["events"][0]["type"] == "output"
 
 
 def test_cli_stream_relays_sse(monkeypatch):
-    monkeypatch.setenv("CLAUDIA_CORE_URL", "http://core.test:9000")
+    monkeypatch.setenv("NEXUS_CORE_URL", "http://core.test:9000")
     monkeypatch.setenv("AUTH_ENABLED", "false")
 
     async def _aiter_text(self):
@@ -155,9 +155,9 @@ def test_cli_stream_relays_sse(monkeypatch):
     mock_client.__aexit__ = AsyncMock(return_value=None)
 
     app = _build_cli_app(_AdminMw)
-    with patch("src.claudia_client.httpx.AsyncClient", return_value=mock_client):
+    with patch("src.nexus_client.httpx.AsyncClient", return_value=mock_client):
         with TestClient(app) as client:
-            with client.stream("GET", "/api/claudia/v1/cli/sessions/s1/stream") as resp:
+            with client.stream("GET", "/api/nexus/v1/cli/sessions/s1/stream") as resp:
                 body = "".join(resp.iter_text())
 
     assert "hermes_output" in body
@@ -165,8 +165,8 @@ def test_cli_stream_relays_sse(monkeypatch):
 
 
 def test_cli_forwards_gateway_secret(monkeypatch):
-    monkeypatch.setenv("CLAUDIA_CORE_URL", "http://core.test:9000")
-    monkeypatch.setenv("CLAUDIA_GATEWAY_SHARED_SECRET", "relay-secret")
+    monkeypatch.setenv("NEXUS_CORE_URL", "http://core.test:9000")
+    monkeypatch.setenv("NEXUS_GATEWAY_SHARED_SECRET", "relay-secret")
     monkeypatch.setenv("AUTH_ENABLED", "false")
 
     mock_resp = type("R", (), {"status_code": 200, "text": "{}", "json": lambda self: {"ok": True, "sessions": []}})()
@@ -176,17 +176,17 @@ def test_cli_forwards_gateway_secret(monkeypatch):
     mock_client.__aexit__ = AsyncMock(return_value=None)
 
     app = _build_cli_app(_AdminMw)
-    with patch("src.claudia_client.httpx.AsyncClient", return_value=mock_client):
+    with patch("src.nexus_client.httpx.AsyncClient", return_value=mock_client):
         with TestClient(app) as client:
-            resp = client.get("/api/claudia/v1/cli/sessions")
+            resp = client.get("/api/nexus/v1/cli/sessions")
 
     headers = mock_client.get.await_args[1]["headers"]
-    assert headers["X-Claudia-Gateway-Secret"] == "relay-secret"
+    assert headers["X-Nexus-Gateway-Secret"] == "relay-secret"
     assert "relay-secret" not in resp.text
 
 
 def test_cli_stop_forwards_to_core(monkeypatch):
-    monkeypatch.setenv("CLAUDIA_CORE_URL", "http://core.test:9000")
+    monkeypatch.setenv("NEXUS_CORE_URL", "http://core.test:9000")
     monkeypatch.setenv("AUTH_ENABLED", "false")
 
     mock_resp = type(
@@ -200,21 +200,21 @@ def test_cli_stop_forwards_to_core(monkeypatch):
     mock_client.__aexit__ = AsyncMock(return_value=None)
 
     app = _build_cli_app(_AdminMw)
-    with patch("src.claudia_client.httpx.AsyncClient", return_value=mock_client):
+    with patch("src.nexus_client.httpx.AsyncClient", return_value=mock_client):
         with TestClient(app) as client:
-            resp = client.post("/api/claudia/v1/cli/sessions/s1/stop")
+            resp = client.post("/api/nexus/v1/cli/sessions/s1/stop")
 
     assert resp.status_code == 200
     assert mock_client.post.await_args[0][0].endswith("/hermes/sessions/s1/stop")
 
 
 def test_cli_no_agent_loop_import(monkeypatch):
-    monkeypatch.setenv("CLAUDIA_CORE_URL", "http://core.test:9000")
+    monkeypatch.setenv("NEXUS_CORE_URL", "http://core.test:9000")
     import ast
     from pathlib import Path
 
-    text = Path(__file__).resolve().parents[1] / "routes" / "claudia_routes.py"
+    text = Path(__file__).resolve().parents[1] / "routes" / "nexus_routes.py"
     tree = ast.parse(text.read_text(encoding="utf-8"))
     for node in ast.walk(tree):
         if isinstance(node, ast.ImportFrom) and node.module and "agent_loop" in node.module:
-            pytest.fail("claudia_routes must not import agent_loop")
+            pytest.fail("nexus_routes must not import agent_loop")

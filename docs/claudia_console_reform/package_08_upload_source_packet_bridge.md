@@ -9,27 +9,27 @@
 
 ## Objective
 
-When `CLAUDIA_CONSOLE_MODE=true`, bridge successful chat attachment uploads (`POST /api/upload`) into Claudia `type=source` packets and forward via Package 7 `forward_source_packet()`. Preserve upload staging; no local agent/RAG/model execution from the bridge.
+When `NEXUS_CONSOLE_MODE=true`, bridge successful chat attachment uploads (`POST /api/upload`) into Nexus `type=source` packets and forward via Package 7 `forward_source_packet()`. Preserve upload staging; no local agent/RAG/model execution from the bridge.
 
 ## Files changed
 
 | File | Change |
 |------|--------|
-| `src/claudia_packets.py` | `create_upload_source_packet()` |
-| `src/claudia_upload_bridge.py` | **New** — build packet + `bridge_upload_to_claudia_source()` |
-| `routes/upload_routes.py` | Console Mode: attach `claudia_source_packet` per file after `save_upload` |
-| `tests/test_claudia_upload_bridge.py` | **New** |
-| `docs/claudia_console_reform/package_08_upload_source_packet_bridge.md` | **New** — this note |
+| `src/nexus_packets.py` | `create_upload_source_packet()` |
+| `src/nexus_upload_bridge.py` | **New** — build packet + `bridge_upload_to_nexus_source()` |
+| `routes/upload_routes.py` | Console Mode: attach `nexus_source_packet` per file after `save_upload` |
+| `tests/test_nexus_upload_bridge.py` | **New** |
+| `docs/console_reform/package_08_upload_source_packet_bridge.md` | **New** — this note |
 
 ## Behavior changed
 
-### `POST /api/upload` in Claudia Console Mode
+### `POST /api/upload` in legacy local console Mode
 
-After each successful `save_upload`, the API response file entry gains `claudia_source_packet` with forward status (`ok`, `status`, `message`, `packet_id`, `trace_id`, `core_configured`, `forwarded`, `source_path`). Upload staging and existing fields (`id`, `name`, `mime`, etc.) are unchanged.
+After each successful `save_upload`, the API response file entry gains `nexus_source_packet` with forward status (`ok`, `status`, `message`, `packet_id`, `trace_id`, `core_configured`, `forwarded`, `source_path`). Upload staging and existing fields (`id`, `name`, `mime`, etc.) are unchanged.
 
 ### Legacy mode
 
-`POST /api/upload` response shape unchanged (no `claudia_source_packet` key).
+`POST /api/upload` response shape unchanged (no `nexus_source_packet` key).
 
 ## Behavior intentionally unchanged
 
@@ -55,7 +55,7 @@ After each successful `save_upload`, the API response file entry gains `claudia_
 
 | Endpoint | Legacy mode behavior | Console Mode behavior | Source packet created? | Local execution from bridge? |
 |----------|----------------------|------------------------|-------------------------|------------------------------|
-| **POST /api/upload** | Stage file; return `files[]` metadata | Same staging + `claudia_source_packet` per file | **Yes** (attempted) | **No** |
+| **POST /api/upload** | Stage file; return `files[]` metadata | Same staging + `nexus_source_packet` per file | **Yes** (attempted) | **No** |
 | **POST /api/upload/cleanup** | Admin cleanup | Unchanged | No | No |
 | **GET /api/upload/stats** | Admin stats | Unchanged | No | No |
 | **GET /api/upload/{file_id}** | Serve file/thumb | Unchanged | No | No |
@@ -83,17 +83,17 @@ After each successful `save_upload`, the API response file entry gains `claudia_
 
 ## Core-unconfigured behavior
 
-`CLAUDIA_CORE_URL` unset → upload still succeeds; `claudia_source_packet` reports `status: core_not_configured`, `forwarded: false`, explicit non-executing message.
+`NEXUS_CORE_URL` unset → upload still succeeds; `nexus_source_packet` reports `status: core_not_configured`, `forwarded: false`, explicit non-executing message.
 
 ## Core-unreachable behavior
 
-Forward failure → `claudia_source_packet` reflects `core_unreachable`, `core_timeout`, or `core_error`; upload file entry still present.
+Forward failure → `nexus_source_packet` reflects `core_unreachable`, `core_timeout`, or `core_error`; upload file entry still present.
 
 ## Forwarding behavior
 
 1. Build packet with `create_upload_source_packet()`.
 2. `forward_source_packet()` → Core `POST /source-packets` (404 → `/intake` per Package 7).
-3. Status surfaced under `files[].claudia_source_packet` only.
+3. Status surfaced under `files[].nexus_source_packet` only.
 
 ## Auth behavior
 
@@ -101,7 +101,7 @@ Upload route auth unchanged (`get_current_user` for ownership on `save_upload`).
 
 ## Safety guarantees
 
-1. Bridge activates only when `CLAUDIA_CONSOLE_MODE=true`.
+1. Bridge activates only when `NEXUS_CONSOLE_MODE=true`.
 2. Upload staging remains functional.
 3. Package 4 envelope + Package 7 forward path.
 4. `content_ref` is `upload:{id}` — no new absolute path exposure.
@@ -114,14 +114,14 @@ Upload route auth unchanged (`get_current_user` for ownership on `save_upload`).
 ```bash
 python3 -m compileall -q app.py core routes src
 venv/bin/python -m pytest -q \
-  tests/test_claudia_upload_bridge.py \
-  tests/test_claudia_source_worker_routes.py \
-  tests/test_claudia_messages.py \
-  tests/test_claudia_chat_demotion.py \
-  tests/test_claudia_gateway_routes.py \
-  tests/test_claudia_token_scopes.py \
-  tests/test_claudia_packets.py \
-  tests/test_claudia_console_mode.py
+  tests/test_nexus_upload_bridge.py \
+  tests/test_nexus_source_worker_routes.py \
+  tests/test_nexus_messages.py \
+  tests/test_nexus_chat_demotion.py \
+  tests/test_nexus_gateway_routes.py \
+  tests/test_nexus_token_scopes.py \
+  tests/test_nexus_packets.py \
+  tests/test_console_mode.py
 ```
 
 **Results:** compileall pass; **76 passed**.
@@ -143,7 +143,7 @@ Full-suite `pytest --collect-only` still has 2 pre-existing collection errors:
 
 - Console Mode guard on vision endpoint and personal RAG upload.
 - Package 9: Console dashboard skeleton.
-- Optional: batch `claudia_source_packets` at response root if clients prefer.
+- Optional: batch `nexus_source_packets` at response root if clients prefer.
 
 ## Next recommended package
 

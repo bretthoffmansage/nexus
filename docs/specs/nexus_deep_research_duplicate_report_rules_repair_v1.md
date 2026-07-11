@@ -44,7 +44,7 @@ The first idempotency guard (commit `99e11bf`) used substring `includes()` anywh
 |-------|--------|----------------|
 | Draft UI | `researchRequest`, `reportRules` (left form / Calendar dialog) | Raw operator input only |
 | Validation | `validateComposedDeepResearchRequest(raw, rules)` | Preview length + compose for submit eligibility |
-| Canonical submit | `requestText` on `nexusTasks` | Final governed payload sent to Claudia |
+| Canonical submit | `requestText` on `nexusTasks` | Final governed payload sent to Nexus |
 | Calendar storage | `taskRequest`, `deepResearchReportRules` on scheduled events | Raw fields until dispatch |
 
 **Contract:** only `composeDeepResearchRequestText` turns raw fields into canonical `requestText`. Callers that already hold canonical text (retry, or dispatch when `taskRequest` is accidentally pre-composed) must rely on compose idempotency or pass the text through without raw rules.
@@ -57,7 +57,7 @@ The first idempotency guard (commit `99e11bf`) used substring `includes()` anywh
 2. **`hasCanonicalTrailingReportRulesBlock`** — detect only the governed trailing structure `\n-------\nRULES FOR REPORT:\n…` at end of string.
 3. **`composeDeepResearchRequestText`** — if a canonical trailing block is present, return normalized request unchanged; otherwise append exactly one block.
 
-No changes to `submitDeepResearch`, retry wiring, Calendar mutations, display components, Convex schema, or Claudia contracts.
+No changes to `submitDeepResearch`, retry wiring, Calendar mutations, display components, Convex schema, or Nexus contracts.
 
 ## Path behavior after repair
 

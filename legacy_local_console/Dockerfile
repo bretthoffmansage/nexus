@@ -1,7 +1,7 @@
 FROM python:3.12-slim
 
-# Docker image is a compatibility/reference deployment path (not the primary Claudia Mac
-# launcher). See start-macos.sh and docs/claudia_console_reform/private_pwa_deployment_hardening.md
+# Docker image is a compatibility/reference deployment path (not the primary Nexus Mac
+# launcher). See start-macos.sh and docs/console_reform/private_pwa_deployment_hardening.md
 
 # System deps. tmux is required by Cookbook for background downloads/serves.
 # openssh-client is required for Cookbook remote server tests, setup, probes,

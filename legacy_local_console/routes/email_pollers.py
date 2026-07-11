@@ -1047,11 +1047,11 @@ _poller_task = None
 _summarize_task = None
 
 def _inprocess_pollers_enabled() -> bool:
-    """Honour `ODYSSEUS_INPROCESS_POLLERS` and `CLAUDIA_CONSOLE_MODE`.
+    """Honour `ODYSSEUS_INPROCESS_POLLERS` and `NEXUS_CONSOLE_MODE`.
 
     Set `ODYSSEUS_INPROCESS_POLLERS` to `0`/`false`/`no`/`off` to disable the
     asyncio tasks so a cron / systemd-timer setup driving `odysseus-mail
-    poll-scheduled` is the sole external driver. Claudia Console Mode forces
+    poll-scheduled` is the sole external driver. legacy local console Mode forces
     pollers off regardless of `ODYSSEUS_INPROCESS_POLLERS`.
     """
     from src.console_mode import inprocess_pollers_enabled
@@ -1066,11 +1066,11 @@ def _start_poller():
     you're driving polling from cron / systemd to avoid two copies of
     `_scheduled_poll_once` racing on the same SQLite."""
     if not _inprocess_pollers_enabled():
-        from src.console_mode import is_claudia_console_mode
-        if is_claudia_console_mode():
+        from src.console_mode import is_console_mode
+        if is_console_mode():
             logger.info(
-                "[claudia-console] In-process email pollers disabled "
-                "(CLAUDIA_CONSOLE_MODE); drive `odysseus-mail poll-scheduled` externally."
+                "[nexus-console] In-process email pollers disabled "
+                "(NEXUS_CONSOLE_MODE); drive `odysseus-mail poll-scheduled` externally."
             )
         else:
             logger.info(

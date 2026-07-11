@@ -1,4 +1,4 @@
-"""Claudia Gateway approval resolution payloads (Package 10).
+"""Nexus Gateway approval resolution payloads (Package 10).
 
 Builds human decision metadata for Core forwarding only; no local execution.
 """

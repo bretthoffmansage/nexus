@@ -1,7 +1,7 @@
 # CLI Mirror Transcript Classification Regression Stabilization Pass
 
 **Date:** 2026-06-03  
-**Repo:** `/Users/bretthoffman/Documents/claudia_console`  
+**Repo:** `/Users/bretthoffman/Documents/console`  
 **Scope:** Console UI only — fix over-classification regression from answer-output pass
 
 ## Root cause found
@@ -16,10 +16,10 @@ Secondary: `classifyContentCategory` prose heuristics promoted long startup/welc
 
 ## Files changed
 
-- `static/js/claudiaCliMirrorHelpers.js` — startup banner/prose helpers, conservative answer-box opener, `hasUserSentInput` gating, classification order fix, `noteUserInput()`
-- `static/js/claudiaCliMirror.js` — optimistic USER `{ optimistic: true }` bypass, `nonPrunable` USER groups, classifier `noteUserInput` on send
-- `tests/test_claudia_cli_mirror_ui.py` — regression stabilization tests
-- `docs/claudia_console_reform/cli_mirror_transcript_classification_regression_stabilization.md` — this note
+- `static/js/nexusCliMirrorHelpers.js` — startup banner/prose helpers, conservative answer-box opener, `hasUserSentInput` gating, classification order fix, `noteUserInput()`
+- `static/js/nexusCliMirror.js` — optimistic USER `{ optimistic: true }` bypass, `nonPrunable` USER groups, classifier `noteUserInput` on send
+- `tests/test_nexus_cli_mirror_ui.py` — regression stabilization tests
+- `docs/console_reform/cli_mirror_transcript_classification_regression_stabilization.md` — this note
 
 ## Behavior changed
 
@@ -80,9 +80,9 @@ Startup checks run **before** answer-box opener checks. Answer-box state is clea
 ```bash
 bash -n start-macos.sh
 python3 -m compileall -q app.py core routes src
-node --check static/js/claudiaCliMirror.js
-node --check static/js/claudiaCliMirrorHelpers.js
-venv/bin/python -m pytest -q tests/test_claudia_cli_mirror_ui.py
+node --check static/js/nexusCliMirror.js
+node --check static/js/nexusCliMirrorHelpers.js
+venv/bin/python -m pytest -q tests/test_nexus_cli_mirror_ui.py
 ```
 
 ## Risks

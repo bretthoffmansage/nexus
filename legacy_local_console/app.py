@@ -75,7 +75,7 @@ logger = logging.getLogger(__name__)
 
 # ========= APP =========
 app = FastAPI(
-    title="Claudia Console",
+    title="legacy local console",
     description="Comprehensive AI chat with memory, research, and multi-modal capabilities",
     version="1.0.0",
 )
@@ -165,7 +165,7 @@ if AUTH_ENABLED:
         "/api/auth/settings",
         "/api/auth/integrations/presets",
         "/api/health",
-        "/api/claudia/v1/health",
+        "/api/nexus/v1/health",
         "/api/version",
         "/login",
     }
@@ -699,10 +699,10 @@ app.include_router(setup_contacts_routes())
 from companion import setup_companion_routes
 app.include_router(setup_companion_routes())
 
-# Claudia Gateway (intake/routing only — no local agent execution)
-from routes.claudia_routes import setup_claudia_routes
-app.include_router(setup_claudia_routes())
-logger.info("Claudia Gateway routes initialized (/api/claudia/v1)")
+# Nexus Gateway (intake/routing only — no local agent execution)
+from routes.nexus_routes import setup_nexus_routes
+app.include_router(setup_nexus_routes())
+logger.info("Nexus Gateway routes initialized (/api/nexus/v1)")
 
 # ========= ROUTES (kept in app.py) =========
 
@@ -814,11 +814,11 @@ async def runtime_info() -> Dict[str, object]:
 @app.on_event("startup")
 async def startup_event():
     global upload_cleanup_task
-    from src.console_mode import is_claudia_console_mode, inprocess_tasks_enabled
+    from src.console_mode import is_console_mode, inprocess_tasks_enabled
     logger.info("Application starting up...")
-    if is_claudia_console_mode():
+    if is_console_mode():
         logger.info(
-            "[claudia-console] Claudia Console Mode enabled (CLAUDIA_CONSOLE_MODE): "
+            "[nexus-console] legacy local console Mode enabled (NEXUS_CONSOLE_MODE): "
             "in-process task scheduler, default task seeding, email pollers, "
             "bg_monitor, and nightly skill audit will not start."
         )
@@ -848,9 +848,9 @@ async def startup_event():
         upload_cleanup_task = asyncio.create_task(upload_cleanup_func())
     # Always-on monitor that auto-continues the agent when a background bash
     # job (#!bg) finishes — re-invokes the turn with the job output.
-    if is_claudia_console_mode():
+    if is_console_mode():
         logger.info(
-            "[claudia-console] Skipping bg_monitor (background agent auto-continuation)"
+            "[nexus-console] Skipping bg_monitor (background agent auto-continuation)"
         )
     else:
         try:
@@ -866,11 +866,11 @@ async def startup_event():
             await register_builtin_servers(mcp_manager)
         except BaseException as e:
             logger.warning(f"Built-in MCP registration failed (non-critical): {type(e).__name__}: {e}")
-        from src.console_mode import is_claudia_console_mode
+        from src.console_mode import is_console_mode
 
-        if is_claudia_console_mode():
+        if is_console_mode():
             logger.info(
-                "[claudia-console] Skipping MCP connect_all_enabled "
+                "[nexus-console] Skipping MCP connect_all_enabled "
                 "(enabled tool servers stay disconnected)"
             )
         else:
@@ -975,9 +975,9 @@ async def startup_event():
 
     # Reconcile built-in tasks before the runner starts. Otherwise legacy
     # scheduled built-ins can fire once before being converted to event tasks.
-    if is_claudia_console_mode():
+    if is_console_mode():
         logger.info(
-            "[claudia-console] Skipping default scheduled task seeding (ensure_defaults)"
+            "[nexus-console] Skipping default scheduled task seeding (ensure_defaults)"
         )
     else:
         await _ensure_default_tasks()
@@ -1005,14 +1005,14 @@ async def startup_event():
         logger.debug(f"Skill owner backfill skipped: {e}")
 
     # Start scheduled task runner — skip when running under a cron-driven
-    # deployment where an external worker drives task firing, or in Claudia
-    # Console Mode (Claudia Core owns scheduling authority).
+    # deployment where an external worker drives task firing, or in Nexus
+    # Console Mode (Nexus Core owns scheduling authority).
     if inprocess_tasks_enabled():
         await task_scheduler.start()
-    elif is_claudia_console_mode():
+    elif is_console_mode():
         logger.info(
-            "[claudia-console] In-process task scheduler not started "
-            "(CLAUDIA_CONSOLE_MODE)"
+            "[nexus-console] In-process task scheduler not started "
+            "(NEXUS_CONSOLE_MODE)"
         )
     else:
         logger.info(
@@ -1062,9 +1062,9 @@ async def startup_event():
             except Exception as e:
                 logger.warning(f"Nightly skill audit failed: {e}")
 
-    if is_claudia_console_mode():
+    if is_console_mode():
         logger.info(
-            "[claudia-console] Skipping nightly skill audit loop "
+            "[nexus-console] Skipping nightly skill audit loop "
             "(agent-autonomous skill audit)"
         )
     else:

@@ -1,7 +1,7 @@
 # CLI Mirror Post-Send Render Drop Root-Cause Fix Pass
 
 **Date:** 2026-06-03  
-**Repo:** `/Users/bretthoffman/Documents/claudia_console`  
+**Repo:** `/Users/bretthoffman/Documents/console`  
 **Scope:** Console UI only — restore post-send HERMES/RESPONSE styled transcript rendering
 
 ## Root cause found
@@ -16,10 +16,10 @@ Raw debug remained correct because it still uses first-field `extractTranscriptT
 
 ## Files changed
 
-- `static/js/claudiaCliMirrorHelpers.js` — `resolveBestPtyPayloadText`, `resolveStyledTranscriptChunkRaw`, `hasReadableDisplayGlyphs`, `diagnoseTranscriptEvent`, safer debris guard, classified append path, `musing` status hint
-- `static/js/claudiaCliMirror.js` — classified append flag, prune uses `displayText`
-- `tests/test_claudia_cli_mirror_ui.py` — split-field fixture, diagnostics, best-payload regression tests
-- `docs/claudia_console_reform/cli_mirror_post_send_render_drop_root_cause_fix.md` — this note
+- `static/js/nexusCliMirrorHelpers.js` — `resolveBestPtyPayloadText`, `resolveStyledTranscriptChunkRaw`, `hasReadableDisplayGlyphs`, `diagnoseTranscriptEvent`, safer debris guard, classified append path, `musing` status hint
+- `static/js/nexusCliMirror.js` — classified append flag, prune uses `displayText`
+- `tests/test_nexus_cli_mirror_ui.py` — split-field fixture, diagnostics, best-payload regression tests
+- `docs/console_reform/cli_mirror_post_send_render_drop_root_cause_fix.md` — this note
 
 ## Behavior changed
 
@@ -63,9 +63,9 @@ Runtime logic does not use sequence numbers.
 ```bash
 bash -n start-macos.sh
 python3 -m compileall -q app.py core routes src
-node --check static/js/claudiaCliMirror.js
-node --check static/js/claudiaCliMirrorHelpers.js
-venv/bin/python -m pytest -q tests/test_claudia_cli_mirror_ui.py
+node --check static/js/nexusCliMirror.js
+node --check static/js/nexusCliMirrorHelpers.js
+venv/bin/python -m pytest -q tests/test_nexus_cli_mirror_ui.py
 ```
 
 ## Risks

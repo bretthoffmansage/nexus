@@ -1,4 +1,4 @@
-"""Tests for embedded Hermes runtime resolver (Claudia Console host)."""
+"""Tests for embedded Hermes runtime resolver (legacy local console host)."""
 
 from __future__ import annotations
 
@@ -38,23 +38,23 @@ def _install_fake_runtime(base: Path) -> None:
     (home / ".env").write_text("HERMES_HOME=\n", encoding="utf-8")
     scripts = base / "scripts"
     scripts.mkdir(exist_ok=True)
-    (scripts / "hermes_claudia.sh").write_text(
+    (scripts / "hermes_nexus.sh").write_text(
         "#!/usr/bin/env bash\n"
-        'export HERMES_HOME="${CLAUDIA_SYSTEM_ROOT}/hermes_runtime"\n'
+        'export HERMES_HOME="${NEXUS_SYSTEM_ROOT}/hermes_runtime"\n'
         'exec "${HERMES_HOME}/hermes-agent/venv/bin/hermes" "$@"\n',
         encoding="utf-8",
     )
 
 
 def test_defaults_use_embedded_venv_cli_not_global_paths(monkeypatch):
-    monkeypatch.delenv("CLAUDIA_SYSTEM_ROOT", raising=False)
-    monkeypatch.delenv("CLAUDIA_HERMES_HOME", raising=False)
-    monkeypatch.delenv("CLAUDIA_HERMES_CLI", raising=False)
-    monkeypatch.delenv("CLAUDIA_HERMES_PYTHON", raising=False)
+    monkeypatch.delenv("NEXUS_SYSTEM_ROOT", raising=False)
+    monkeypatch.delenv("NEXUS_HERMES_HOME", raising=False)
+    monkeypatch.delenv("NEXUS_HERMES_CLI", raising=False)
+    monkeypatch.delenv("NEXUS_HERMES_PYTHON", raising=False)
     with tempfile.TemporaryDirectory() as tmp:
         base = Path(tmp)
         _install_fake_runtime(base)
-        monkeypatch.setenv("CLAUDIA_SYSTEM_ROOT", str(base))
+        monkeypatch.setenv("NEXUS_SYSTEM_ROOT", str(base))
         mod = _load_module()
         cli = mod.get_hermes_cli()
         home = mod.get_hermes_home()
@@ -69,7 +69,7 @@ def test_build_hermes_command_uses_venv_cli(monkeypatch):
     with tempfile.TemporaryDirectory() as tmp:
         base = Path(tmp)
         _install_fake_runtime(base)
-        monkeypatch.setenv("CLAUDIA_SYSTEM_ROOT", str(base))
+        monkeypatch.setenv("NEXUS_SYSTEM_ROOT", str(base))
         mod = _load_module()
         argv = mod.build_hermes_command(["config"])
         assert argv[0].endswith("hermes-agent/venv/bin/hermes")
@@ -91,10 +91,10 @@ def test_env_overrides(monkeypatch):
         custom_python = custom_home / "bin" / "python"
         custom_python.write_text("#!/bin/sh\n", encoding="utf-8")
         custom_python.chmod(custom_python.stat().st_mode | stat.S_IXUSR)
-        monkeypatch.setenv("CLAUDIA_SYSTEM_ROOT", str(base))
-        monkeypatch.setenv("CLAUDIA_HERMES_HOME", str(custom_home))
-        monkeypatch.setenv("CLAUDIA_HERMES_CLI", str(custom_cli))
-        monkeypatch.setenv("CLAUDIA_HERMES_PYTHON", str(custom_python))
+        monkeypatch.setenv("NEXUS_SYSTEM_ROOT", str(base))
+        monkeypatch.setenv("NEXUS_HERMES_HOME", str(custom_home))
+        monkeypatch.setenv("NEXUS_HERMES_CLI", str(custom_cli))
+        monkeypatch.setenv("NEXUS_HERMES_PYTHON", str(custom_python))
         mod = _load_module()
         assert mod.get_hermes_home() == custom_home.resolve()
         assert mod.get_hermes_cli() == custom_cli.resolve()
@@ -105,7 +105,7 @@ def test_validate_hermes_runtime_success(monkeypatch):
     with tempfile.TemporaryDirectory() as tmp:
         base = Path(tmp)
         _install_fake_runtime(base)
-        monkeypatch.setenv("CLAUDIA_SYSTEM_ROOT", str(base))
+        monkeypatch.setenv("NEXUS_SYSTEM_ROOT", str(base))
         mod = _load_module()
         report = mod.validate_hermes_runtime()
         assert report["validation_ok"] is True
@@ -118,8 +118,8 @@ def test_validate_rejects_forbidden_cli_path(monkeypatch):
     with tempfile.TemporaryDirectory() as tmp:
         base = Path(tmp)
         _install_fake_runtime(base)
-        monkeypatch.setenv("CLAUDIA_SYSTEM_ROOT", str(base))
-        monkeypatch.setenv("CLAUDIA_HERMES_CLI", str(Path.home() / ".local/bin/hermes"))
+        monkeypatch.setenv("NEXUS_SYSTEM_ROOT", str(base))
+        monkeypatch.setenv("NEXUS_HERMES_CLI", str(Path.home() / ".local/bin/hermes"))
         mod = _load_module()
         with pytest.raises(mod.HermesRuntimeError):
             mod.build_hermes_command(["--help"])
@@ -129,20 +129,20 @@ def test_gateway_health_includes_hermes_runtime(monkeypatch):
     with tempfile.TemporaryDirectory() as tmp:
         base = Path(tmp)
         _install_fake_runtime(base)
-        monkeypatch.setenv("CLAUDIA_SYSTEM_ROOT", str(base))
-        monkeypatch.delenv("CLAUDIA_CORE_URL", raising=False)
+        monkeypatch.setenv("NEXUS_SYSTEM_ROOT", str(base))
+        monkeypatch.delenv("NEXUS_CORE_URL", raising=False)
         monkeypatch.setenv("AUTH_ENABLED", "false")
-        sys.modules.pop("routes.claudia_routes", None)
-        sys.modules.pop("src.claudia_deployment_posture", None)
+        sys.modules.pop("routes.nexus_routes", None)
+        sys.modules.pop("src.nexus_deployment_posture", None)
         sys.modules.pop("src.hermes_runtime", None)
         from fastapi import FastAPI
         from fastapi.testclient import TestClient
-        from routes.claudia_routes import setup_claudia_routes
+        from routes.nexus_routes import setup_nexus_routes
 
         app = FastAPI()
-        app.include_router(setup_claudia_routes())
+        app.include_router(setup_nexus_routes())
         with TestClient(app) as client:
-            resp = client.get("/api/claudia/v1/health")
+            resp = client.get("/api/nexus/v1/health")
         assert resp.status_code == 200
         data = resp.json()
         assert "hermes_runtime" in data
@@ -150,8 +150,8 @@ def test_gateway_health_includes_hermes_runtime(monkeypatch):
         assert data["hermes_runtime"]["hermes_cli"].endswith("venv/bin/hermes")
 
 
-def test_claudia_client_does_not_shell_out_to_hermes():
-    text = (REPO / "src/claudia_client.py").read_text(encoding="utf-8")
+def test_nexus_client_does_not_shell_out_to_hermes():
+    text = (REPO / "src/nexus_client.py").read_text(encoding="utf-8")
     assert "subprocess" not in text
     assert "Popen" not in text
     assert ".hermes" not in text
@@ -172,7 +172,7 @@ def test_no_active_old_hermes_home_in_python_sources():
 
 
 def test_model_selector_frontend_uses_gateway_only():
-    text = (REPO / "static/js/claudiaModelSelector.js").read_text(encoding="utf-8")
-    assert "/api/claudia/v1/model-config" in text
+    text = (REPO / "static/js/nexusModelSelector.js").read_text(encoding="utf-8")
+    assert "/api/nexus/v1/model-config" in text
     assert ".hermes" not in text
     assert "venv/bin/hermes" not in text

@@ -1,41 +1,41 @@
-# Claudia Console / Gateway — Operator Handoff
+# legacy local console / Gateway — Operator Handoff
 
-Practical guide for running the reformed Odysseus codebase as **Claudia Console UI** and **Claudia Gateway API**. Read this first; detailed reform history lives under `docs/claudia_console_reform/`.
+Practical guide for running the reformed Odysseus codebase as **legacy local console UI** and **Nexus Gateway API**. Read this first; detailed reform history lives under `docs/console_reform/`.
 
 ---
 
 ## 1. What this repo is now
 
-- **Claudia Console UI** — authenticated web/PWA control surface (chat, dashboard, approvals, uploads, read-only connectors, model admin).
-- **Claudia Gateway API** — `/api/claudia/v1/*` forward-only routes (intake, messages, sources, worker-output, health, approvals).
-- **Private deployment shell** — designed for a dedicated Claudia Mac on loopback or Tailscale/private LAN.
+- **legacy local console UI** — authenticated web/PWA control surface (chat, dashboard, approvals, uploads, read-only connectors, model admin).
+- **Nexus Gateway API** — `/api/nexus/v1/*` forward-only routes (intake, messages, sources, worker-output, health, approvals).
+- **Private deployment shell** — designed for a dedicated Nexus Mac on loopback or Tailscale/private LAN.
 
 Checkout path:
 
 ```text
-/Users/bretthoffman/Documents/claudia_console
+/Users/bretthoffman/Documents/console
 ```
 
 ## 2. What this repo is not
 
-- **Not Claudia Core** — no task loop, worker execution, final authority, or autonomous housekeeping.
+- **Not Nexus Core** — no task loop, worker execution, final authority, or autonomous housekeeping.
 - **Not a public SaaS** — do not expose raw ports to the internet.
 - **Not a full Odysseus agent host** in Console Mode — local agent loop, shell, MCP spawn, connector writes, and generative gallery are demoted/blocked.
 
-## 3. Where Claudia Core lives
+## 3. Where Nexus Core lives
 
 ```text
-/Users/bretthoffman/Documents/claudia_system
+/Users/bretthoffman/Documents/system
 ```
 
 Core runs separately. Console does **not** start Core. Point Gateway at Core only when Core is running and reachable on loopback or private LAN.
 
-## 4. How to launch Claudia Console
+## 4. How to launch legacy local console
 
 **Basic launch:**
 
 ```bash
-cd /Users/bretthoffman/Documents/claudia_console
+cd /Users/bretthoffman/Documents/console
 ./start-macos.sh
 ```
 
@@ -44,8 +44,8 @@ Opens at `http://127.0.0.1:7860`.
 **Recommended Console Mode launch:**
 
 ```bash
-cd /Users/bretthoffman/Documents/claudia_console
-CLAUDIA_CONSOLE_MODE=true ./start-macos.sh
+cd /Users/bretthoffman/Documents/console
+NEXUS_CONSOLE_MODE=true ./start-macos.sh
 ```
 
 The script resolves paths from its own location — the folder name does not need to be `odysseus`.
@@ -55,15 +55,15 @@ The script resolves paths from its own location — the folder name does not nee
 Copy `.env.example` to `.env` (never commit `.env`):
 
 ```env
-CLAUDIA_CONSOLE_MODE=true
+NEXUS_CONSOLE_MODE=true
 AUTH_ENABLED=true
 LOCALHOST_BYPASS=false
 APP_BIND=127.0.0.1
-CLAUDIA_CORE_URL=http://127.0.0.1:8080
-CLAUDIA_GATEWAY_SHARED_SECRET=<set locally; never commit>
+NEXUS_CORE_URL=http://127.0.0.1:8080
+NEXUS_GATEWAY_SHARED_SECRET=<set locally; never commit>
 ```
 
-Set `CLAUDIA_CORE_URL` and `CLAUDIA_GATEWAY_SHARED_SECRET` only when Claudia Core is running at `/Users/bretthoffman/Documents/claudia_system` (never commit secrets).
+Set `NEXUS_CORE_URL` and `NEXUS_GATEWAY_SHARED_SECRET` only when Nexus Core is running at `/Users/bretthoffman/Documents/system` (never commit secrets).
 
 Console Mode also forces off in-process task scheduler, email pollers, bg_monitor, and nightly skill audit regardless of `ODYSSEUS_INPROCESS_*`.
 
@@ -73,37 +73,37 @@ Console Mode also forces off in-process task scheduler, email pollers, bg_monito
 2. Gateway health (no auth required):
 
    ```bash
-   curl -s http://127.0.0.1:7860/api/claudia/v1/health | python3 -m json.tool
+   curl -s http://127.0.0.1:7860/api/nexus/v1/health | python3 -m json.tool
    ```
 
-   Expect `claudia_console_mode: true` when Console Mode is on, plus `deployment_warnings` (no secret values).
+   Expect `console_mode: true` when Console Mode is on, plus `deployment_warnings` (no secret values).
 
-3. UI: Claudia dashboard tab shows health, deployment warnings, and Console Mode indicators.
-4. Startup logs: look for `[claudia-console]` skip lines when Console Mode is active.
+3. UI: Nexus dashboard tab shows health, deployment warnings, and Console Mode indicators.
+4. Startup logs: look for `[nexus-console]` skip lines when Console Mode is active.
 
-**Note:** Package 20 validation did not run a live long-running server smoke test in CI; verify on your Claudia Mac after launch.
+**Note:** Package 20 validation did not run a live long-running server smoke test in CI; verify on your Nexus Mac after launch.
 
-## 7. How to use Claudia Console Mode
+## 7. How to use legacy local console Mode
 
-Set `CLAUDIA_CONSOLE_MODE=true` in `.env` or the shell before `./start-macos.sh`.
+Set `NEXUS_CONSOLE_MODE=true` in `.env` or the shell before `./start-macos.sh`.
 
 Console Mode:
 
 - Skips competing in-process autonomy (scheduler, pollers, bg_monitor, skill audit seed).
-- Routes chat through Claudia message packets → Core when `CLAUDIA_CORE_URL` is set.
+- Routes chat through Nexus message packets → Core when `NEXUS_CORE_URL` is set.
 - Blocks local agent loop, shell, MCP connect/spawn, connector writes, memory/skills writes, research runs, task runs, cookbook subprocesses, and gallery AI generation.
 - Preserves auth, PWA, dashboard, Gateway API, read surfaces, Ollama/model admin, and gallery browsing.
 
-Legacy Odysseus behavior returns when `CLAUDIA_CONSOLE_MODE` is off (not recommended for Claudia Mac production).
+Legacy Odysseus behavior returns when `NEXUS_CONSOLE_MODE` is off (not recommended for Nexus Mac production).
 
-## 8. How Gateway connects to Claudia Core
+## 8. How Gateway connects to Nexus Core
 
 | Setting | Purpose |
 |---------|---------|
-| `CLAUDIA_CORE_URL` | Base URL for Core (loopback or private LAN only) |
-| `CLAUDIA_GATEWAY_SHARED_SECRET` | Sent as `X-Claudia-Gateway-Secret`; required when Core URL is set |
+| `NEXUS_CORE_URL` | Base URL for Core (loopback or private LAN only) |
+| `NEXUS_GATEWAY_SHARED_SECRET` | Sent as `X-Nexus-Gateway-Secret`; required when Core URL is set |
 
-Gateway routes (`/api/claudia/v1/intake`, `/messages`, `/sources`, `/worker-output`) normalize Claudia packets and **forward** to Core. Gateway does not execute tools, agents, or tasks locally.
+Gateway routes (`/api/nexus/v1/intake`, `/messages`, `/sources`, `/worker-output`) normalize Nexus packets and **forward** to Core. Gateway does not execute tools, agents, or tasks locally.
 
 Health probes Core when URL is configured. Chat/message forwarding uses Core `POST /messages` with fallback to `/intake`.
 
@@ -118,13 +118,13 @@ Health probes Core when URL is configured. Chat/message forwarding uses Core `PO
 | Authority | Memory/skills writes, document archive/restore, upload vision/RAG processing |
 | Gallery | AI upscale, inpaint, style transfer, and related generative routes |
 
-All return structured blocked responses (`local_execution_disabled`, `connector_write_disabled`, `authority_disabled`, etc.) with `claudia_console_mode: true`.
+All return structured blocked responses (`local_execution_disabled`, `connector_write_disabled`, `authority_disabled`, etc.) with `console_mode: true`.
 
 ## 10. What is preserved
 
-- Login/auth, 2FA, API tokens (Claudia scopes)
-- PWA/mobile shell and Claudia branding
-- Claudia dashboard and approvals UI
+- Login/auth, 2FA, API tokens (Nexus scopes)
+- PWA/mobile shell and Nexus branding
+- Nexus dashboard and approvals UI
 - Gateway API (forward-only)
 - Chat UI (packet bridge to Core)
 - Upload staging → source packets (no local vision/RAG in Console Mode)
@@ -153,7 +153,7 @@ Summary:
 - **Core integration:** Real Core streaming/event relay is placeholder until Core API is live.
 - **Task metadata CRUD:** Task create/update still allowed; scheduler does not run in Console Mode.
 - **Internal identifiers:** Cookies/headers still use `odysseus_*` names (intentional compatibility).
-- **Upstream GitHub repo** still named `odysseus`; local checkout is `claudia_console`.
+- **Upstream GitHub repo** still named `odysseus`; local checkout is `console`.
 - **Historical package notes** (00–19) record the pre-rename checkout folder name — historical only.
 - **pytest baseline:** Two pre-existing collection errors in full suite (see §14).
 
@@ -163,17 +163,17 @@ Summary:
 |---------|-------|
 | Port in use | `ODYSSEUS_PORT=7900 ./start-macos.sh` or stop existing process |
 | Auth loop / bypass | `AUTH_ENABLED=true`, `LOCALHOST_BYPASS=false` for LAN/Tailscale |
-| Chat returns Core unreachable | Set `CLAUDIA_CORE_URL`; ensure Core is running; check `deployment_warnings` |
-| Gateway secret warning | Set `CLAUDIA_GATEWAY_SHARED_SECRET` when Core URL is set |
-| Cookbook serve blocked | Expected in Console Mode; use legacy mode only on non-Claudia dev hosts |
-| Deployment warnings in health | Review `/api/claudia/v1/health` → `deployment_warnings` |
-| PWA stale UI | Service worker cache `claudia-console-v1`; hard refresh or reinstall |
+| Chat returns Core unreachable | Set `NEXUS_CORE_URL`; ensure Core is running; check `deployment_warnings` |
+| Gateway secret warning | Set `NEXUS_GATEWAY_SHARED_SECRET` when Core URL is set |
+| Cookbook serve blocked | Expected in Console Mode; use legacy mode only on non-Nexus dev hosts |
+| Deployment warnings in health | Review `/api/nexus/v1/health` → `deployment_warnings` |
+| PWA stale UI | Service worker cache `nexus-console-v1`; hard refresh or reinstall |
 
 ## 14. Final launch command
 
 ```bash
-cd /Users/bretthoffman/Documents/claudia_console
-CLAUDIA_CONSOLE_MODE=true ./start-macos.sh
+cd /Users/bretthoffman/Documents/console
+NEXUS_CONSOLE_MODE=true ./start-macos.sh
 ```
 
 ---

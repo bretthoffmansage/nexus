@@ -9,7 +9,7 @@ from fastapi import APIRouter, HTTPException, Request, Form
 from core.database import get_db_session, ApiToken
 from core.middleware import require_admin
 from src.auth_helpers import get_current_user
-from src.claudia_scopes import (
+from src.nexus_scopes import (
     ALL_KNOWN_API_TOKEN_SCOPES,
     DEFAULT_API_TOKEN_SCOPES,
     parse_scopes_csv,
@@ -18,7 +18,7 @@ from src.claudia_scopes import (
 
 MAX_NAME_LEN = 100
 DEFAULT_SCOPES = DEFAULT_API_TOKEN_SCOPES
-# Documented scopes for admin/UI: chat,research + claudia_intake,claudia_worker,claudia_read,claudia_admin
+# Documented scopes for admin/UI: chat,research + nexus_intake,nexus_worker,nexus_read,nexus_admin
 KNOWN_API_TOKEN_SCOPES = sorted(ALL_KNOWN_API_TOKEN_SCOPES)
 
 

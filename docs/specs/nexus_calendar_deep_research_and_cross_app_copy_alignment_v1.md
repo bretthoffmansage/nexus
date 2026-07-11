@@ -6,12 +6,12 @@ Package: `nexus_calendar_deep_research_and_cross_app_copy_alignment_v1`
 
 Direct and scheduled Deep Research converge on one path:
 
-- **Direct:** Deep Research page → `nexusTasks` → Claudia Connector → `research.hermes_deep_research` → terminal result → Deep Research report rendering
+- **Direct:** Deep Research page → `nexusTasks` → Console Connector → `research.hermes_deep_research` → terminal result → Deep Research report rendering
 - **Scheduled:** Calendar event due → existing Calendar dispatcher → one `nexusTasks` row → same Connector tool → same terminal result → Calendar projection + Tasks + Deep Research history
 
-No second queue, worker, endpoint, research-history table, or Claudia tool was added.
+No second queue, worker, endpoint, research-history table, or Nexus tool was added.
 
-## Strict Claudia metadata
+## Strict Nexus metadata
 
 Calendar-dispatched Deep Research uses the same five `taskMetadata` keys as direct submission:
 
@@ -21,7 +21,7 @@ Calendar-dispatched Deep Research uses the same five `taskMetadata` keys as dire
 - `researchRequestId`
 - `idempotencyKey`
 
-Calendar linkage is stored on Nexus-owned fields (`nexusScheduledEvents`, `nexusTasks.scheduledEventId`, `linkedTaskId`) — not in Claudia `taskMetadata`.
+Calendar linkage is stored on Nexus-owned fields (`nexusScheduledEvents`, `nexusTasks.scheduledEventId`, `linkedTaskId`) — not in Nexus `taskMetadata`.
 
 ## Calendar scheduled-tool registry
 
@@ -105,4 +105,4 @@ Active Connector `allowedToolIds` must include `research.hermes_deep_research`. 
 
 ## Rollback notes
 
-Revert Calendar registry entry, scheduled-event fields, dispatch branch, dialog UI, shared form helper, Skills/copy edits, and spec. No Claudia System changes required for rollback.
+Revert Calendar registry entry, scheduled-event fields, dispatch branch, dialog UI, shared form helper, Skills/copy edits, and spec. No Nexus System changes required for rollback.

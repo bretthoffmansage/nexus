@@ -1,28 +1,28 @@
 # Nexus Calendar Membership.io Full Sync Option v1
 
 **Package:** `nexus_calendar_membership_full_sync_option_v1`  
-**Repository:** `/Users/bretthoffman/Documents/claudia_console`  
+**Repository:** `/Users/bretthoffman/Documents/console`  
 **Branch at start:** `main`  
 **Starting HEAD:** `d865ac7`
 
-## Canonical Claudia tool
+## Canonical Nexus tool
 
-**Tool ID (unchanged, Claudia-owned):** `membership_io.catalog_refresh_and_vault_update`
+**Tool ID (unchanged, Nexus-owned):** `membership_io.catalog_refresh_and_vault_update`
 
-Nexus does **not** implement scraping, transcript processing, vault placement, or sync logic. It only schedules the canonical tool through the existing global `nexusTasks` queue when Claudia Connector capability is present.
+Nexus does **not** implement scraping, transcript processing, vault placement, or sync logic. It only schedules the canonical tool through the existing global `nexusTasks` queue when Console Connector capability is present.
 
-## Current Claudia blockers
+## Current Nexus blockers
 
-The tool exists in Claudia source but is **not yet live through Nexus**:
+The tool exists in Nexus source but is **not yet live through Nexus**:
 
 - no trusted Connector adapter for this full-sync tool;
 - `nexus_connector` not yet an allowed caller;
 - no calendar-origin write-evidence authorization;
 - no Connector capability entry in production;
 - no Nexus progress mapping;
-- no Claudia-side single-flight lock.
+- no Nexus-side single-flight lock.
 
-**This package must not enable live scheduling until Claudia implements trusted Connector execution.** Nexus gates save and dispatch on active Connector `allowedToolIds`.
+**This package must not enable live scheduling until Nexus implements trusted Connector execution.** Nexus gates save and dispatch on active Connector `allowedToolIds`.
 
 ## Scheduled-tool registry
 
@@ -38,7 +38,7 @@ Single surface: `convex/lib/calendarScheduledTools.ts`
 | `chatAvailable` | false |
 | `requiresConnectorCapability` | true |
 | `singleFlightKey` | same tool id |
-| `executionTimeoutSeconds` | 3600 (Claudia-side guidance) |
+| `executionTimeoutSeconds` | 3600 (Nexus-side guidance) |
 
 Existing text-request tools remain in the same registry unchanged.
 
@@ -65,7 +65,7 @@ Switching from a text tool preserves draft request text in UI state only; server
 | `taskMetadata.scheduledForUtc` | canonical UTC ms |
 | `taskMetadata.idempotencyKey` | `{eventId}:{ISO scheduled instant}` |
 | Attachments | none |
-| Browser-supplied Claudia flags | none |
+| Browser-supplied Nexus flags | none |
 
 ## Readiness gating
 
@@ -79,7 +79,7 @@ Tool is in `KNOWN_CONNECTOR_TOOL_IDS` (operator may add via `setConnectorAllowed
 
 No one-hour HTTP request. Uses normal queue → claim → renewable lease → progress → terminal completion.
 
-Nexus has no per-task timeout field; Claudia enforces **3600 s**. Connector lease renewal (`P6_LEASE.renewalExtensionMs`) remains the long-run mechanism.
+Nexus has no per-task timeout field; Nexus enforces **3600 s**. Connector lease renewal (`P6_LEASE.renewalExtensionMs`) remains the long-run mechanism.
 
 ## Single-flight protection
 
@@ -98,7 +98,7 @@ Per-event idempotency key `schedule:{eventId}` unchanged. Single-flight wait doe
 
 ## Progress and terminal projection
 
-Until Claudia emits Nexus progress, show normal queued/running lifecycle only. Do not fabricate stage labels.
+Until Nexus emits Nexus progress, show normal queued/running lifecycle only. Do not fabricate stage labels.
 
 Future terminal mapping (bounded, user-safe): `complete`, `complete_with_transcript_gaps`, `partial`, `failed`, `blocked` — no raw paths, logs, or credentials.
 
@@ -115,13 +115,13 @@ Tool is **not** in `P5_SUPPORTED_TOOL_IDS`. Only Calendar explicit scheduling ma
 
 **Not performed** — no live full sync scheduled or executed in this package.
 
-UI verification (before Claudia support):
+UI verification (before Nexus support):
 
 1. Open Calendar → confirm third option visible with unavailable label.
 2. Select it → task request hidden; Save disabled.
 3. Server rejects direct mutation without Connector capability.
 
-Coordinated smoke after Claudia package: enable Connector allowlist, schedule future event, confirm single dispatch and no overlap.
+Coordinated smoke after Nexus package: enable Connector allowlist, schedule future event, confirm single dispatch and no overlap.
 
 ## Rollback
 

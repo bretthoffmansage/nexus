@@ -1,4 +1,4 @@
-"""Tests for Package 19 — final authority hardening in Claudia Console Mode."""
+"""Tests for Package 19 — final authority hardening in legacy local console Mode."""
 
 import asyncio
 import sys
@@ -20,7 +20,7 @@ def _admin_request():
 
 @pytest.mark.asyncio
 async def test_task_run_blocked_before_scheduler(monkeypatch):
-    monkeypatch.setenv("CLAUDIA_CONSOLE_MODE", "true")
+    monkeypatch.setenv("NEXUS_CONSOLE_MODE", "true")
     sys.modules.pop("src.console_mode", None)
 
     scheduler = MagicMock()
@@ -40,7 +40,7 @@ async def test_task_run_blocked_before_scheduler(monkeypatch):
 
 @pytest.mark.asyncio
 async def test_assistant_run_blocked_before_scheduler(monkeypatch):
-    monkeypatch.setenv("CLAUDIA_CONSOLE_MODE", "true")
+    monkeypatch.setenv("NEXUS_CONSOLE_MODE", "true")
     sys.modules.pop("src.console_mode", None)
 
     scheduler = MagicMock()
@@ -60,7 +60,7 @@ async def test_assistant_run_blocked_before_scheduler(monkeypatch):
 
 @pytest.mark.asyncio
 async def test_cookbook_download_blocked_before_subprocess(monkeypatch):
-    monkeypatch.setenv("CLAUDIA_CONSOLE_MODE", "true")
+    monkeypatch.setenv("NEXUS_CONSOLE_MODE", "true")
     sys.modules.pop("src.console_mode", None)
 
     from routes.cookbook_routes import setup_cookbook_routes, ModelDownloadRequest
@@ -78,7 +78,7 @@ async def test_cookbook_download_blocked_before_subprocess(monkeypatch):
 
 
 def test_gallery_inpaint_blocked_before_provider_call(monkeypatch):
-    monkeypatch.setenv("CLAUDIA_CONSOLE_MODE", "true")
+    monkeypatch.setenv("NEXUS_CONSOLE_MODE", "true")
     sys.modules.pop("src.console_mode", None)
 
     from routes.gallery_routes import setup_gallery_routes
@@ -95,7 +95,7 @@ def test_gallery_inpaint_blocked_before_provider_call(monkeypatch):
 
 
 def test_gallery_library_read_allowed_in_console_mode(monkeypatch):
-    monkeypatch.setenv("CLAUDIA_CONSOLE_MODE", "true")
+    monkeypatch.setenv("NEXUS_CONSOLE_MODE", "true")
     sys.modules.pop("src.console_mode", None)
 
     from routes.gallery_routes import setup_gallery_routes
@@ -125,7 +125,7 @@ def test_gallery_library_read_allowed_in_console_mode(monkeypatch):
 
 @pytest.mark.asyncio
 async def test_document_restore_blocked_before_db_write(monkeypatch):
-    monkeypatch.setenv("CLAUDIA_CONSOLE_MODE", "true")
+    monkeypatch.setenv("NEXUS_CONSOLE_MODE", "true")
     sys.modules.pop("src.console_mode", None)
 
     from routes.document_routes import setup_document_routes
@@ -143,7 +143,7 @@ async def test_document_restore_blocked_before_db_write(monkeypatch):
 
 @pytest.mark.asyncio
 async def test_stream_agent_loop_blocked_in_console_mode(monkeypatch):
-    monkeypatch.setenv("CLAUDIA_CONSOLE_MODE", "true")
+    monkeypatch.setenv("NEXUS_CONSOLE_MODE", "true")
     sys.modules.pop("src.console_mode", None)
     sys.modules.pop("src.agent_loop", None)
 
@@ -159,7 +159,7 @@ async def test_stream_agent_loop_blocked_in_console_mode(monkeypatch):
 
 @pytest.mark.asyncio
 async def test_execute_tool_block_blocked_in_console_mode(monkeypatch):
-    monkeypatch.setenv("CLAUDIA_CONSOLE_MODE", "true")
+    monkeypatch.setenv("NEXUS_CONSOLE_MODE", "true")
     sys.modules.pop("src.console_mode", None)
 
     from src.tool_execution import execute_tool_block
@@ -173,16 +173,16 @@ async def test_execute_tool_block_blocked_in_console_mode(monkeypatch):
 
 @pytest.mark.asyncio
 async def test_mcp_connect_all_skipped_when_console_mode(monkeypatch):
-    monkeypatch.setenv("CLAUDIA_CONSOLE_MODE", "true")
+    monkeypatch.setenv("NEXUS_CONSOLE_MODE", "true")
     sys.modules.pop("src.console_mode", None)
 
     mgr = MagicMock()
     mgr.connect_all_enabled = AsyncMock(side_effect=AssertionError("connect_all_enabled"))
 
     async def _startup_connect():
-        from src.console_mode import is_claudia_console_mode
+        from src.console_mode import is_console_mode
 
-        if not is_claudia_console_mode():
+        if not is_console_mode():
             await mgr.connect_all_enabled()
 
     await _startup_connect()

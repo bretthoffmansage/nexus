@@ -82,7 +82,7 @@ def _personal_upload_endpoint(monkeypatch):
 
 @pytest.mark.asyncio
 async def test_vision_console_mode_disabled_before_vl(tmp_path, monkeypatch):
-    monkeypatch.setenv("CLAUDIA_CONSOLE_MODE", "true")
+    monkeypatch.setenv("NEXUS_CONSOLE_MODE", "true")
     sys.modules.pop("src.console_mode", None)
     handler, alice_id = _make_upload_store(tmp_path, monkeypatch)
     get_vision_text = _upload_endpoints(handler, monkeypatch)["get_vision_text"]
@@ -103,13 +103,13 @@ async def test_vision_console_mode_disabled_before_vl(tmp_path, monkeypatch):
         force=1,
     )
     assert result["status"] == "local_processing_disabled"
-    assert result["claudia_console_mode"] is True
+    assert result["console_mode"] is True
     assert not vl_calls
 
 
 @pytest.mark.asyncio
 async def test_vision_legacy_mode_can_call_vl_mock(tmp_path, monkeypatch):
-    monkeypatch.delenv("CLAUDIA_CONSOLE_MODE", raising=False)
+    monkeypatch.delenv("NEXUS_CONSOLE_MODE", raising=False)
     sys.modules.pop("src.console_mode", None)
     handler, alice_id = _make_upload_store(tmp_path, monkeypatch)
     get_vision_text = _upload_endpoints(handler, monkeypatch)["get_vision_text"]
@@ -136,7 +136,7 @@ async def test_vision_legacy_mode_can_call_vl_mock(tmp_path, monkeypatch):
 
 @pytest.mark.asyncio
 async def test_personal_upload_console_mode_blocks_indexing(monkeypatch):
-    monkeypatch.setenv("CLAUDIA_CONSOLE_MODE", "true")
+    monkeypatch.setenv("NEXUS_CONSOLE_MODE", "true")
     sys.modules.pop("src.console_mode", None)
     upload_files_to_rag = _personal_upload_endpoint(monkeypatch)
 
@@ -160,7 +160,7 @@ async def test_personal_upload_console_mode_blocks_indexing(monkeypatch):
 
 @pytest.mark.asyncio
 async def test_personal_upload_legacy_mode_indexes_with_mock(monkeypatch, tmp_path):
-    monkeypatch.delenv("CLAUDIA_CONSOLE_MODE", raising=False)
+    monkeypatch.delenv("NEXUS_CONSOLE_MODE", raising=False)
     sys.modules.pop("src.console_mode", None)
     monkeypatch.setattr("routes.personal_routes.UPLOADS_DIR", str(tmp_path))
     upload_files_to_rag = _personal_upload_endpoint(monkeypatch)
@@ -186,7 +186,7 @@ async def test_personal_upload_legacy_mode_indexes_with_mock(monkeypatch, tmp_pa
 def test_upload_bridge_still_present_in_console_mode(monkeypatch):
     """Regression: Package 8 POST /api/upload bridge unchanged."""
     from src.upload_console_guard import console_mode_vision_disabled
-    from src.claudia_upload_bridge import bridge_upload_to_claudia_source
+    from src.nexus_upload_bridge import bridge_upload_to_nexus_source
 
-    assert "claudia_source_packet" not in console_mode_vision_disabled()
-    assert callable(bridge_upload_to_claudia_source)
+    assert "nexus_source_packet" not in console_mode_vision_disabled()
+    assert callable(bridge_upload_to_nexus_source)

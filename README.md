@@ -2,14 +2,14 @@
 
 **Nexus** is the repository-root hosted web application for approved users. It is built with **Next.js**, **TypeScript**, **Clerk**, and **Convex**, and is intended for deployment to **Vercel** via **GitHub**.
 
-**Claudia** is a separate private local execution system on the Claudia Mac. Nexus does not connect directly to Hermes, Claudia Core, local Python, SQLite, or the machine filesystem. Approved work flows **outbound only** through a future **Console Connector**.
+**The system** is a separate private local execution layer on the Nexus Mac. The hosted console does not connect directly to Hermes, Nexus Core, local Python, SQLite, or the machine filesystem. Approved work flows **outbound only** through the private **Console Connector**.
 
-The legacy **Claudia Console** (FastAPI + static SPA) is preserved for local reference and compatibility under [`legacy_local_console/`](legacy_local_console/).
+The legacy **local console** (FastAPI + static SPA) is preserved for local reference and compatibility under [`legacy_local_console/`](legacy_local_console/).
 
 ## Repository layout
 
 ```
-claudia_console/                 # local folder name (future GitHub repo may be named nexus)
+console/                         # local folder name (repo may be published as nexus)
 ├── app/                         # Next.js App Router (Nexus)
 ├── components/
 ├── convex/                      # Convex functions (beside package.json)
@@ -20,7 +20,7 @@ claudia_console/                 # local folder name (future GitHub repo may be 
 ├── scripts/
 ├── docs/specs/                  # authoritative architecture + migration specs
 ├── package.json                 # Nexus npm package (authoritative)
-└── legacy_local_console/        # local FastAPI Claudia Console (not deployed to Vercel)
+└── legacy_local_console/        # local FastAPI legacy console (not deployed to Vercel)
     ├── app.py
     ├── routes/, src/, static/
     └── start-macos.sh
@@ -42,7 +42,7 @@ claudia_console/                 # local folder name (future GitHub repo may be 
 | **P5-private-conversations-tasks-shared-queue** | Complete — private per-user conversations/tasks + global queue persistence; no execution (Connector is P6+) |
 | **P5.1-convex-auth-readiness-guard** | Complete — private queries gate on Convex auth readiness |
 | **P6-trusted-connector-queue-protocol** | Complete (Nexus/Convex side) — signed Connector protocol (claim/lease/heartbeat/complete) over the canonical queue; execution still requires the P7 local poller |
-| **P7+** | Not started — local outbound Connector poller inside `claudia_system` (execution) |
+| **P7+** | Not started — local outbound Connector poller inside `system` (execution) |
 
 See [`docs/specs/nexus_p4_2_clerk_convex_auth_repair_and_auth_centering_v1.md`](docs/specs/nexus_p4_2_clerk_convex_auth_repair_and_auth_centering_v1.md) for the Clerk-to-Convex token fix.
 
@@ -64,7 +64,7 @@ Webhook + bootstrap (server / Convex dashboard only):
 - `NEXUS_BOOTSTRAP_ADMIN_EMAILS` (optional; disabled once an active `nexus_admin` exists)
 
 ```bash
-cd /Users/bretthoffman/Documents/claudia_console
+cd /Users/bretthoffman/Documents/Nexus/console
 cp .env.example .env.local
 # Add Clerk and Convex keys for sign-in testing
 
@@ -101,7 +101,7 @@ npm run dev          # http://localhost:3000
 
 No Python, uvicorn, SQLite, or `data/` directory is required for Nexus builds.
 
-## Run legacy Claudia Console (local only)
+## Run the legacy local console (local only)
 
 ```bash
 cd legacy_local_console
@@ -118,10 +118,10 @@ The legacy launcher uses paths relative to `legacy_local_console/`. Runtime data
 
 ## What Nexus does not include yet
 
-- The **local outbound Connector poller** inside `claudia_system` (P7) — the piece that actually
-  executes queued work through Claudia. Nexus does not call Claudia; there is no inbound Claudia
+- The **local outbound Connector poller** inside `system` (P7) — the piece that actually
+  executes queued work on the local system. The hosted console never calls the system; there is no inbound
   endpoint.
-- Terminal execution, governed shell, Web Search, or direct Claudia/Hermes calls.
+- Terminal execution, governed shell, Web Search, or direct system/Hermes calls.
 
 Private conversations, persistent tasks, and shared global queue ordering (P5/P5.1) are implemented,
 and the **trusted Connector queue protocol (P6)** — a signed HTTPS surface for a single machine

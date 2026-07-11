@@ -21,7 +21,7 @@ import * as emailInbox from './emailInbox.js';
 import codeRunnerModule from './codeRunner.js';
 import slashCommands, { initSlashCommands, isCommand, handleSlashCommand, handleSetupInput, handleSetupWizard, typewriterInto } from './slashCommands.js';
 import createResearchSynapse from './researchSynapse.js';
-import claudiaBridge from './claudiaBrowserChatBridge.js';
+import nexusBridge from './nexusBrowserChatBridge.js';
   const RESEARCH_TIMEOUT_MS = 360000;
   const DEFAULT_TIMEOUT_MS = 120000;
   const RESEARCH_SVG = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>';
@@ -440,15 +440,15 @@ import claudiaBridge from './claudiaBrowserChatBridge.js';
     }
 
     if (!sessionModule.getCurrentSessionId()) {
-      await claudiaBridge.init();
-      if (claudiaBridge.shouldUseBridge()) {
-        const bridgeSid = await sessionModule.ensureClaudiaBridgeSession();
+      await nexusBridge.init();
+      if (nexusBridge.shouldUseBridge()) {
+        const bridgeSid = await sessionModule.ensureNexusBridgeSession();
         if (!bridgeSid) {
           addMessage(
             'assistant',
-            claudiaBridge.getCoreUnavailableMessage(),
+            nexusBridge.getCoreUnavailableMessage(),
             null,
-            { dismissible: true, claudia_bridge: true },
+            { dismissible: true, nexus_bridge: true },
           );
           _releaseSendFlag();
           return;
@@ -796,9 +796,9 @@ import claudiaBridge from './claudiaBrowserChatBridge.js';
         fd.append('preset_id', presetsModule.getSelectedPreset());
       }
 
-      // --- Claudia Console direct JSON bridge (Core configured) ---
-      await claudiaBridge.init();
-      if (claudiaBridge.shouldUseBridge()) {
+      // --- legacy local console direct JSON bridge (Core configured) ---
+      await nexusBridge.init();
+      if (nexusBridge.shouldUseBridge()) {
         const _bridgeBox = el('chat-history');
         if (_bridgeBox) _bridgeBox.setAttribute('aria-busy', 'true');
         holder = document.createElement('div');
@@ -806,21 +806,21 @@ import claudiaBridge from './claudiaBrowserChatBridge.js';
         currentHolder = holder;
         const _bridgeRoleTs = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         holder.innerHTML =
-          `<div class="role">Claudia <span class="role-timestamp">${_bridgeRoleTs}</span></div><div class="body"></div>`;
+          `<div class="role">Nexus <span class="role-timestamp">${_bridgeRoleTs}</span></div><div class="body"></div>`;
         _bridgeBox.appendChild(holder);
         uiModule.scrollHistory();
 
-        spinner = spinnerModule.create('Sending to Claudia Core', 'right', 'wave');
+        spinner = spinnerModule.create('Sending to Nexus Core', 'right', 'wave');
         currentSpinner = spinner;
         const _bridgeBody = holder.querySelector('.body');
         _bridgeBody.appendChild(spinner.createElement());
         spinner.start();
 
         try {
-          const bridgeResult = await claudiaBridge.sendBridgeMessage(_finalMsgWithInject, streamSessionId);
+          const bridgeResult = await nexusBridge.sendBridgeMessage(_finalMsgWithInject, streamSessionId);
           if (spinner && spinner.element) spinner.destroy();
           holder.classList.remove('streaming');
-          const displayText = bridgeResult.content || claudiaBridge.EMPTY_CONTENT_FALLBACK;
+          const displayText = bridgeResult.content || nexusBridge.EMPTY_CONTENT_FALLBACK;
           _bridgeBody.innerHTML = markdownModule.processWithThinking(
             markdownModule.squashOutsideCode(displayText),
           );
@@ -831,10 +831,10 @@ import claudiaBridge from './claudiaBrowserChatBridge.js';
           }
           if (markdownModule.renderMermaid) markdownModule.renderMermaid(holder);
         } catch (bridgeErr) {
-          console.error('Claudia bridge send failed:', bridgeErr);
+          console.error('Nexus bridge send failed:', bridgeErr);
           if (spinner && spinner.element) spinner.destroy();
           holder.classList.remove('streaming');
-          const errText = claudiaBridge.getCoreUnavailableMessage();
+          const errText = nexusBridge.getCoreUnavailableMessage();
           typewriterInto(holder.querySelector('.body'), errText);
           holder.dataset.raw = errText;
         }
@@ -884,7 +884,7 @@ import claudiaBridge from './claudiaBrowserChatBridge.js';
         loadingText = 'Processing request...';
       }
 
-      var roleLabel = claudiaBridge.shouldUseBridge() ? 'Claudia' : _shortModel(modelName);
+      var roleLabel = nexusBridge.shouldUseBridge() ? 'Nexus' : _shortModel(modelName);
       var _charNameInit = presetsModule.getCharacterName ? presetsModule.getCharacterName() : '';
       if (_charNameInit) roleLabel = _charNameInit;
       const roleTs = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
@@ -907,9 +907,9 @@ import claudiaBridge from './claudiaBrowserChatBridge.js';
         spinner.updateMessage('Researching');
         setTimeout(() => spinner.updateMessage('Analyzing sources'), 1500);
       } else {
-        spinner.updateMessage(claudiaBridge.shouldUseBridge() ? 'Sending to Claudia Core' : 'Processing request');
+        spinner.updateMessage(nexusBridge.shouldUseBridge() ? 'Sending to Nexus Core' : 'Processing request');
         const endpointUrlForProbe = sessionModule.getCurrentEndpointUrl ? sessionModule.getCurrentEndpointUrl() : null;
-        if (!claudiaBridge.shouldUseBridge() && endpointUrlForProbe && modelName) {
+        if (!nexusBridge.shouldUseBridge() && endpointUrlForProbe && modelName) {
           processingProbeTimer = setTimeout(async () => {
             processingProbeTimer = null;
             if (accumulated || !spinner || !spinner.element || (currentAbort && currentAbort.signal.aborted)) return;
@@ -1421,15 +1421,15 @@ import claudiaBridge from './claudiaBrowserChatBridge.js';
                 typewriterInto(roundHolder.querySelector('.body'), errMsg);
                 break;
               }
-              if (json.delta || json.type === 'claudia_message' || json.type === 'tool_start' || json.type === 'agent_step' || json.type === 'doc_stream_delta') {
+              if (json.delta || json.type === 'nexus_message' || json.type === 'tool_start' || json.type === 'agent_step' || json.type === 'doc_stream_delta') {
                 clearProcessingProbe();
               }
-              if (json.type === 'claudia_message' && !json.delta) {
-                const bridgeText = claudiaBridge.extractAssistantContent(json);
+              if (json.type === 'nexus_message' && !json.delta) {
+                const bridgeText = nexusBridge.extractAssistantContent(json);
                 if (bridgeText) json.delta = bridgeText;
               }
               if (json.type === 'error' || json.type === 'validation_error') {
-                const errText = claudiaBridge.extractAssistantContent(json) || json.message || 'Claudia Core returned an error.';
+                const errText = nexusBridge.extractAssistantContent(json) || json.message || 'Nexus Core returned an error.';
                 if (spinner && spinner.element) spinner.destroy();
                 typewriterInto(roundHolder.querySelector('.body'), errText);
                 break;
@@ -2857,7 +2857,7 @@ import claudiaBridge from './claudiaBrowserChatBridge.js';
             if (_box && sessionModule.getCurrentSessionId() === _timeoutSessionId) {
               var _timeoutMsg = document.createElement('div');
               _timeoutMsg.className = 'msg msg-ai';
-              _timeoutMsg.innerHTML = '<div class="role">Claudia</div><div class="body" style="opacity:0.6;font-style:italic;">Research clarification timed out. Toggle research again to start over.</div>';
+              _timeoutMsg.innerHTML = '<div class="role">Nexus</div><div class="body" style="opacity:0.6;font-style:italic;">Research clarification timed out. Toggle research again to start over.</div>';
               _box.appendChild(_timeoutMsg);
               uiModule.scrollHistory();
             }

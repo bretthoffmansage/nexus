@@ -1,29 +1,29 @@
 # Nexus P6 → P7 Connector Handoff Contract (v1)
 
-**Package:** Binding contract for the future local Connector poller (P7) inside `claudia_system`
+**Package:** Binding contract for the future local Connector poller (P7) inside `system`
 **Status:** Authoritative — P7 must implement exactly this. P6 (Nexus/Convex side) is complete; P7 is **not** started.
 **Date:** 2026-07-01
 **Related:** `docs/specs/nexus_p6_trusted_connector_queue_protocol_v1.md`
 
 This document is the exact wire contract the P7 outbound poller (running on the
-Claudia Mac, inside `claudia_system`) must speak to Nexus. Nothing in this
-contract is implemented in `claudia_system` yet. Where P7 conflicts with this
+Nexus Mac, inside `system`) must speak to Nexus. Nothing in this
+contract is implemented in `system` yet. Where P7 conflicts with this
 document, this document governs until superseded by a versioned successor.
 
 ## 1. Base URL & protocol
 
 - Base URL: the Convex **HTTP actions** origin — `https://<deployment>.convex.site`
   (note `.convex.site`, not `.convex.cloud`). Configure as
-  `NEXUS_CONNECTOR_BASE_URL` on the Claudia side.
+  `NEXUS_CONNECTOR_BASE_URL` on the Nexus side.
 - Protocol version: `v1`. Send header `x-nexus-protocol-version: v1`.
 - All requests are `POST` with a JSON body (may be `{}`), outbound only. Nexus
-  never calls Claudia; there is no inbound endpoint on the Claudia side.
+  never calls Nexus; there is no inbound endpoint on the Nexus side.
 
-## 2. Credentials (Claudia side)
+## 2. Credentials (Nexus side)
 
 - `NEXUS_CONNECTOR_ID` and `NEXUS_CONNECTOR_SHARED_SECRET` — provisioned by the
   operator; identical to the Convex deployment env values. Store them in the
-  Claudia machine's secret store, **never** in source, logs, or client-visible
+  Nexus machine's secret store, **never** in source, logs, or client-visible
   config. The secret is used only to compute HMACs; it is never transmitted.
 
 ## 3. Required headers (every request)
@@ -38,7 +38,7 @@ document, this document governs until superseded by a versioned successor.
 | `x-nexus-protocol-version` | `v1` |
 
 Clock skew: the timestamp must be within **±5 minutes** of Nexus server time.
-Keep the Claudia clock NTP-synced. Generate a new nonce per request (a UUID or
+Keep the Nexus clock NTP-synced. Generate a new nonce per request (a UUID or
 128-bit random hex is fine); never reuse one.
 
 ## 4. Signing (pseudocode)
@@ -186,7 +186,7 @@ user data.
 
 The shared secret is read once from the machine secret store into memory, used
 only for HMAC, and never transmitted, logged, or written to disk in plaintext.
-Rotating it is an operator action on both sides (Convex env + Claudia store).
+Rotating it is an operator action on both sides (Convex env + Nexus store).
 
 ## 21. Single-task loop (pseudocode)
 
@@ -200,12 +200,12 @@ loop forever:
     start(task.taskId, task.leaseId)
     startLeaseHeartbeatTimer(task, every ~30s)         # renew before expiry
     try:
-        for each phase of Claudia execution:
+        for each phase of Nexus execution:
             hb = leaseHeartbeat(task.taskId, task.leaseId)
             if hb.cancellationRequested:
                 acknowledgeCancellation(task.taskId, task.leaseId); break out
             progress(task.taskId, task.leaseId, stage=…, message=…)
-            … run read-only retrieval via Claudia locally …
+            … run read-only retrieval via Nexus locally …
         if not cancelled:
             complete(task.taskId, task.leaseId, answerText, sources, …)
     catch userSafeError e:
@@ -219,7 +219,7 @@ loop forever:
 
 ## 22. What P7 must NOT do
 
-- Do **not** expose any inbound HTTP endpoint on the Claudia machine.
+- Do **not** expose any inbound HTTP endpoint on the Nexus machine.
 - Do **not** open a public tunnel or accept Nexus-initiated connections.
 - Do **not** hold Convex deployment admin credentials or call Convex functions
   directly — only the signed HTTP routes in this contract.

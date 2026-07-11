@@ -5,9 +5,9 @@
 | **Document** | `docs/specs/nexus_hosted_console_architecture_audit_v1.md` |
 | **Pass type** | Architecture audit and specification only — **no implementation** |
 | **Date** | 2026-06-30 |
-| **Repository audited** | `/Users/bretthoffman/Documents/claudia_console` |
-| **Related repository** | `/Users/bretthoffman/Documents/claudia_system` (read-only references; no changes from this pass) |
-| **Product rename** | Hosted application → **Nexus**; local OS/authority → **Claudia**; outbound poller → **Console Connector** |
+| **Repository audited** | `/Users/bretthoffman/Documents/console` |
+| **Related repository** | `/Users/bretthoffman/Documents/system` (read-only references; no changes from this pass) |
+| **Product rename** | Hosted application → **Nexus**; local OS/authority → **Nexus**; outbound poller → **Console Connector** |
 
 > **Superseded target architecture (2026-06-30):** Railway/Fly.io, managed PostgreSQL, and long-running uvicorn as the **hosted Nexus runtime** are no longer the selected direction. Current-state findings in this document remain valid. For the authoritative hosted implementation target, see **[nexus_vercel_convex_architecture_correction_v1.md](./nexus_vercel_convex_architecture_correction_v1.md)** (Vercel + GitHub + Next.js/TypeScript + Clerk + Convex).
 
@@ -15,14 +15,14 @@
 
 ## 1. Executive summary
 
-The repository currently ships **Claudia Console** — a reformed **Odysseus** codebase that is a **FastAPI + uvicorn Python server** serving a **vanilla ES-module SPA** (no frontend build step). It was designed as a **private, co-located UI/Gateway shell** on the Claudia Mac, forwarding work to **Claudia Core** over loopback HTTP when `CLAUDIA_CORE_URL` is set.
+The repository currently ships **legacy local console** — a reformed **Odysseus** codebase that is a **FastAPI + uvicorn Python server** serving a **vanilla ES-module SPA** (no frontend build step). It was designed as a **private, co-located UI/Gateway shell** on the Nexus Mac, forwarding work to **Nexus Core** over loopback HTTP when `NEXUS_CORE_URL` is set.
 
 **Nexus** (the future hosted product) is **not present** in the codebase today. There are **zero** references to "Nexus". The intended product boundary requires:
 
 - **Nexus** = singular hosted, Clerk-authenticated web application with durable task persistence.
-- **Claudia** = private local OS and execution authority on the Claudia Mac.
+- **Nexus** = private local OS and execution authority on the Nexus Mac.
 - **Console Connector** = managed local subsystem that polls Nexus outbound-only.
-- **No inbound public tunnel** to Claudia Core.
+- **No inbound public tunnel** to Nexus Core.
 
 ### Readiness assessment
 
@@ -32,22 +32,22 @@ The repository currently ships **Claudia Console** — a reformed **Odysseus** c
 | Auth | bcrypt + cookie sessions (`data/auth.json`) | **Not suitable** for internet-hosted multi-tenant; Clerk required |
 | Task queue | None on Gateway; Core `/tasks` read passthrough only | **Missing** — primary Phase 3–5 work |
 | Connector API | None (`/api/connector/v1` does not exist) | **Missing** |
-| Claudia communication | Synchronous HTTP forward to `CLAUDIA_CORE_URL` | **Incompatible** with offline Claudia / outbound-only model |
+| Nexus communication | Synchronous HTTP forward to `NEXUS_CORE_URL` | **Incompatible** with offline Nexus / outbound-only model |
 | Persistence | SQLite file (`data/app.db`) + JSON (`auth.json`, `sessions.json`) | **Not suitable** for multi-user hosted deployment |
-| Branding | "Claudia Console" throughout UI | Must rename visible hosted branding to **Nexus** |
+| Branding | "legacy local console" throughout UI | Must rename visible hosted branding to **Nexus** |
 
 ### First milestone gap
 
-Boss signs into Nexus → Sage KB question → task persists while Claudia offline → connector claims → `vault.agentic_retrieval` → structured answer displayed.
+Boss signs into Nexus → Sage KB question → task persists while Nexus offline → connector claims → `vault.agentic_retrieval` → structured answer displayed.
 
-**Blockers today:** no Clerk, no hosted task DB, no connector API, no Console Connector in `claudia_system`, no role `knowledge_reader`, browser still assumes co-located Gateway↔Core HTTP, and Core HTTP API may still be scaffold-only (see Bridge 00 audit in `docs/claudia_console_reform/package_bridge_00_integration_audit.md`).
+**Blockers today:** no Clerk, no hosted task DB, no connector API, no Console Connector in `system`, no role `knowledge_reader`, browser still assumes co-located Gateway↔Core HTTP, and Core HTTP API may still be scaffold-only (see Bridge 00 audit in `docs/console_reform/package_bridge_00_integration_audit.md`).
 
 ### Audit recommendation (not an implementation decision)
 
 1. **Phase 2:** Nexus rename + strip co-location assumptions from hosted-facing surfaces.
 2. **Phase 3:** PostgreSQL (or equivalent) task persistence on Nexus.
 3. **Phase 4:** Versioned `/api/connector/v1/*` contract on Nexus.
-4. **Phase 5:** Console Connector in `claudia_system` (handoff point).
+4. **Phase 5:** Console Connector in `system` (handoff point).
 5. **Phase 7:** Read-only tool allowlist (`vault.agentic_retrieval`, `membership_io.transcript_retrieve`).
 6. **Phase 8:** Deploy Nexus to **Railway** or **Fly.io** (audit recommendation — see §16).
 
@@ -67,8 +67,8 @@ Boss signs into Nexus → Sage KB question → task persists while Claudia offli
 | Frontend | Static HTML + ES modules under `static/` (no webpack/vite) |
 | Server entry point | `app.py` |
 | Browser entry point | `GET /` → `static/index.html` (CSP nonce injection) |
-| Python packaging | `requirements.txt`, `pyproject.toml` (`name = claudia-console`) |
-| Node packaging | `package.json` (`name = claudia-console`) — dev tooling only (`@antithesishq/bombadil`) |
+| Python packaging | `requirements.txt`, `pyproject.toml` (`name = nexus-console`) |
+| Node packaging | `package.json` (`name = nexus-console`) — dev tooling only (`@antithesishq/bombadil`) |
 | ORM / DB | SQLAlchemy + SQLite default (`DATABASE_URL=sqlite:///./data/app.db`) |
 | Vector store | ChromaDB (optional Docker service) |
 | Web search | SearXNG (optional Docker service) |
@@ -80,8 +80,8 @@ Boss signs into Nexus → Sage KB question → task persists while Claudia offli
 | Command | Purpose |
 |---------|---------|
 | `./start-macos.sh` | Primary macOS operator path: Homebrew deps, venv, `setup.py`, uvicorn |
-| `CLAUDIA_CONSOLE_MODE=true ./start-macos.sh` | Recommended dedicated Claudia Mac Console Mode |
-| `docker compose up` | Reference/compatibility stack (not primary for Claudia Mac GPU) |
+| `NEXUS_CONSOLE_MODE=true ./start-macos.sh` | Recommended dedicated Nexus Mac Console Mode |
+| `docker compose up` | Reference/compatibility stack (not primary for Nexus Mac GPU) |
 | `python setup.py` | First-run: data dirs, SQLite schema, `data/auth.json` admin |
 | `pytest` | Test suite under `tests/` |
 
@@ -97,27 +97,27 @@ Boss signs into Nexus → Sage KB question → task persists while Claudia offli
 
 | Pattern | Usage |
 |---------|-------|
-| **SSE** | `POST /api/chat_stream`, `GET /api/claudia/v1/stream/{packet_id}`, `GET /api/claudia/v1/cli/sessions/{id}/stream`, `GET /api/shell/stream` |
-| **EventSource (browser)** | CLI Mirror (`claudiaCliMirror.js`), chat streaming |
+| **SSE** | `POST /api/chat_stream`, `GET /api/nexus/v1/stream/{packet_id}`, `GET /api/nexus/v1/cli/sessions/{id}/stream`, `GET /api/shell/stream` |
+| **EventSource (browser)** | CLI Mirror (`nexusCliMirror.js`), chat streaming |
 | **WebSocket** | Not used for primary chat |
 | **PTY** | `routes/shell_routes.py` (admin-only local shell); CLI Mirror via Core relay |
 | **subprocess** | Shell routes, cookbook, builtin actions, Hermes runtime validation |
-| **httpx async** | Claudia Core forwarding (`src/claudia_client.py`) |
+| **httpx async** | Nexus Core forwarding (`src/nexus_client.py`) |
 | **Polling** | Calendar reminders (browser → `/api/notes`), dashboard auto-refresh 60s |
 
 ### 2.5 Deployment assumptions
 
-- **Primary:** native macOS on Claudia Mac (`start-macos.sh`, Metal GPU for Cookbook).
+- **Primary:** native macOS on Nexus Mac (`start-macos.sh`, Metal GPU for Cookbook).
 - **Secondary:** Docker Compose with loopback binds, volume-mounted `./data`.
 - **Private PWA:** installable; not designed for public internet multi-tenant hosting.
 - **Filesystem:** heavy use of `./data/` (SQLite, uploads, Chroma, auth.json, generated images).
-- **Co-location:** `CLAUDIA_CORE_URL=http://127.0.0.1:8080` assumes Gateway can reach Core on same machine or trusted LAN.
+- **Co-location:** `NEXUS_CORE_URL=http://127.0.0.1:8080` assumes Gateway can reach Core on same machine or trusted LAN.
 
 ### 2.6 macOS-specific behavior
 
 - `start-macos.sh`: Homebrew, arm64 Python selection, port 7860 (avoids AirPlay 7000).
 - `build-macos-app.sh`: native .app bundle.
-- `src/hermes_runtime.py`: default `CLAUDIA_SYSTEM_ROOT=/Users/bretthoffman/Documents/claudia_system`.
+- `src/hermes_runtime.py`: default `NEXUS_SYSTEM_ROOT=/Users/bretthoffman/Documents/system`.
 - Platform checks in shell routes (`pty` unavailable on Windows).
 
 ### 2.7 High-level current architecture diagram
@@ -126,36 +126,36 @@ Boss signs into Nexus → Sage KB question → task persists while Claudia offli
 flowchart TB
   subgraph Browser["Browser (PWA SPA)"]
     UI[index.html + static/js/*]
-    ChatBridge[claudiaBrowserChatBridge.js]
-    CliMirror[claudiaCliMirror.js]
-    Dashboard[claudiaDashboard.js]
+    ChatBridge[nexusBrowserChatBridge.js]
+    CliMirror[nexusCliMirror.js]
+    Dashboard[nexusDashboard.js]
   end
 
-  subgraph ConsoleHost["Claudia Mac — claudia_console process"]
+  subgraph ConsoleHost["Nexus Mac — console process"]
     FastAPI[FastAPI app.py]
     AuthMW[AuthMiddleware cookie + Bearer]
     ChatRoutes[/api/chat*]
-    ClaudiaGW[/api/claudia/v1/* Gateway]
+    NexusGW[/api/nexus/v1/* Gateway]
     LegacyRoutes[/api/shell /api/cookbook /api/research ...]
     SQLite[(SQLite data/app.db)]
     AuthJSON[(data/auth.json sessions)]
-    ClaudiaClient[claudia_client.py httpx]
+    NexusClient[nexus_client.py httpx]
     HermesResolver[hermes_runtime.py path resolver]
   end
 
-  subgraph ClaudiaSystem["Claudia Mac — claudia_system"]
-    CoreHTTP[Claudia Core HTTP API scaffold/ partial]
+  subgraph NexusSystem["Nexus Mac — system"]
+    CoreHTTP[Nexus Core HTTP API scaffold/ partial]
     HermesPTY[Hermes PTY sessions]
     Tools[Governed tool registry]
   end
 
   UI --> FastAPI
-  ChatBridge --> ClaudiaGW
-  CliMirror --> ClaudiaGW
-  ChatRoutes -->|Console Mode| ClaudiaClient
+  ChatBridge --> NexusGW
+  CliMirror --> NexusGW
+  ChatRoutes -->|Console Mode| NexusClient
   ChatRoutes -->|Legacy Mode| AgentLoop[agent_loop.py]
-  ClaudiaGW --> ClaudiaClient
-  ClaudiaClient -->|CLAUDIA_CORE_URL| CoreHTTP
+  NexusGW --> NexusClient
+  NexusClient -->|NEXUS_CORE_URL| CoreHTTP
   CoreHTTP --> HermesPTY
   CoreHTTP --> Tools
   FastAPI --> SQLite
@@ -164,14 +164,14 @@ flowchart TB
   LegacyRoutes --> ShellPTY[shell_routes PTY]
 ```
 
-### 2.8 Claudia Console Mode
+### 2.8 legacy local console Mode
 
-Enabled via `CLAUDIA_CONSOLE_MODE=true` (`src/console_mode.py`):
+Enabled via `NEXUS_CONSOLE_MODE=true` (`src/console_mode.py`):
 
 - Disables in-process `TaskScheduler`, email pollers, `bg_monitor`, MCP auto-connect.
-- Chat routes demoted to Gateway forward (`src/claudia_chat_bridge.py`).
+- Chat routes demoted to Gateway forward (`src/nexus_chat_bridge.py`).
 - Authority guards block local memory/skills/shell/MCP/research writes (`src/*_console_guard.py`).
-- Frontend hides/dims legacy execution UI (`static/js/claudiaConsoleMode.js`).
+- Frontend hides/dims legacy execution UI (`static/js/nexusConsoleMode.js`).
 
 This mode is a **local deployment profile**, not a hosted Nexus profile.
 
@@ -184,31 +184,31 @@ This mode is a **local deployment profile**, not a hosted Nexus profile.
 ```mermaid
 sequenceDiagram
   participant U as User browser
-  participant CB as claudiaBrowserChatBridge.js
-  participant GW as POST /api/claudia/v1/messages
-  participant CC as claudia_client.forward_message
-  participant Core as Claudia Core POST /messages
+  participant CB as nexusBrowserChatBridge.js
+  participant GW as POST /api/nexus/v1/messages
+  participant CC as nexus_client.forward_message
+  participant Core as Nexus Core POST /messages
 
   U->>CB: sendBridgeMessage(text, sessionId)
   CB->>GW: JSON {message, session_id} + session cookie
-  GW->>GW: authorize_claudia_intake (cookie or claudia_intake token)
+  GW->>GW: authorize_nexus_intake (cookie or nexus_intake token)
   GW->>GW: create_chat_message_packet
-  CC->>Core: httpx POST + X-Claudia-Gateway-Secret
+  CC->>Core: httpx POST + X-Nexus-Gateway-Secret
   Core-->>CC: {response: {content, ...}}
   CC-->>GW: gateway_envelope + core body
   GW-->>CB: JSON
   CB-->>U: extractAssistantContent → render bubble
 ```
 
-**Survives Claudia offline?** **No** — synchronous forward; user sees unreachable/timeout message.
+**Survives Nexus offline?** **No** — synchronous forward; user sees unreachable/timeout message.
 
-**Same-machine assumption?** **De facto yes** — `CLAUDIA_CORE_URL` typically loopback; 5s httpx timeout (`DEFAULT_TIMEOUT_S`).
+**Same-machine assumption?** **De facto yes** — `NEXUS_CORE_URL` typically loopback; 5s httpx timeout (`DEFAULT_TIMEOUT_S`).
 
 **Hosted Nexus compatible?** **No** — requires Nexus→Core inbound HTTP from hosted server or co-located Gateway.
 
 ### 3.2 Simple Chat (Console Mode + `/api/chat_stream` fallback path)
 
-When bridge not used, `routes/chat_routes.py` checks `is_claudia_console_mode()` and calls `console_mode_chat_stream` → `forward_message` → same Core path, wrapped as SSE.
+When bridge not used, `routes/chat_routes.py` checks `is_console_mode()` and calls `console_mode_chat_stream` → `forward_message` → same Core path, wrapped as SSE.
 
 ### 3.3 Simple Chat (Legacy / non-Console Mode)
 
@@ -240,21 +240,21 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
   participant U as Operator browser
-  participant CM as claudiaCliMirror.js
-  participant API as /api/claudia/v1/cli/sessions/*
-  participant CC as claudia_client cli_* 
-  participant Core as Claudia Core CLI API
+  participant CM as nexusCliMirror.js
+  participant API as /api/nexus/v1/cli/sessions/*
+  participant CC as nexus_client cli_* 
+  participant Core as Nexus Core CLI API
 
   U->>CM: Start session / send input
   CM->>API: POST/GET (admin session auth)
-  API->>API: authorize_claudia_admin
+  API->>API: authorize_nexus_admin
   CC->>Core: httpx relay (start, input, transcript, stream)
   Core-->>CC: PTY events / session state
   CM->>API: EventSource GET .../stream?after_seq=
   API-->>CM: SSE relay
 ```
 
-**Routes:** `GET/POST /api/claudia/v1/cli/sessions`, `.../input`, `.../transcript`, `.../stream`, `.../stop`, `.../interrupt`.
+**Routes:** `GET/POST /api/nexus/v1/cli/sessions`, `.../input`, `.../transcript`, `.../stream`, `.../stop`, `.../interrupt`.
 
 **Hosted Nexus compatible?** **No** — admin PTY mirror is operator-local surface; must not ship on public Nexus (remove or gate to break-glass local recovery only).
 
@@ -262,9 +262,9 @@ sequenceDiagram
 
 | Step | Component | Route |
 |------|-----------|-------|
-| UI read | `claudiaModelSelector.js` | `GET /api/claudia/v1/model-config` |
-| UI write | admin only | `POST /api/claudia/v1/model-config` |
-| Gateway | `claudia_client.get_model_config` / `update_model_config` | Forwards to Core |
+| UI read | `nexusModelSelector.js` | `GET /api/nexus/v1/model-config` |
+| UI write | admin only | `POST /api/nexus/v1/model-config` |
+| Gateway | `nexus_client.get_model_config` / `update_model_config` | Forwards to Core |
 | Legacy | `modelPicker.js`, `models.js` | `/api/model-endpoints`, local SQLite `ModelEndpoint` |
 
 Console Mode: Gateway **never reads** local Hermes YAML (`src/hermes_runtime.py` is status-only).
@@ -273,7 +273,7 @@ Console Mode: Gateway **never reads** local Hermes YAML (`src/hermes_runtime.py`
 
 | Check | Route | Auth | Notes |
 |-------|-------|------|-------|
-| Gateway liveness | `GET /api/claudia/v1/health` | **Exempt** (no auth) | Probes Core `/health` if configured |
+| Gateway liveness | `GET /api/nexus/v1/health` | **Exempt** (no auth) | Probes Core `/health` if configured |
 | App liveness | `GET /api/health` | Exempt | `{status: healthy}` |
 | Readiness | `GET /api/ready` | Protected | DB + data dir checks |
 | Hermes layout | embedded in gateway health | — | `hermes_runtime_status()` path validation only |
@@ -314,19 +314,19 @@ No connector heartbeat exists today.
 
 - `AUTH_ENABLED=false` → middleware not installed.
 - `LOCALHOST_BYPASS=true` → direct loopback without proxy headers bypasses auth (**dev only**).
-- Exempt routes: login/setup/status, `/static`, `/api/health`, **`/api/claudia/v1/health`**, webhook pattern.
+- Exempt routes: login/setup/status, `/static`, `/api/health`, **`/api/nexus/v1/health`**, webhook pattern.
 - Internal tool bypass: `X-Odysseus-Internal-Token` + trusted loopback → `current_user = internal-tool` (admin-equivalent).
 - API bearer: `Authorization: Bearer ody_*` → `current_user = api` with scopes.
 
-### 4.4 Claudia Gateway authorization (`src/claudia_scopes.py`)
+### 4.4 Nexus Gateway authorization (`src/nexus_scopes.py`)
 
 | Scope | Routes |
 |-------|--------|
 | Session cookie (any logged-in user) | intake, read (fallback) |
-| `claudia_intake` | POST intake/messages/sources |
-| `claudia_read` | GET packets, stream, model-config |
-| `claudia_worker` | POST worker-output |
-| `claudia_admin` | approvals resolve, model-config POST, **all CLI routes** |
+| `nexus_intake` | POST intake/messages/sources |
+| `nexus_read` | GET packets, stream, model-config |
+| `nexus_worker` | POST worker-output |
+| `nexus_admin` | approvals resolve, model-config POST, **all CLI routes** |
 
 **Gap:** Session-authenticated non-admin users can call intake/messages — not role-scoped to `knowledge_reader`.
 
@@ -338,7 +338,7 @@ No connector heartbeat exists today.
 | `chat.js` | `preset_id`, web toggle | Used for context/tool permission hints |
 | `init.js` | Can hide Agent toggle via features | UI only unless features API disables |
 | `/api/auth/status` | Returns `privileges` object | Server-computed but **UI enforcement is primary** for hiding controls |
-| `claudiaCliMirror.js` | `localStorage` session id, mode | Server validates admin on API |
+| `nexusCliMirror.js` | `localStorage` session id, mode | Server validates admin on API |
 | `storage.js` / many modules | `odysseus-*` localStorage keys | Preferences only |
 | Shell / cookbook | Admin routes | Server enforces `require_admin` |
 
@@ -349,7 +349,7 @@ No connector heartbeat exists today.
 ### 4.6 Routes callable without authentication (when AUTH_ENABLED=true)
 
 - `/api/auth/setup`, `/signup`, `/login`, `/logout`, `/status`, `/features`, `/settings`, `/integrations/presets`
-- `/api/health`, `/api/claudia/v1/health`, `/api/version`
+- `/api/health`, `/api/nexus/v1/health`, `/api/version`
 - `/static/*`
 - `/api/tasks/{id}/webhook/{token}` (path-embedded secret)
 - `/login` HTML
@@ -383,16 +383,16 @@ No connector heartbeat exists today.
 | Uploads / files | `data/uploads/*` | Server filesystem | Owner-scoped routes | Needs object storage |
 | Chroma / RAG | `data/chroma`, `data/rag` | Server | Partial | Local-only assumption |
 | Memories | `memories` table + vectors | Server | Owner-scoped | Not for hosted vault duplication |
-| Browser localStorage | `odysseus-*`, `claudia-*` keys | Browser | Per-browser | Not authoritative |
+| Browser localStorage | `odysseus-*`, `nexus-*` keys | Browser | Per-browser | Not authoritative |
 | In-memory | `_active_streams`, token cache, agent runs | Process | Single instance | Lost on restart |
-| Core task ledger | Claudia Core `/tasks` (read via Gateway) | Core | Unknown | Source of truth for Core packets, not Nexus |
+| Core task ledger | Nexus Core `/tasks` (read via Gateway) | Core | Unknown | Source of truth for Core packets, not Nexus |
 
 ### 5.2 Reusable abstractions?
 
 | Abstraction | Reusable for Nexus? |
 |-------------|---------------------|
 | `ScheduledTask` / `TaskRun` | **No** — cron/LLM automation model, no claim/lease |
-| `claudia_packets.py` envelope | **Partial** — packet shape useful for trace metadata |
+| `nexus_packets.py` envelope | **Partial** — packet shape useful for trace metadata |
 | Gateway `/packets` read passthrough | **Partial** — read pattern only |
 | `api_tokens` + scopes | **Partial** — machine auth pattern, needs connector-specific scopes |
 | Chat `Session` / `ChatMessage` | **Partial** — UI history, not connector task state |
@@ -415,13 +415,13 @@ Key fields: `id`, `owner`, `prompt`, `task_type`, `action`, `schedule`, `next_ru
 | B02 | SQLite file DB | Critical | `DATABASE_URL` default |
 | B03 | No hosted task queue | Critical | Not implemented |
 | B04 | No connector API | Critical | No `/api/connector/v1` |
-| B05 | Synchronous Core HTTP from Gateway | Critical | `claudia_client.py` 5s timeout |
-| B06 | `CLAUDIA_CORE_URL` loopback assumption | Critical | `.env.example` |
+| B05 | Synchronous Core HTTP from Gateway | Critical | `nexus_client.py` 5s timeout |
+| B06 | `NEXUS_CORE_URL` loopback assumption | Critical | `.env.example` |
 | B07 | No atomic claims / leases / idempotency | Critical | — |
 | B08 | Admin shell/PTY routes | Critical | `routes/shell_routes.py`, CLI mirror |
 | B09 | `LOCALHOST_BYPASS` / `AUTH_ENABLED=false` | High | `app.py` |
 | B10 | Internal tool token admin bypass | High | `core/middleware.py` |
-| B11 | Unauthenticated `/api/claudia/v1/health` | Medium | `app.py` AUTH_EXEMPT |
+| B11 | Unauthenticated `/api/nexus/v1/health` | Medium | `app.py` AUTH_EXEMPT |
 | B12 | Browser-supplied chat `mode` | High | `chat.js` |
 | B13 | Hardcoded macOS paths | High | `hermes_runtime.py` default root |
 | B14 | Filesystem-heavy data dir | High | `setup.py` DIRS |
@@ -433,7 +433,7 @@ Key fields: `id`, `owner`, `prompt`, `task_type`, `action`, `schedule`, `next_ru
 | B20 | PWA/service worker same-origin assumptions | Low | `sw.js` |
 | B21 | Docker reference stack not production-hardened | Medium | `docker-compose.yml` |
 | B22 | No connector presence model | High | Dashboard placeholder |
-| B23 | Branding implies browser = Claudia | Medium | manifest, titles |
+| B23 | Branding implies browser = Nexus | Medium | manifest, titles |
 | B24 | Co-located Chroma/SearXNG/Ollama | Medium | optional services |
 | B25 | Webhook tasks without user auth | Medium | by design for integrations |
 | B26 | No request size limits beyond upload route | Medium | — |
@@ -444,7 +444,7 @@ Key fields: `id`, `owner`, `prompt`, `task_type`, `action`, `schedule`, `next_ru
 
 ---
 
-## 7. Browser / server / local-Claudia boundary map
+## 7. Browser / server / local-Nexus boundary map
 
 ### 7.1 Target zones
 
@@ -466,12 +466,12 @@ flowchart LR
     B6[Presence + audit metadata]
   end
 
-  subgraph C["C. Local Claudia"]
+  subgraph C["C. Local Nexus"]
     C1[Console Connector]
     C2[Machine credential]
     C3[Outbound poll only]
     C4[Local tool allowlist]
-    C5[Claudia Core execution]
+    C5[Nexus Core execution]
   end
 
   A -->|HTTPS| B
@@ -483,21 +483,21 @@ flowchart LR
 
 | Code | Violation |
 |------|-----------|
-| `claudia_client.py` | Hosted Gateway would need **inbound** reachability to Core |
-| `claudiaBrowserChatBridge.js` | Browser triggers synchronous Core forward |
-| `claudiaCliMirror.js` + CLI routes | Browser operates Hermes PTY via Gateway→Core |
+| `nexus_client.py` | Hosted Gateway would need **inbound** reachability to Core |
+| `nexusBrowserChatBridge.js` | Browser triggers synchronous Core forward |
+| `nexusCliMirror.js` + CLI routes | Browser operates Hermes PTY via Gateway→Core |
 | `routes/shell_routes.py` | Server runs shell/PTY on app host |
 | `src/agent_loop.py` | Server executes tools/MCP locally |
 | `routes/cookbook_routes.py` | Server SSH/subprocess to GPU hosts |
 | `hermes_runtime.py` on Console host | Implies Hermes lives on same machine as UI |
 | `LOCALHOST_BYPASS` | Browser loopback == authenticated |
 | `chat.js` agent mode | Browser chooses execution authority level |
-| Dashboard `GET /api/claudia/v1/health` unauthenticated | Information disclosure |
-| `CLAUDIA_GATEWAY_SHARED_SECRET` | Shared secret between Gateway and Core — wrong axis for Nexus↔Connector |
+| Dashboard `GET /api/nexus/v1/health` unauthenticated | Information disclosure |
+| `NEXUS_GATEWAY_SHARED_SECRET` | Shared secret between Gateway and Core — wrong axis for Nexus↔Connector |
 
 ### 7.3 What should eventually live where
 
-| Capability | Browser | Nexus | Claudia Connector |
+| Capability | Browser | Nexus | Console Connector |
 |------------|---------|-------|-------------------|
 | Ask Sage KB question | Submit UI | Validate role, enqueue task | Claim, execute `vault.agentic_retrieval` |
 | Chat history display | Render | Persist task + answer metadata | — |
@@ -514,7 +514,7 @@ flowchart LR
 
 | Term | Approx. matches (py/js/html/css/json/md) | Notes |
 |------|------------------------------------------|-------|
-| Claudia / claudia | 100+ files | Mix of branding vs backend |
+| Nexus / nexus | 100+ files | Mix of branding vs backend |
 | Odysseus / odysseus | 100+ files | Legacy internal compatibility |
 | Nexus / nexus | **0** | New name not started |
 | Clerk | Docs only (non-goal mentions) | Not implemented |
@@ -523,24 +523,24 @@ flowchart LR
 
 | Current reference | Context | Proposed replacement | Change for hosting? | Compatibility risk | Notes |
 |-----------------|---------|----------------------|---------------------|-------------------|-------|
-| Claudia Console | Page title, README, FastAPI title | **Nexus** | Yes | Low | Primary branding |
-| Claudia | PWA `manifest.json` name | **Nexus** | Yes | Medium (installed PWA) | Users reinstall PWA |
-| Claudia Chat | Session default name, meta | **Nexus Chat** or neutral | Yes | Low | |
-| Message Claudia... | Chat placeholder | **Ask Nexus...** | Yes | Low | `static/app.js` |
-| Claudia Console Mode | Env + banner | **Nexus deployment mode** OR remove in hosted | Partial | High | Env `CLAUDIA_CONSOLE_MODE` retain internally |
-| Claudia Console CLI Mirror | CLI panel title | Remove from hosted / rename local-only | Yes | Low | Not for Nexus |
-| claudia-console | npm/pyproject package name | `nexus` or `nexus-app` | Later | High | PyPI/npm if published |
-| claudia_console | repo folder | `nexus` (future) | Later | High | Git remote URLs |
-| `/api/claudia/v1/*` | Gateway routes | **Keep** initially | No | **High** | Compatibility-sensitive API |
-| `claudia_intake` scope | API token scope | Retain | No | High | Machine clients |
-| `claudiaDashboard.js` | File name | `nexusDashboard.js` (Phase 2) | Later | Medium | |
-| `claudia-cli-mirror-*` CSS classes | CLI mirror UI | Local-only module | Hosted: remove | Low | |
-| Claudia Core | Backend OS | **Retain Claudia** | No | N/A | Correct boundary |
-| Claudia Gateway | Forward layer | **Retain** for local dev; hosted becomes Nexus API | Partial | Medium | |
+| legacy local console | Page title, README, FastAPI title | **Nexus** | Yes | Low | Primary branding |
+| Nexus | PWA `manifest.json` name | **Nexus** | Yes | Medium (installed PWA) | Users reinstall PWA |
+| Nexus Chat | Session default name, meta | **Nexus Chat** or neutral | Yes | Low | |
+| Message Nexus... | Chat placeholder | **Ask Nexus...** | Yes | Low | `static/app.js` |
+| legacy local console Mode | Env + banner | **Nexus deployment mode** OR remove in hosted | Partial | High | Env `NEXUS_CONSOLE_MODE` retain internally |
+| legacy local console CLI Mirror | CLI panel title | Remove from hosted / rename local-only | Yes | Low | Not for Nexus |
+| nexus-console | npm/pyproject package name | `nexus` or `nexus-app` | Later | High | PyPI/npm if published |
+| console | repo folder | `nexus` (future) | Later | High | Git remote URLs |
+| `/api/nexus/v1/*` | Gateway routes | **Keep** initially | No | **High** | Compatibility-sensitive API |
+| `nexus_intake` scope | API token scope | Retain | No | High | Machine clients |
+| `nexusDashboard.js` | File name | `nexusDashboard.js` (Phase 2) | Later | Medium | |
+| `nexus-cli-mirror-*` CSS classes | CLI mirror UI | Local-only module | Hosted: remove | Low | |
+| Nexus Core | Backend OS | **Retain Nexus** | No | N/A | Correct boundary |
+| Nexus Gateway | Forward layer | **Retain** for local dev; hosted becomes Nexus API | Partial | Medium | |
 | Console Connector | Architecture term | **Retain** | No | N/A | |
-| CLAUDIA_CORE_URL | Env | **Retain** (local) | No | High | |
-| CLAUDIA_SYSTEM_ROOT | Env | **Retain** | No | High | Local only |
-| CLAUDIA_CONSOLE_MODE | Env | Retain → add `NEXUS_HOSTED_MODE` | Partial | High | |
+| NEXUS_CORE_URL | Env | **Retain** (local) | No | High | |
+| NEXUS_SYSTEM_ROOT | Env | **Retain** | No | High | Local only |
+| NEXUS_CONSOLE_MODE | Env | Retain → add `NEXUS_HOSTED_MODE` | Partial | High | |
 | odysseus_session | Cookie name | `nexus_session` (with migration) | Yes | **High** | Breaking for sessions |
 | odysseus-theme | localStorage | `nexus-theme` (migrate read) | Later | Medium | |
 | X-Odysseus-Internal-Token | Header | Retain internal-only | No | High | |
@@ -549,10 +549,10 @@ flowchart LR
 ### 8.3 Classification rules applied
 
 - **Rename to Nexus now (user-visible hosted):** titles, manifest, placeholders, welcome, operator docs aimed at end users.
-- **Retain Claudia:** Core, backend, authority, connector (local), env vars pointing at local install.
-- **Compatibility-sensitive / migrate later:** `/api/claudia/v1`, token scopes, cookie names, package names.
-- **Internal-only harmless:** `odysseus` in variable names, test fixtures, reform docs path `claudia_console_reform/`.
-- **Ambiguous — decision needed:** "Claudia Gateway" label on hosted — see §20 Q1.
+- **Retain Nexus:** Core, backend, authority, connector (local), env vars pointing at local install.
+- **Compatibility-sensitive / migrate later:** `/api/nexus/v1`, token scopes, cookie names, package names.
+- **Internal-only harmless:** `odysseus` in variable names, test fixtures, reform docs path `console_reform/`.
+- **Ambiguous — decision needed:** "Nexus Gateway" label on hosted — see §20 Q1.
 
 ---
 
@@ -718,7 +718,7 @@ console_connector:
     require_local_confirmation_for_writes: true
 ```
 
-**Config location (future):** `claudia_system` Control Center config — not scattered env vars.
+**Config location (future):** `system` Control Center config — not scattered env vars.
 
 ### 11.7 Concurrency rule
 
@@ -848,8 +848,8 @@ Suggested `/api/nexus/v1/tasks` or `/api/v1/tasks` (decision needed):
 
 | State | Derivation |
 |-------|------------|
-| Claudia online | Heartbeat within `2 × heartbeat_interval_seconds` |
-| Claudia offline | No heartbeat beyond threshold |
+| Nexus online | Heartbeat within `2 × heartbeat_interval_seconds` |
+| Nexus offline | No heartbeat beyond threshold |
 | Reconnecting | Heartbeat gap then new heartbeat within backoff window |
 | Last seen | `max(last_heartbeat_at)` from connector record |
 | Connector disabled | Config flag / no credential |
@@ -893,7 +893,7 @@ Normal polling during `claim-next` idle loop doubles as liveness if heartbeat in
 - Complete transcript text (unless excerpt policy explicitly allows bounded snippet)
 - Raw Hermes PTY logs
 - Machine credentials
-- Internal Claudia file paths exposing home directory structure
+- Internal Nexus file paths exposing home directory structure
 
 ### 15.3 Existing Console concerns
 
@@ -914,7 +914,7 @@ Normal polling during `claim-next` idle loop doubles as liveness if heartbeat in
 | Cron/worker process | Lease expiry, task expiration |
 | Env secrets | Clerk, DB, connector HMAC pepper |
 | SSE support | Optional for task progress UI (or poll) |
-| No inbound Claudia | Connector outbound only |
+| No inbound Nexus | Connector outbound only |
 
 ### 16.2 Option evaluation
 
@@ -942,13 +942,13 @@ Normal polling during `claim-next` idle loop doubles as liveness if heartbeat in
 |------|---------|----------|----------|
 | S1 | No federated auth; password file on disk | Critical | `core/auth.py` |
 | S2 | Legacy agent loop + shell RCE surface on same app | Critical | `agent_loop.py`, `shell_routes.py` |
-| S3 | Synchronous Core coupling prevents outbound-only security model | Critical | `claudia_client.py` |
+| S3 | Synchronous Core coupling prevents outbound-only security model | Critical | `nexus_client.py` |
 | S4 | `LOCALHOST_BYPASS` / auth disabled modes | Critical | `app.py` |
 | S5 | Browser selects agent vs chat mode | High | `chat.js` |
 | S6 | Internal tool token grants admin on loopback | High | `middleware.py`, `app.py` |
-| S7 | CLI Mirror exposes PTY to admin session holders | High | `claudia_routes.py` CLI family |
+| S7 | CLI Mirror exposes PTY to admin session holders | High | `nexus_routes.py` CLI family |
 | S8 | SQLite + JSON auth not cluster-safe | High | `data/*` |
-| S9 | Unauthenticated gateway health leaks Core config status | Medium | `/api/claudia/v1/health` |
+| S9 | Unauthenticated gateway health leaks Core config status | Medium | `/api/nexus/v1/health` |
 | S10 | Webhook tasks auth-exempt by path token | Medium | `app.py` |
 | S11 | CSRF not explicit on cookie POSTs | Medium | SPA forms |
 | S12 | `SECURE_COOKIES` default false | Medium | `auth_routes.py` |
@@ -961,15 +961,15 @@ Normal polling during `claim-next` idle loop doubles as liveness if heartbeat in
 
 ### 18.1 Naming debt
 
-- Dual naming: **Claudia Console** (product) vs **Odysseus** (internal cookie, storage keys, headers).
-- Reform docs under `docs/claudia_console_reform/` — historical; new specs under `docs/specs/`.
+- Dual naming: **legacy local console** (product) vs **Odysseus** (internal cookie, storage keys, headers).
+- Reform docs under `docs/console_reform/` — historical; new specs under `docs/specs/`.
 
 ### 18.2 Architectural debt
 
 - **Two chat paths:** legacy `agent_loop` vs Console bridge — hosted must use task queue only.
-- **CLI Mirror PTY parsing** (`claudiaCliMirrorHelpers.js`, Hermes classifier) — substantial experimental UI; **must not** become hosted architecture.
+- **CLI Mirror PTY parsing** (`nexusCliMirrorHelpers.js`, Hermes classifier) — substantial experimental UI; **must not** become hosted architecture.
 - **Gateway packet persistence placeholder** — honest but incomplete (`gateway_packets_list_placeholder`).
-- **Core HTTP API** may be scaffold-only in `claudia_system` (Bridge 00).
+- **Core HTTP API** may be scaffold-only in `system` (Bridge 00).
 
 ### 18.3 Duplicate / legacy abstractions
 
@@ -980,7 +980,7 @@ Normal polling during `claim-next` idle loop doubles as liveness if heartbeat in
 ### 18.4 Test gaps (hosted)
 
 - No tests for Clerk, connector API, claim lease, idempotency (expected — not built).
-- Good coverage for Console Mode demotion (`tests/test_claudia_*`).
+- Good coverage for Console Mode demotion (`tests/test_nexus_*`).
 
 ### 18.5 Dependencies
 
@@ -1001,7 +1001,7 @@ Normal polling during `claim-next` idle loop doubles as liveness if heartbeat in
 ### Phase 1 — Current architecture audit ✅
 
 **Package P1-audit:** This document.  
-**Repo:** `claudia_console`  
+**Repo:** `console`  
 **Deliverable:** `docs/specs/nexus_hosted_console_architecture_audit_v1.md`
 
 ---
@@ -1010,12 +1010,12 @@ Normal polling during `claim-next` idle loop doubles as liveness if heartbeat in
 
 | Package | Name | Scope | Prerequisites | Key files | Acceptance criteria |
 |---------|------|-------|---------------|-----------|---------------------|
-| **P2a** | Visible Nexus rebrand | User-facing titles, manifest, placeholders, login, README operator sections | P1 | `static/index.html`, `manifest.json`, `app.js`, `login.html`, `README.md` | Tests: branding assert Nexus not Claudia Console in HTML |
+| **P2a** | Visible Nexus rebrand | User-facing titles, manifest, placeholders, login, README operator sections | P1 | `static/index.html`, `manifest.json`, `app.js`, `login.html`, `README.md` | Tests: branding assert Nexus not legacy local console in HTML |
 | **P2b** | Hosted mode feature flag | `NEXUS_HOSTED_MODE` disables shell, CLI mirror, cookbook SSH, agent loop routes | P2a | `app.py`, `console_mode.py`, route guards | With flag on, `/api/shell` 404/disabled |
 | **P2c** | Auth boundary prep | Document Clerk integration points; stub middleware interface | P2b | new `core/clerk_auth.py` stub | No Clerk secrets committed |
 | **P2d** | Odysseus storage migration plan | Dual-read `nexus-theme` keys | P2a | `storage.js`, `theme.js` | Optional — batch with P2a |
 
-**Non-goals:** Rename `/api/claudia/v1`, cookie names.  
+**Non-goals:** Rename `/api/nexus/v1`, cookie names.  
 **Security:** Remove hosted exposure of admin PTY.  
 **Rollback:** Feature flag off.  
 **Batch:** P2a+P2b sequential; P2d optional parallel.
@@ -1049,24 +1049,24 @@ Normal polling during `claim-next` idle loop doubles as liveness if heartbeat in
 
 ---
 
-### Phase 5 — Local Claudia Console Connector
+### Phase 5 — Local legacy local console Connector
 
 | Package | Name | Scope | Prerequisites | Key files | Acceptance criteria |
 |---------|------|-------|---------------|-----------|---------------------|
-| **P5a** | Connector daemon skeleton | Poll loop, config file | P4b | **`claudia_system`** repo | Outbound HTTPS only |
-| **P5b** | Credential bootstrap | One-time pairing | P4a, P5a | Control Center UI (claudia_system) | Secret in Keychain |
+| **P5a** | Connector daemon skeleton | Poll loop, config file | P4b | **`system`** repo | Outbound HTTPS only |
+| **P5b** | Credential bootstrap | One-time pairing | P4a, P5a | Control Center UI (system) | Secret in Keychain |
 | **P5c** | Local allowlist enforcement | `allowed_tool_ids` | P5a | connector config | Write tools rejected |
 
-**HANDOFF POINT:** Nexus hosted API complete in `claudia_console`; **all outbound execution code lives in `claudia_system`**. Console repo must not grow a second Core bridge.
+**HANDOFF POINT:** Nexus hosted API complete in `console`; **all outbound execution code lives in `system`**. Console repo must not grow a second Core bridge.
 
 ---
 
-### Phase 6 — Claudia Control Center Connector panel
+### Phase 6 — Nexus Control Center Connector panel
 
 | Package | Name | Repo | Scope |
 |---------|------|------|-------|
-| **P6a** | Connector panel UI | claudia_system | Status, enable/disable, last error, queue depth |
-| **P6b** | start_with_control_center | claudia_system | Launchd integration |
+| **P6a** | Connector panel UI | system | Status, enable/disable, last error, queue depth |
+| **P6b** | start_with_control_center | system | Launchd integration |
 
 ---
 
@@ -1109,17 +1109,17 @@ Agent mode, writes, confirmations — **only after** queue model proven.
 
 ```mermaid
 flowchart LR
-  subgraph CC["claudia_console → Nexus"]
+  subgraph CC["console → Nexus"]
     N1[Clerk UX + task API]
     N2[Postgres tasks]
     N3[Connector API /api/connector/v1]
     N4[Presence + history UI]
   end
 
-  subgraph CS["claudia_system → Claudia"]
+  subgraph CS["system → Nexus"]
     C1[Console Connector daemon]
     C2[Control Center panel]
-    C3[Claudia Core tools]
+    C3[Nexus Core tools]
     C4[Hermes local only]
   end
 
@@ -1133,7 +1133,7 @@ flowchart LR
 
 | ID | Question | Options |
 |----|----------|---------|
-| Q1 | Hosted product API prefix: retain `/api/claudia/v1` vs `/api/nexus/v1`? | Retain for compat vs clean break |
+| Q1 | Hosted product API prefix: retain `/api/nexus/v1` vs `/api/nexus/v1`? | Retain for compat vs clean break |
 | Q2 | PWA manifest short name: "Nexus" only vs "Nexus by …"? | Branding |
 | Q3 | Clerk org model: single org vs multi-tenant? | Affects DB schema |
 | Q4 | First hosting target: Railway vs Fly.io? | Ops preference |
@@ -1141,7 +1141,7 @@ flowchart LR
 | Q6 | Migrate `odysseus_session` cookie or fresh login wall? | User disruption |
 | Q7 | Excerpt max length for sources in DB? | 500 vs 2000 chars |
 | Q8 | Connector auth: Bearer vs HMAC for v1? | Security vs velocity |
-| Q9 | Is Claudia Core HTTP API implemented yet in claudia_system? | Blocks P7 |
+| Q9 | Is Nexus Core HTTP API implemented yet in system? | Blocks P7 |
 | Q10 | Approved user list: Clerk allowlist vs invite-only? | Onboarding |
 
 ---
@@ -1151,10 +1151,10 @@ flowchart LR
 - Implementing hosted task queue, connector daemon, or connector routes
 - Database migrations or production Postgres provisioning
 - Clerk tenant creation or production secrets
-- Renaming `/api/claudia/v1` or `CLAUDIA_*` env vars
-- Modifying `claudia_system` from this repo
+- Renaming `/api/nexus/v1` or `NEXUS_*` env vars
+- Modifying `system` from this repo
 - Deploying to production hosting
-- Removing Ollama/Cookbook legacy surfaces (local Claudia Mac may retain)
+- Removing Ollama/Cookbook legacy surfaces (local Nexus Mac may retain)
 - Agent mode on hosted Nexus
 - Inbound tunnels (ngrok, port forwarding) as architecture components
 - Generic remote tool RPC API
@@ -1174,20 +1174,20 @@ flowchart LR
 ### 22.2 Authentication
 
 - `core/auth.py`, `routes/auth_routes.py`, `core/middleware.py`
-- `src/auth_helpers.py`, `src/claudia_scopes.py`, `routes/api_token_routes.py`
+- `src/auth_helpers.py`, `src/nexus_scopes.py`, `routes/api_token_routes.py`
 
-### 22.3 Claudia / Gateway
+### 22.3 Nexus / Gateway
 
-- `routes/claudia_routes.py`, `src/claudia_client.py`, `src/claudia_chat_bridge.py`
-- `src/claudia_packets.py`, `src/console_mode.py`, `src/hermes_runtime.py`
-- `src/authority_console_guard.py`, `src/claudia_deployment_posture.py`
+- `routes/nexus_routes.py`, `src/nexus_client.py`, `src/nexus_chat_bridge.py`
+- `src/nexus_packets.py`, `src/console_mode.py`, `src/hermes_runtime.py`
+- `src/authority_console_guard.py`, `src/nexus_deployment_posture.py`
 
 ### 22.4 Chat / agent / CLI
 
 - `routes/chat_routes.py`, `routes/chat_helpers.py`, `src/agent_loop.py`
-- `static/js/chat.js`, `static/js/claudiaBrowserChatBridge.js`
-- `static/js/claudiaCliMirror.js`, `static/js/claudiaCliMirrorHelpers.js`
-- `static/js/claudiaConsoleMode.js`, `static/js/claudiaDashboard.js`
+- `static/js/chat.js`, `static/js/nexusBrowserChatBridge.js`
+- `static/js/nexusCliMirror.js`, `static/js/nexusCliMirrorHelpers.js`
+- `static/js/nexusConsoleMode.js`, `static/js/nexusDashboard.js`
 - `routes/shell_routes.py`
 
 ### 22.5 Frontend branding
@@ -1202,16 +1202,16 @@ flowchart LR
 
 ### 22.7 Prior integration audit
 
-- `docs/claudia_console_reform/package_bridge_00_integration_audit.md`
+- `docs/console_reform/package_bridge_00_integration_audit.md`
 
 ### 22.8 Tests executed
 
 ```
 ./venv/bin/python3 -m pytest \
-  tests/test_claudia_console_mode.py \
-  tests/test_claudia_gateway_routes.py \
-  tests/test_claudia_branding.py \
-  tests/test_claudia_chat_demotion.py \
+  tests/test_console_mode.py \
+  tests/test_nexus_gateway_routes.py \
+  tests/test_nexus_branding.py \
+  tests/test_nexus_chat_demotion.py \
   tests/test_auth_regressions.py \
   -q --tb=no
 
@@ -1220,7 +1220,7 @@ Result: 50 passed, 5 warnings in 0.42s
 
 ### 22.9 Search terms used
 
-Claudia, Claudia Console, Claudia Chat, Message Claudia, Nexus, Clerk, auth, session, role, permission, agent, chat mode, CLI mirror, PTY, Hermes, Core, gateway, heartbeat, task, queue, database, sqlite, localStorage, subprocess, shell, localhost, Flask, uvicorn, ngrok, WebSocket, SSE, EventSource, convex — among others via ripgrep and semantic inspection.
+Nexus, legacy local console, Nexus Chat, Message Nexus, Nexus, Clerk, auth, session, role, permission, agent, chat mode, CLI mirror, PTY, Hermes, Core, gateway, heartbeat, task, queue, database, sqlite, localStorage, subprocess, shell, localhost, Flask, uvicorn, ngrok, WebSocket, SSE, EventSource, convex — among others via ripgrep and semantic inspection.
 
 ---
 
@@ -1232,7 +1232,7 @@ sequenceDiagram
   participant Nexus as Hosted Nexus
   participant DB as Postgres tasks
   participant Conn as Console Connector
-  participant Core as Claudia Core
+  participant Core as Nexus Core
 
   Boss->>Nexus: Clerk session POST /tasks (vault.agentic_retrieval)
   Nexus->>Nexus: Validate role knowledge_reader
@@ -1270,13 +1270,13 @@ sequenceDiagram
 └──────────────────────────────────────────────────│────────────┘
                                                    │ outbound only
 ┌──────────────────────────────────────────────────│────────────┐
-│  Claudia Mac (private)                           │            │
+│  Nexus Mac (private)                           │            │
 │  ┌─────────────────┐      ┌────────────────────┴─────────┐  │
 │  │ Console Connector│◄────►│  Nexus HTTPS                  │  │
 │  └────────┬─────────┘      └──────────────────────────────┘  │
 │           │ local only                                        │
 │  ┌────────▼─────────┐                                        │
-│  │  Claudia Core    │  NO inbound from internet              │
+│  │  Nexus Core    │  NO inbound from internet              │
 │  │  governed tools  │                                        │
 │  └──────────────────┘                                        │
 └──────────────────────────────────────────────────────────────┘

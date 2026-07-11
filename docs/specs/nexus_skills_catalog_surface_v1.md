@@ -1,7 +1,7 @@
 # Nexus Skills Catalog Surface v1
 
 **Package:** `nexus_skills_catalog_surface_v1`  
-**Repository:** `/Users/bretthoffman/Documents/claudia_console`  
+**Repository:** `/Users/bretthoffman/Documents/console`  
 **Branch at start:** `main`  
 **Starting HEAD:** `7a9aec4`
 
@@ -29,7 +29,7 @@ No second tool registry — static defs reference canonical IDs only.
 3. `vault.dropzone.process_document` — Library Dropzone Processing  
 4. `membership_io.catalog_refresh_and_vault_update` — Membership.io Full Sync  
 
-Claudia-internal-only tools are excluded.
+Nexus-internal-only tools are excluded.
 
 ## Sections
 
@@ -64,7 +64,7 @@ Skills navigation `availability` changed from `local_only` to `available`, remov
 
 ## Legacy content removed
 
-- “Local Claudia only” banner  
+- “Local Nexus only” banner  
 - “No skills loaded in hosted Nexus”  
 - “Markdown editor and audit tools require the legacy local console”  
 - Two-panel empty editor shell  

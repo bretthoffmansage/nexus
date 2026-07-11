@@ -1,6 +1,6 @@
-# Legacy Claudia Console (local)
+# Legacy legacy local console (local)
 
-This directory contains the **legacy local Claudia Console** — FastAPI backend, static ES-module frontend, SQLite persistence, local authentication, CLI Mirror, shell access, and direct Claudia Gateway/Core communication.
+This directory contains the **legacy local legacy local console** — FastAPI backend, static ES-module frontend, SQLite persistence, local authentication, CLI Mirror, shell access, and direct Nexus Gateway/Core communication.
 
 It is **not** the hosted Nexus product and is **not** deployed to Vercel.
 
@@ -17,7 +17,7 @@ Opens at `http://127.0.0.1:7860` (or `APP_PORT` from `.env`).
 Recommended Console Mode:
 
 ```bash
-CLAUDIA_CONSOLE_MODE=true ./start-macos.sh
+NEXUS_CONSOLE_MODE=true ./start-macos.sh
 ```
 
 ## Layout
@@ -26,12 +26,12 @@ CLAUDIA_CONSOLE_MODE=true ./start-macos.sh
 |------|---------|
 | `app.py` | FastAPI application entry |
 | `routes/` | HTTP route modules |
-| `src/` | Agent loop, Claudia client, guards |
+| `src/` | Agent loop, Nexus client, guards |
 | `static/` | Legacy SPA (visual reference for Nexus P3 port) |
 | `core/` | Auth, database, session manager |
 | `services/` | Email, memory, docs, hwfit services |
 | `tests/` | Python test suite |
-| `scripts/` | Odysseus/Claudia CLI helpers |
+| `scripts/` | Odysseus/Nexus CLI helpers |
 | `data/` | Local SQLite and JSON stores (gitignored) |
 
 ## Hosted successor

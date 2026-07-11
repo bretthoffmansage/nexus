@@ -1,7 +1,7 @@
 # CLI Mirror Readable PTY Extraction Stabilization Pass
 
 **Date:** 2026-06-03  
-**Repo:** `/Users/bretthoffman/Documents/claudia_console`  
+**Repo:** `/Users/bretthoffman/Documents/console`  
 **Scope:** Console UI only — stabilize styled transcript after user messages
 
 ## Root cause found
@@ -12,10 +12,10 @@ Startup worked because it is mostly append-only banner output. Post-send output 
 
 ## Files changed
 
-- `static/js/claudiaCliMirrorHelpers.js` — `extractReadablePtyText`, `isControlDebrisOnly`, orphan control stripping, `classifyHermesOutputText` uses readable extraction, `hasVisibleTranscriptText` hardened
-- `static/js/claudiaCliMirror.js` — group body fallback uses `extractReadablePtyText`
-- `tests/test_claudia_cli_mirror_ui.py` — control debris, status/synthesizing, answer-box, post-send sequence, startup regression tests
-- `docs/claudia_console_reform/cli_mirror_readable_pty_extraction_stabilization.md` — this note
+- `static/js/nexusCliMirrorHelpers.js` — `extractReadablePtyText`, `isControlDebrisOnly`, orphan control stripping, `classifyHermesOutputText` uses readable extraction, `hasVisibleTranscriptText` hardened
+- `static/js/nexusCliMirror.js` — group body fallback uses `extractReadablePtyText`
+- `tests/test_nexus_cli_mirror_ui.py` — control debris, status/synthesizing, answer-box, post-send sequence, startup regression tests
+- `docs/console_reform/cli_mirror_readable_pty_extraction_stabilization.md` — this note
 
 ## Behavior changed
 
@@ -91,9 +91,9 @@ All classification is pattern/state based on normalized display content and clas
 ```bash
 bash -n start-macos.sh
 python3 -m compileall -q app.py core routes src
-node --check static/js/claudiaCliMirror.js
-node --check static/js/claudiaCliMirrorHelpers.js
-venv/bin/python -m pytest -q tests/test_claudia_cli_mirror_ui.py
+node --check static/js/nexusCliMirror.js
+node --check static/js/nexusCliMirrorHelpers.js
+venv/bin/python -m pytest -q tests/test_nexus_cli_mirror_ui.py
 ```
 
 ## Risks

@@ -22,12 +22,12 @@ from src.endpoint_resolver import normalize_base as _normalize_base, build_chat_
 from src.prompt_security import untrusted_context_message
 from core.exceptions import SessionNotFoundError
 from src.auth_helpers import effective_user, get_current_user
-from src.claudia_chat_bridge import (
+from src.nexus_chat_bridge import (
     console_mode_chat_stream,
     console_mode_resume_stream,
     console_mode_sync_chat,
 )
-from src.console_mode import is_claudia_console_mode
+from src.console_mode import is_console_mode
 from routes.session_routes import _verify_session_owner
 from routes.document_helpers import _owner_session_filter
 from core.database import SessionLocal, get_session_mode, set_session_mode
@@ -253,7 +253,7 @@ def setup_chat_routes(
     # ------------------------------------------------------------------ #
     @router.post("/api/chat", response_model=Dict[str, str])
     async def chat_endpoint(request: Request, chat_request: ChatRequest) -> Dict[str, str]:
-        if is_claudia_console_mode():
+        if is_console_mode():
             owner = get_current_user(request) or effective_user(request)
             return await console_mode_sync_chat(
                 message=chat_request.message,
@@ -357,7 +357,7 @@ def setup_chat_routes(
     # ------------------------------------------------------------------ #
     @router.post("/api/chat_stream")
     async def chat_stream(request: Request) -> StreamingResponse:
-        if is_claudia_console_mode():
+        if is_console_mode():
             return StreamingResponse(
                 console_mode_chat_stream(request),
                 media_type="text/event-stream",
@@ -1092,7 +1092,7 @@ def setup_chat_routes(
     @router.get("/api/chat/resume/{session_id}")
     async def chat_resume(request: Request, session_id: str) -> StreamingResponse:
         _verify_session_owner(request, session_id)
-        if is_claudia_console_mode():
+        if is_console_mode():
             return StreamingResponse(
                 console_mode_resume_stream(session_id),
                 media_type="text/event-stream",

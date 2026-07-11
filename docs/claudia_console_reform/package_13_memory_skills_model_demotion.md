@@ -9,7 +9,7 @@
 
 ## Objective
 
-When `CLAUDIA_CONSOLE_MODE=true`, demote Odysseus memory, skills, and model-routing authority so the Console cannot mutate canonical memory, change Tool Factory/skill authority, or run local LLM-assist/model work for Claudia decisions outside Claudia Core.
+When `NEXUS_CONSOLE_MODE=true`, demote Odysseus memory, skills, and model-routing authority so the Console cannot mutate canonical memory, change Tool Factory/skill authority, or run local LLM-assist/model work for Nexus decisions outside Nexus Core.
 
 ## Files changed
 
@@ -20,36 +20,36 @@ When `CLAUDIA_CONSOLE_MODE=true`, demote Odysseus memory, skills, and model-rout
 | `routes/skills_routes.py` | Guards on add, update, delete, test, audit-all, markdown save, builtin overrides |
 | `routes/email_routes.py` | Guards on extract-style, summarize, ai-reply |
 | `routes/document_routes.py` | Guards on ai-tidy, ai-fill-annotations; import-pdf via file write guard |
-| `tests/test_claudia_authority_demotion.py` | **New** |
-| `docs/claudia_console_reform/package_13_memory_skills_model_demotion.md` | **New** |
+| `tests/test_nexus_authority_demotion.py` | **New** |
+| `docs/console_reform/package_13_memory_skills_model_demotion.md` | **New** |
 
 ## Behavior changed
 
-### Memory (`CLAUDIA_CONSOLE_MODE=true`)
+### Memory (`NEXUS_CONSOLE_MODE=true`)
 
 Blocked before mutation/LLM: `POST /add`, `POST /extract`, `POST /audit`, `POST /import`, `POST /{id}/pin`, `PUT /{id}`, `DELETE /{id}`.
 
 Returns `status: authority_disabled`, `surface: memory`.
 
-### Skills (`CLAUDIA_CONSOLE_MODE=true`)
+### Skills (`NEXUS_CONSOLE_MODE=true`)
 
 Blocked before mutation/execution: `POST /add`, `PUT /{id}`, `DELETE /{id}`, `POST /{id}/test`, `POST /audit-all`, `POST /{id}/markdown`, `PUT /builtin/{name}`, `DELETE /builtin/{name}`.
 
 Returns `surface: skills`.
 
-### LLM assist (`CLAUDIA_CONSOLE_MODE=true`)
+### LLM assist (`NEXUS_CONSOLE_MODE=true`)
 
 Blocked before model calls: `POST /api/email/extract-style`, `summarize`, `ai-reply`; `POST /api/documents/ai-tidy`; `POST /api/document/{id}/ai-fill-annotations`.
 
 Returns `surface: llm_assist`.
 
-### Documents (`CLAUDIA_CONSOLE_MODE=true`)
+### Documents (`NEXUS_CONSOLE_MODE=true`)
 
 `POST /api/documents/import-pdf` blocked via Package 12 file guard (`import_pdf`).
 
 ### Legacy mode
 
-Unchanged when `CLAUDIA_CONSOLE_MODE` is off.
+Unchanged when `NEXUS_CONSOLE_MODE` is off.
 
 ## Behavior intentionally unchanged
 
@@ -125,7 +125,7 @@ Unchanged when `CLAUDIA_CONSOLE_MODE` is off.
 - **Preserved:** model endpoint CRUD, probe/test ping, Ollama URL detection in model routes, cookbook/Ollama admin modules and static UI integration (not removed).
 - **Guarded:** email/document LLM-assist routes that performed local reasoning for user-facing outputs.
 
-Display/config/status does not assert canonical Claudia memory or route models for autonomous work; guarded routes did.
+Display/config/status does not assert canonical Nexus memory or route models for autonomous work; guarded routes did.
 
 ## Console Mode blocked response behavior
 
@@ -134,10 +134,10 @@ Display/config/status does not assert canonical Claudia memory or route models f
   "ok": false,
   "success": false,
   "status": "authority_disabled",
-  "claudia_console_mode": true,
+  "console_mode": true,
   "surface": "memory|skills|model_routing|llm_assist",
   "operation": "...",
-  "message": "Claudia Console Mode is active. This authority is owned by Claudia Core. Route this request through Claudia Core governance.",
+  "message": "legacy local console Mode is active. This authority is owned by Nexus Core. Route this request through Nexus Core governance.",
   "guidance": "..."
 }
 ```
@@ -162,7 +162,7 @@ Email extract-style, summarize, ai-reply; document ai-tidy, ai-fill-annotations.
 
 ## Safety guarantees
 
-1. Guards only when `CLAUDIA_CONSOLE_MODE=true`.
+1. Guards only when `NEXUS_CONSOLE_MODE=true`.
 2. Guards run before `memory_manager`/`skills_manager` mutation or `llm_call_async` on guarded routes.
 3. Non-authoritative responses (do not claim Core executed work).
 4. Legacy mode unchanged when flag is off.
@@ -172,15 +172,15 @@ Email extract-style, summarize, ai-reply; document ai-tidy, ai-fill-annotations.
 ```bash
 python3 -m compileall -q app.py core routes src
 venv/bin/python -m pytest -q \
-  tests/test_claudia_authority_demotion.py \
-  tests/test_claudia_execution_surface_guards.py \
-  ... (P1–P12 Claudia tests)
+  tests/test_nexus_authority_demotion.py \
+  tests/test_nexus_execution_surface_guards.py \
+  ... (P1–P12 Nexus tests)
 ```
 
 ## Results
 
 - `compileall`: pass
-- Focused Claudia package tests (P1–P13): **123 passed**
+- Focused Nexus package tests (P1–P13): **123 passed**
 - New P13 tests: **8 passed**
 
 ## Known pytest baseline issue from Package 0
@@ -201,8 +201,8 @@ Collect-only may still report 2 pre-existing errors:
 - Demote in-process agent_loop memory/skill/model usage in Console Mode.
 - Optional authority packets on blocked responses.
 - Guard remaining document model routes if needed.
-- Package 14: visible Claudia branding pass.
+- Package 14: visible Nexus branding pass.
 
 ## Next recommended package
 
-**Package 14 — Visible Claudia branding pass**
+**Package 14 — Visible Nexus branding pass**

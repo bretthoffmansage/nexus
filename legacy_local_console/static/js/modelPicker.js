@@ -5,7 +5,7 @@ import { providerLogo } from './providers.js';
 import uiModule from './ui.js';
 import settingsModule from './settings.js';
 import { sortModelObjects } from './modelSort.js';
-import claudiaCoreModel from './claudiaModelSelector.js';
+import nexusCoreModel from './nexusModelSelector.js';
 
 const API_BASE = window.location.origin;
 
@@ -103,7 +103,7 @@ function _modelExists(modelId, url) {
  */
 export function initModelPicker(deps) {
   _deps = deps;
-  claudiaCoreModel.init().then(() => updateModelPicker()).catch(() => {});
+  nexusCoreModel.init().then(() => updateModelPicker()).catch(() => {});
   _initModelPickerDropdown();
 }
 
@@ -261,13 +261,13 @@ function _initModelPickerDropdown() {
 
   function _populateCoreModels(filter) {
     listEl.innerHTML = '';
-    const unavailable = claudiaCoreModel.getUnavailableListMessage();
-    const models = claudiaCoreModel.getAvailableModels(filter);
+    const unavailable = nexusCoreModel.getUnavailableListMessage();
+    const models = nexusCoreModel.getAvailableModels(filter);
     const hasModels = models.length > 0;
     listEl.classList.toggle('is-empty', !hasModels);
     menu.classList.toggle('no-models', !hasModels);
     if (search) {
-      search.placeholder = claudiaCoreModel.getSearchPlaceholder();
+      search.placeholder = nexusCoreModel.getSearchPlaceholder();
     }
     if (searchRow) {
       searchRow.classList.toggle('searching', !!(filter || '').trim());
@@ -283,7 +283,7 @@ function _initModelPickerDropdown() {
 
     const section = document.createElement('div');
     section.className = 'mp-section-label';
-    section.textContent = 'Claudia Core models';
+    section.textContent = 'Nexus Core models';
     listEl.appendChild(section);
 
     models.forEach((m) => {
@@ -308,7 +308,7 @@ function _initModelPickerDropdown() {
         row.appendChild(epSpan);
       }
       if (m.current) {
-        row.title = 'Current Hermes model (Claudia Core)';
+        row.title = 'Current Hermes model (Nexus Core)';
       }
       row.addEventListener('click', () => _pickCoreModel(m));
       listEl.appendChild(row);
@@ -322,13 +322,13 @@ function _initModelPickerDropdown() {
       return;
     }
     if (document.activeElement) document.activeElement.blur();
-    const result = await claudiaCoreModel.selectModel(m.id);
+    const result = await nexusCoreModel.selectModel(m.id);
     _close();
     if (result.ok) {
       updateModelPicker();
       try {
         document.dispatchEvent(new CustomEvent('odysseus:model-picked', {
-          detail: { mid: m.id, display: m.label || m.id, source: 'claudia_core' },
+          detail: { mid: m.id, display: m.label || m.id, source: 'nexus_core' },
         }));
       } catch (_) {}
       uiModule.showToast(`Using ${m.label || m.id}`);
@@ -338,7 +338,7 @@ function _initModelPickerDropdown() {
   }
 
   function _populate(filter) {
-    if (claudiaCoreModel.useCoreSelector()) {
+    if (nexusCoreModel.useCoreSelector()) {
       _populateCoreModels(filter);
       return;
     }
@@ -644,8 +644,8 @@ function _initModelPickerDropdown() {
       // Force-clear any in-progress close animation
       menu.classList.remove('closing', 'hidden');
       _populate('');
-      if (claudiaCoreModel.useCoreSelector()) {
-        claudiaCoreModel.refresh().then(() => {
+      if (nexusCoreModel.useCoreSelector()) {
+        nexusCoreModel.refresh().then(() => {
           if (!menu.classList.contains('hidden')) _populate(search.value || '');
           updateModelPicker();
         }).catch(() => {});
@@ -712,12 +712,12 @@ export function updateModelPicker() {
     wrap.style.pointerEvents = '';
   }
 
-  if (claudiaCoreModel.useCoreSelector()) {
-    const displayName = claudiaCoreModel.getButtonLabel() || 'Select model';
-    const state = claudiaCoreModel.getState();
+  if (nexusCoreModel.useCoreSelector()) {
+    const displayName = nexusCoreModel.getButtonLabel() || 'Select model';
+    const state = nexusCoreModel.getState();
     const modelId = state && state.model;
     if (btn) {
-      btn.title = claudiaCoreModel.getButtonTitle() || 'Switch Claudia Core model';
+      btn.title = nexusCoreModel.getButtonTitle() || 'Switch Nexus Core model';
     }
     const logo = modelId ? providerLogo(modelId) : null;
     if (logo) {

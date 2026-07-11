@@ -20,7 +20,7 @@ tool, result table, conversation model, or history authority is introduced.
 Deep Research page
   → submitDeepResearch (existing mutation)
     → nexusTasks (existing shared queue)
-      → Claudia Connector
+      → Console Connector
         → research.hermes_deep_research
           → terminal result
             → existing Deep Research result renderer
@@ -44,7 +44,7 @@ identity.
 - closes the History drawer, clears any historical selection, and selects the newly
   created task as **Current Research**.
 
-The strict Claudia metadata contract is unchanged. The server bakes in exactly five
+The strict Nexus metadata contract is unchanged. The server bakes in exactly five
 keys: `kind`, `sourcePage`, `explicitUserAction`, `researchRequestId`, `idempotencyKey`.
 No continuation-related metadata is ever added.
 

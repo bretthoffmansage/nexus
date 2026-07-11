@@ -9,13 +9,13 @@
 Nexus Deep Research page
   → submitDeepResearch (nexusTasks insert)
   → global nexusTasks queue
-  → Claudia Connector claim/execute
+  → Console Connector claim/execute
   → research.hermes_deep_research
   → terminal result path (taskResults / taskSources)
   → Nexus SafeMarkdown + SafeExternalLink rendering
 ```
 
-Nexus owns request collection, task creation, lifecycle display, and safe terminal-result rendering. Claudia owns research runtime, tools, model selection, prompts, source access, sandboxing, budgets, and final result assembly.
+Nexus owns request collection, task creation, lifecycle display, and safe terminal-result rendering. Nexus owns research runtime, tools, model selection, prompts, source access, sandboxing, budgets, and final result assembly.
 
 No second queue, worker, callback route, or persisted research state machine is introduced.
 
@@ -53,7 +53,7 @@ Server idempotency uses `by_owner_and_idempotency_key` — refresh/reconnect doe
 
 - Centered layout (`--nexus-calendar-content-max`)
 - Multiline **Research request** textarea with live character count
-- Disabled read-only **Model** field (`Managed by Claudia`) — not sent in task
+- Disabled read-only **Model** field (`Managed by Nexus`) — not sent in task
 - **Max rounds** removed
 - **Research** submit button (explicit action only)
 - Current research lifecycle + recent task history from `listMyDeepResearchTasks`
@@ -81,7 +81,7 @@ Non-retryable blocked codes (no automatic resubmit):
 - `unsupported_tool`
 - `task_contract_invalid`
 
-Display Claudia `errorMessage` when present; otherwise: `Deep Research is currently unavailable.`
+Display Nexus `errorMessage` when present; otherwise: `Deep Research is currently unavailable.`
 
 ## Result rendering
 
@@ -104,24 +104,24 @@ Display Claudia `errorMessage` when present; otherwise: `Deep Research is curren
 
 ## Dormant smoke expectation
 
-With Claudia research master enable **false** and Connector advertising the tool:
+With Nexus research master enable **false** and Connector advertising the tool:
 
 1. Nexus submits valid task → one `nexusTasks` row with exact envelope
-2. Connector claims → Claudia validates → `research_disabled`
+2. Connector claims → Nexus validates → `research_disabled`
 3. Nexus renders blocked state; no automatic retry or second task
 
 ## Focused tests
 
 `tests/nexus-deep-research-handoff.test.ts` — envelope, identifiers, submission, UI, lifecycle, blocked results, architecture guards.
 
-## Claudia activation dependencies
+## Nexus activation dependencies
 
 Before live production research:
 
 1. Connector advertises `research.hermes_deep_research`
-2. Claudia governed tool enabled (master enable)
+2. Nexus governed tool enabled (master enable)
 3. Tavily credentials configured and verified
-4. Operator enables production execution on Claudia side
+4. Operator enables production execution on Nexus side
 
 ## Rollback
 

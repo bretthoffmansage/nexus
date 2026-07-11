@@ -6,10 +6,10 @@ from pathlib import Path
 import pytest
 
 REPO = Path(__file__).resolve().parents[1]
-ARCHIVE = REPO / "docs/claudia_console_reform/legacy_archive"
+ARCHIVE = REPO / "docs/console_reform/legacy_archive"
 ARCHIVE_README = ARCHIVE / "README.md"
-CLASSIFICATION = REPO / "docs/claudia_console_reform/legacy_file_classification.json"
-PRIVATE_GUIDE = REPO / "docs/claudia_console_reform/private_pwa_deployment_hardening.md"
+CLASSIFICATION = REPO / "docs/console_reform/legacy_file_classification.json"
+PRIVATE_GUIDE = REPO / "docs/console_reform/private_pwa_deployment_hardening.md"
 README = REPO / "README.md"
 
 APPROVED_ARCHIVE_NAMES = frozenset({
@@ -44,11 +44,11 @@ def test_active_launch_paths_remain():
     assert (REPO / "scripts").is_dir()
 
 
-def test_readme_claudia_console_gateway_note():
+def test_readme_console_gateway_note():
     text = README.read_text(encoding="utf-8")
-    assert "Claudia Console" in text
-    assert "Claudia Gateway" in text
-    assert "claudia_system" in text
+    assert "legacy local console" in text
+    assert "Nexus Gateway" in text
+    assert "system" in text
     assert "static/landing.html" in text
 
 
@@ -61,9 +61,9 @@ def test_legacy_classification_json_parses():
     assert data["root_and_deployment"]["install-service.sh"] == "archived_package_18"
 
 
-def test_sw_cache_claudia_oriented():
+def test_sw_cache_nexus_oriented():
     sw = (REPO / "static/sw.js").read_text(encoding="utf-8")
-    assert "claudia-console-v1" in sw
+    assert "nexus-console-v1" in sw
     assert "odysseus-v326" not in sw
 
 

@@ -7,8 +7,8 @@ from pathlib import Path
 import pytest
 
 REPO = Path(__file__).resolve().parents[1]
-AUDIT = REPO / "docs/claudia_console_reform/package_17_competing_authority_legacy_file_audit.md"
-CLASSIFICATION = REPO / "docs/claudia_console_reform/legacy_file_classification.json"
+AUDIT = REPO / "docs/console_reform/package_17_competing_authority_legacy_file_audit.md"
+CLASSIFICATION = REPO / "docs/console_reform/legacy_file_classification.json"
 
 REQUIRED_AUDIT_SECTIONS = (
     "Matrix 1",

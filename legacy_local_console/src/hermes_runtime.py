@@ -1,11 +1,11 @@
-"""Embedded Hermes runtime resolver for Claudia Console (Gateway host).
+"""Embedded Hermes runtime resolver for legacy local console (Gateway host).
 
-Hermes lives inside Claudia System at ``claudia_system/hermes_runtime``.
+Hermes lives inside Nexus System at ``system/hermes_runtime``.
 Console must not discover Hermes from ``~/.hermes``, ``~/.local/bin/hermes``,
 global PATH, or the raw ``hermes-agent/hermes`` launcher without venv Python.
 
 Env overrides (first match wins for each path):
-  CLAUDIA_SYSTEM_ROOT, CLAUDIA_HERMES_HOME, CLAUDIA_HERMES_CLI, CLAUDIA_HERMES_PYTHON
+  NEXUS_SYSTEM_ROOT, NEXUS_HERMES_HOME, NEXUS_HERMES_CLI, NEXUS_HERMES_PYTHON
 """
 
 from __future__ import annotations
@@ -14,24 +14,24 @@ import os
 from pathlib import Path
 from typing import Any
 
-ENV_CLAUDIA_SYSTEM_ROOT = "CLAUDIA_SYSTEM_ROOT"
-ENV_HERMES_HOME = "CLAUDIA_HERMES_HOME"
-ENV_HERMES_CLI = "CLAUDIA_HERMES_CLI"
-ENV_HERMES_PYTHON = "CLAUDIA_HERMES_PYTHON"
+ENV_NEXUS_SYSTEM_ROOT = "NEXUS_SYSTEM_ROOT"
+ENV_HERMES_HOME = "NEXUS_HERMES_HOME"
+ENV_HERMES_CLI = "NEXUS_HERMES_CLI"
+ENV_HERMES_PYTHON = "NEXUS_HERMES_PYTHON"
 
 HERMES_HOME_REL = "hermes_runtime"
 HERMES_CLI_REL = "hermes-agent/venv/bin/hermes"
 HERMES_PYTHON_REL = "hermes-agent/venv/bin/python"
 HERMES_RAW_LAUNCHER_REL = "hermes-agent/hermes"
-HERMES_LAUNCHER_SCRIPT_REL = "scripts/hermes_claudia.sh"
+HERMES_LAUNCHER_SCRIPT_REL = "scripts/hermes_nexus.sh"
 
 FORBIDDEN_PATH_FRAGMENTS = (
     ".local/bin/hermes",
     str(Path.home() / ".hermes"),
 )
 
-_DEFAULT_CLAUDIA_SYSTEM_ROOT = Path(
-    "/Users/bretthoffman/Documents/claudia_system"
+_DEFAULT_NEXUS_SYSTEM_ROOT = Path(
+    "/Users/bretthoffman/Documents/system"
 )
 
 
@@ -46,15 +46,15 @@ def _resolve_from_env(name: str) -> Path | None:
     return Path(raw).expanduser().resolve()
 
 
-def get_claudia_system_root() -> Path:
-    """Claudia System repository root (embedded Hermes parent)."""
-    env_root = _resolve_from_env(ENV_CLAUDIA_SYSTEM_ROOT)
+def get_system_root() -> Path:
+    """Nexus System repository root (embedded Hermes parent)."""
+    env_root = _resolve_from_env(ENV_NEXUS_SYSTEM_ROOT)
     if env_root is not None:
         return env_root
-    sibling = Path(__file__).resolve().parents[1].parent / "claudia_system"
+    sibling = Path(__file__).resolve().parents[1].parent / "system"
     if sibling.is_dir():
         return sibling.resolve()
-    return _DEFAULT_CLAUDIA_SYSTEM_ROOT.resolve()
+    return _DEFAULT_NEXUS_SYSTEM_ROOT.resolve()
 
 
 def get_hermes_home() -> Path:
@@ -62,7 +62,7 @@ def get_hermes_home() -> Path:
     env_home = _resolve_from_env(ENV_HERMES_HOME)
     if env_home is not None:
         return env_home
-    return (get_claudia_system_root() / HERMES_HOME_REL).resolve()
+    return (get_system_root() / HERMES_HOME_REL).resolve()
 
 
 def get_hermes_cli() -> Path:
@@ -87,8 +87,8 @@ def get_hermes_raw_launcher() -> Path:
 
 
 def get_hermes_launcher_script() -> Path:
-    """Claudia-side shell launcher (must delegate to venv CLI)."""
-    return (get_claudia_system_root() / HERMES_LAUNCHER_SCRIPT_REL).resolve()
+    """Nexus-side shell launcher (must delegate to venv CLI)."""
+    return (get_system_root() / HERMES_LAUNCHER_SCRIPT_REL).resolve()
 
 
 def get_hermes_config_path() -> Path:
@@ -125,7 +125,7 @@ def build_hermes_command(args: list[str] | None = None) -> list[str]:
 
 def validate_hermes_runtime() -> dict[str, Any]:
     """Validate embedded Hermes runtime layout on the Console host."""
-    root = get_claudia_system_root()
+    root = get_system_root()
     home = get_hermes_home()
     cli = get_hermes_cli()
     python_bin = get_hermes_python()
@@ -138,7 +138,7 @@ def validate_hermes_runtime() -> dict[str, Any]:
     warnings: list[str] = []
 
     checks = {
-        "claudia_system_root_exists": root.is_dir(),
+        "system_root_exists": root.is_dir(),
         "hermes_runtime_exists": home.is_dir(),
         "hermes_config_yaml_exists": config_path.is_file(),
         "hermes_env_exists": env_path.is_file(),
@@ -181,7 +181,7 @@ def validate_hermes_runtime() -> dict[str, Any]:
 
     return {
         "validation_ok": not errors,
-        "claudia_system_root": str(root),
+        "system_root": str(root),
         "hermes_home": str(home),
         "hermes_cli": str(cli),
         "hermes_python": str(python_bin),
@@ -199,7 +199,7 @@ def hermes_runtime_status() -> dict[str, Any]:
     report = validate_hermes_runtime()
     return {
         "validation_ok": report["validation_ok"],
-        "claudia_system_root": report["claudia_system_root"],
+        "system_root": report["system_root"],
         "hermes_home": report["hermes_home"],
         "hermes_cli": report["hermes_cli"],
         "hermes_python": report["hermes_python"],

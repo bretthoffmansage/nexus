@@ -16,17 +16,17 @@ Fix CLI Mirror usability before Bridge 12 session persistence/resume design:
 
 | File | Change |
 |------|--------|
-| `static/js/claudiaCliMirror.js` | Persistent top-bar mode toggle; sectioned UI; session reattach/resume; stream dedup guard |
-| `static/js/claudiaCliMirrorHelpers.js` | Session ID + mode localStorage helpers |
+| `static/js/nexusCliMirror.js` | Persistent top-bar mode toggle; sectioned UI; session reattach/resume; stream dedup guard |
+| `static/js/nexusCliMirrorHelpers.js` | Session ID + mode localStorage helpers |
 | `static/style.css` | Top-bar toggle layout; session setup / transcript / Hermes input sections |
-| `tests/test_claudia_cli_mirror_ui.py` | Bridge 11B static and helper tests |
-| `docs/claudia_console_reform/package_bridge_11b_cli_mirror_mode_switch_input_clarity_reattach.md` | This note |
+| `tests/test_nexus_cli_mirror_ui.py` | Bridge 11B static and helper tests |
+| `docs/console_reform/package_bridge_11b_cli_mirror_mode_switch_input_clarity_reattach.md` | This note |
 
 ## Mode switch changes
 
 - **Simple Chat | CLI Mirror** segmented control moved from `.chat-input-bar` (hidden in CLI Mirror) to **`.chat-top-bar`**, so it stays visible in both modes.
 - Active mode uses existing `mode-toggle-btn active` styling and `aria-pressed`.
-- Selected mode persists via `localStorage` key `claudia_console_interaction_mode` (unchanged from Bridge 09).
+- Selected mode persists via `localStorage` key `console_interaction_mode` (unchanged from Bridge 09).
 
 ## Input clarity changes
 
@@ -64,7 +64,7 @@ Behavior:
 ### Browser refresh
 
 - Restores interaction mode from localStorage
-- On CLI Mirror init, `_resumeCliMirror()` attempts reattach to `claudia_console_cli_mirror_session_id`
+- On CLI Mirror init, `_resumeCliMirror()` attempts reattach to `console_cli_mirror_session_id`
 
 ### 409 conflict on start
 
@@ -74,15 +74,15 @@ Behavior:
 
 | Key | Purpose |
 |-----|---------|
-| `claudia_console_interaction_mode` | `simple_chat` or `cli_mirror` |
-| `claudia_console_cli_mirror_session_id` | Last attached/active CLI Mirror session ID |
+| `console_interaction_mode` | `simple_chat` or `cli_mirror` |
+| `console_cli_mirror_session_id` | Last attached/active CLI Mirror session ID |
 
 ## Tests/checks run
 
 ```bash
-cd claudia_console
-node --check static/js/claudiaCliMirror.js static/js/claudiaCliMirrorHelpers.js
-pytest tests/test_claudia_cli_mirror_ui.py tests/test_claudia_cli_relay.py tests/test_claudia_messages.py -q
+cd console
+node --check static/js/nexusCliMirror.js static/js/nexusCliMirrorHelpers.js
+pytest tests/test_nexus_cli_mirror_ui.py tests/test_nexus_cli_relay.py tests/test_nexus_messages.py -q
 ```
 
 Bridge 11B tests cover:
@@ -100,15 +100,15 @@ Bridge 11B tests cover:
 **Terminal 1 — Core:**
 
 ```bash
-cd /Users/bretthoffman/Documents/Claudia/claudia_system
-CLAUDIA_ENABLE_HERMES_PTY=true ./start-core-api.sh
+cd /Users/bretthoffman/Documents/Nexus/system
+NEXUS_ENABLE_HERMES_PTY=true ./start-core-api.sh
 ```
 
 **Terminal 2 — Console:**
 
 ```bash
-cd /Users/bretthoffman/Documents/Claudia/claudia_console
-CLAUDIA_CONSOLE_MODE=true CLAUDIA_CORE_URL=http://127.0.0.1:8080 ./start-macos.sh
+cd /Users/bretthoffman/Documents/Nexus/console
+NEXUS_CONSOLE_MODE=true NEXUS_CORE_URL=http://127.0.0.1:8080 ./start-macos.sh
 ```
 
 **Browser:**

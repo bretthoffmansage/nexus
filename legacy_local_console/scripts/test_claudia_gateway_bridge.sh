@@ -1,19 +1,19 @@
 #!/usr/bin/env bash
-# End-to-end Claudia Gateway bridge verification (Console + Core).
-# Requires Core at CLAUDIA_CORE_URL and Console at CLAUDIA_CONSOLE_URL.
+# End-to-end Nexus Gateway bridge verification (Console + Core).
+# Requires Core at NEXUS_CORE_URL and Console at NEXUS_CONSOLE_URL.
 #
-# Auth: when AUTH_ENABLED=true, set CLAUDIA_GATEWAY_BEARER_TOKEN to an API token
-# with claudia_intake and claudia_read scopes (Admin → API Tokens). The script
+# Auth: when AUTH_ENABLED=true, set NEXUS_GATEWAY_BEARER_TOKEN to an API token
+# with nexus_intake and nexus_read scopes (Admin → API Tokens). The script
 # does not weaken auth — it skips protected steps with a clear message if unauthenticated.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
-CORE_URL="${CLAUDIA_CORE_URL:-http://127.0.0.1:8080}"
-CONSOLE_URL="${CLAUDIA_CONSOLE_URL:-http://127.0.0.1:7860}"
-SECRET="${CLAUDIA_GATEWAY_SHARED_SECRET:-}"
-BEARER="${CLAUDIA_GATEWAY_BEARER_TOKEN:-}"
+CORE_URL="${NEXUS_CORE_URL:-http://127.0.0.1:8080}"
+CONSOLE_URL="${NEXUS_CONSOLE_URL:-http://127.0.0.1:7860}"
+SECRET="${NEXUS_GATEWAY_SHARED_SECRET:-}"
+BEARER="${NEXUS_GATEWAY_BEARER_TOKEN:-}"
 
 PASS=0
 FAIL=0
@@ -39,30 +39,30 @@ fi
 
 CORE_HEADERS=(-H "Content-Type: application/json")
 if [[ -n "$SECRET" ]]; then
-  CORE_HEADERS+=(-H "X-Claudia-Gateway-Secret: ${SECRET}")
+  CORE_HEADERS+=(-H "X-Nexus-Gateway-Secret: ${SECRET}")
 fi
 
-echo "▶ Claudia Gateway bridge verification (Console → Core)"
+echo "▶ Nexus Gateway bridge verification (Console → Core)"
 echo "  Core URL:     $CORE_URL"
 echo "  Console URL:  $CONSOLE_URL"
 echo
 
 if [[ "$(http_code "${CORE_URL}/health")" != "200" ]]; then
-  fail "Core not reachable at ${CORE_URL}/health — start claudia_system ./start-core-api.sh"
+  fail "Core not reachable at ${CORE_URL}/health — start system ./start-core-api.sh"
   echo "Result: ${PASS} passed, ${FAIL} failed, ${SKIP} skipped"
   exit 1
 fi
 pass "Core is reachable"
 
-if [[ "$(http_code "${CONSOLE_URL}/api/claudia/v1/health")" != "200" ]]; then
-  skip "Console not running at ${CONSOLE_URL} — start with CLAUDIA_CONSOLE_MODE=true CLAUDIA_CORE_URL=${CORE_URL} ./start-macos.sh"
+if [[ "$(http_code "${CONSOLE_URL}/api/nexus/v1/health")" != "200" ]]; then
+  skip "Console not running at ${CONSOLE_URL} — start with NEXUS_CONSOLE_MODE=true NEXUS_CORE_URL=${CORE_URL} ./start-macos.sh"
   echo "Result: ${PASS} passed, ${FAIL} failed, ${SKIP} skipped"
   exit 0
 fi
 
-GW_HEALTH="$(curl -sS "${CONSOLE_URL}/api/claudia/v1/health")"
+GW_HEALTH="$(curl -sS "${CONSOLE_URL}/api/nexus/v1/health")"
 if [[ "$(printf '%s' "$GW_HEALTH" | json_get "data.get('ok', False)")" == "True" ]]; then
-  pass "Console GET /api/claudia/v1/health ok=true"
+  pass "Console GET /api/nexus/v1/health ok=true"
 else
   fail "Console health check failed"
 fi
@@ -74,7 +74,7 @@ INTAKE_BODY="$(cat <<EOF
 EOF
 )"
 
-INTAKE_RESP="$(curl -sS -w "\n%{http_code}" -X POST "${CONSOLE_URL}/api/claudia/v1/intake" \
+INTAKE_RESP="$(curl -sS -w "\n%{http_code}" -X POST "${CONSOLE_URL}/api/nexus/v1/intake" \
   "${AUTH_HEADERS[@]}" \
   -H "Content-Type: application/json" \
   -d "$INTAKE_BODY")"
@@ -82,7 +82,7 @@ INTAKE_HTTP="$(printf '%s' "$INTAKE_RESP" | tail -n1)"
 INTAKE_JSON="$(printf '%s' "$INTAKE_RESP" | sed '$d')"
 
 if [[ "$INTAKE_HTTP" == "401" || "$INTAKE_HTTP" == "403" ]]; then
-  skip "Console POST /api/claudia/v1/intake returned HTTP ${INTAKE_HTTP} — set CLAUDIA_GATEWAY_BEARER_TOKEN (claudia_intake scope) or authenticate in browser"
+  skip "Console POST /api/nexus/v1/intake returned HTTP ${INTAKE_HTTP} — set NEXUS_GATEWAY_BEARER_TOKEN (nexus_intake scope) or authenticate in browser"
   echo "Result: ${PASS} passed, ${FAIL} failed, ${SKIP} skipped"
   exit 0
 fi
@@ -103,14 +103,14 @@ else
   fail "Console intake did not forward successfully (HTTP ${INTAKE_HTTP}: ${INTAKE_JSON})"
 fi
 
-PACKETS_RESP="$(curl -sS -w "\n%{http_code}" "${CONSOLE_URL}/api/claudia/v1/packets" "${AUTH_HEADERS[@]}")"
+PACKETS_RESP="$(curl -sS -w "\n%{http_code}" "${CONSOLE_URL}/api/nexus/v1/packets" "${AUTH_HEADERS[@]}")"
 PACKETS_HTTP="$(printf '%s' "$PACKETS_RESP" | tail -n1)"
 PACKETS_JSON="$(printf '%s' "$PACKETS_RESP" | sed '$d')"
 
 if [[ "$PACKETS_HTTP" == "401" || "$PACKETS_HTTP" == "403" ]]; then
-  skip "Console GET /api/claudia/v1/packets returned HTTP ${PACKETS_HTTP} — token needs claudia_read scope"
+  skip "Console GET /api/nexus/v1/packets returned HTTP ${PACKETS_HTTP} — token needs nexus_read scope"
 elif [[ "$PACKETS_HTTP" != "200" ]]; then
-  fail "Console GET /api/claudia/v1/packets returned HTTP ${PACKETS_HTTP}"
+  fail "Console GET /api/nexus/v1/packets returned HTTP ${PACKETS_HTTP}"
 else
   FOUND="$(printf '%s' "$PACKETS_JSON" | python3 -c "
 import json,sys
@@ -121,21 +121,21 @@ print('yes' if any(i.get('packet_id')==needle for i in items) else 'no')
 " "$PACKET_ID")"
   FWD="$(printf '%s' "$PACKETS_JSON" | json_get "data.get('forwarded', False)")"
   SRC="$(printf '%s' "$PACKETS_JSON" | json_get "data.get('source', '')")"
-  if [[ "$FOUND" == "yes" && "$FWD" == "True" && "$SRC" == "claudia_core" ]]; then
-    pass "Console /packets lists test packet from Core (source=claudia_core)"
+  if [[ "$FOUND" == "yes" && "$FWD" == "True" && "$SRC" == "nexus_core" ]]; then
+    pass "Console /packets lists test packet from Core (source=nexus_core)"
   else
     fail "Console /packets did not list test packet ${PACKET_ID} from Core"
   fi
 fi
 
-DETAIL_RESP="$(curl -sS -w "\n%{http_code}" "${CONSOLE_URL}/api/claudia/v1/packets/${PACKET_ID}" "${AUTH_HEADERS[@]}")"
+DETAIL_RESP="$(curl -sS -w "\n%{http_code}" "${CONSOLE_URL}/api/nexus/v1/packets/${PACKET_ID}" "${AUTH_HEADERS[@]}")"
 DETAIL_HTTP="$(printf '%s' "$DETAIL_RESP" | tail -n1)"
 DETAIL_JSON="$(printf '%s' "$DETAIL_RESP" | sed '$d')"
 
 if [[ "$DETAIL_HTTP" == "401" || "$DETAIL_HTTP" == "403" ]]; then
-  skip "Console GET /api/claudia/v1/packets/{id} returned HTTP ${DETAIL_HTTP} — token needs claudia_read scope"
+  skip "Console GET /api/nexus/v1/packets/{id} returned HTTP ${DETAIL_HTTP} — token needs nexus_read scope"
 elif [[ "$DETAIL_HTTP" != "200" ]]; then
-  fail "Console GET /api/claudia/v1/packets/${PACKET_ID} returned HTTP ${DETAIL_HTTP}"
+  fail "Console GET /api/nexus/v1/packets/${PACKET_ID} returned HTTP ${DETAIL_HTTP}"
 else
   MATCH="$(printf '%s' "$DETAIL_JSON" | python3 -c "
 import json,sys
@@ -162,7 +162,7 @@ echo
 echo "── Gateway message stub (Bridge 04B) ──"
 
 MSG_BODY='{"type":"message","route":"bridge_e2e","payload":{"message":"Hello from Console Bridge 04B"}}'
-MSG_RESP="$(curl -sS -w "\n%{http_code}" -X POST "${CONSOLE_URL}/api/claudia/v1/messages" \
+MSG_RESP="$(curl -sS -w "\n%{http_code}" -X POST "${CONSOLE_URL}/api/nexus/v1/messages" \
   "${AUTH_HEADERS[@]}" \
   -H "Content-Type: application/json" \
   -d "$MSG_BODY")"
@@ -170,9 +170,9 @@ MSG_HTTP="$(printf '%s' "$MSG_RESP" | tail -n1)"
 MSG_JSON="$(printf '%s' "$MSG_RESP" | sed '$d')"
 
 if [[ "$MSG_HTTP" == "401" || "$MSG_HTTP" == "403" ]]; then
-  skip "Console POST /api/claudia/v1/messages returned HTTP ${MSG_HTTP} — set CLAUDIA_GATEWAY_BEARER_TOKEN (claudia_intake scope) or authenticate"
+  skip "Console POST /api/nexus/v1/messages returned HTTP ${MSG_HTTP} — set NEXUS_GATEWAY_BEARER_TOKEN (nexus_intake scope) or authenticate"
 elif [[ "$MSG_HTTP" != "200" ]]; then
-  fail "Console POST /api/claudia/v1/messages returned HTTP ${MSG_HTTP}"
+  fail "Console POST /api/nexus/v1/messages returned HTTP ${MSG_HTTP}"
 else
   STUB_TYPE="$(printf '%s' "$MSG_JSON" | python3 -c "
 import json,sys

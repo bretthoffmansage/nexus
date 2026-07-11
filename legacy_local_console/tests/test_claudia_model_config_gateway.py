@@ -1,4 +1,4 @@
-"""Tests for Claudia Gateway model-config routes (Core Hermes model relay)."""
+"""Tests for Nexus Gateway model-config routes (Core Hermes model relay)."""
 
 import ast
 import importlib
@@ -26,23 +26,23 @@ def _token_middleware(scopes: list[str]):
 
 
 def _build_gateway_app(middleware_cls=None):
-    sys.modules.pop("routes.claudia_routes", None)
-    sys.modules.pop("src.claudia_client", None)
-    from routes.claudia_routes import setup_claudia_routes
+    sys.modules.pop("routes.nexus_routes", None)
+    sys.modules.pop("src.nexus_client", None)
+    from routes.nexus_routes import setup_nexus_routes
 
     app = FastAPI()
     if middleware_cls:
         app.add_middleware(middleware_cls)
-    app.include_router(setup_claudia_routes())
+    app.include_router(setup_nexus_routes())
     return app
 
 
 def test_get_model_config_core_unconfigured(monkeypatch):
-    monkeypatch.delenv("CLAUDIA_CORE_URL", raising=False)
+    monkeypatch.delenv("NEXUS_CORE_URL", raising=False)
     monkeypatch.setenv("AUTH_ENABLED", "false")
     app = _build_gateway_app()
     with TestClient(app) as client:
-        resp = client.get("/api/claudia/v1/model-config")
+        resp = client.get("/api/nexus/v1/model-config")
     assert resp.status_code == 200
     data = resp.json()
     assert data["ok"] is False
@@ -51,45 +51,45 @@ def test_get_model_config_core_unconfigured(monkeypatch):
     assert data["available_models"] == []
 
 
-def test_get_model_config_requires_claudia_read_bearer(monkeypatch):
-    monkeypatch.delenv("CLAUDIA_CORE_URL", raising=False)
+def test_get_model_config_requires_nexus_read_bearer(monkeypatch):
+    monkeypatch.delenv("NEXUS_CORE_URL", raising=False)
     monkeypatch.setenv("AUTH_ENABLED", "true")
-    app = _build_gateway_app(_token_middleware(["claudia_intake"]))
+    app = _build_gateway_app(_token_middleware(["nexus_intake"]))
     with TestClient(app) as client:
         resp = client.get(
-            "/api/claudia/v1/model-config",
+            "/api/nexus/v1/model-config",
             headers={"Authorization": "Bearer ody_fake"},
         )
     assert resp.status_code == 403
 
 
-def test_post_model_config_requires_claudia_admin_bearer(monkeypatch):
-    monkeypatch.delenv("CLAUDIA_CORE_URL", raising=False)
+def test_post_model_config_requires_nexus_admin_bearer(monkeypatch):
+    monkeypatch.delenv("NEXUS_CORE_URL", raising=False)
     monkeypatch.setenv("AUTH_ENABLED", "true")
-    app = _build_gateway_app(_token_middleware(["claudia_read"]))
+    app = _build_gateway_app(_token_middleware(["nexus_read"]))
     with TestClient(app) as client:
         resp = client.post(
-            "/api/claudia/v1/model-config",
+            "/api/nexus/v1/model-config",
             json={"model": "anthropic/claude-opus-4.6"},
             headers={"Authorization": "Bearer ody_fake"},
         )
     assert resp.status_code == 403
-    assert "Claudia admin" in resp.json()["detail"]
+    assert "Nexus admin" in resp.json()["detail"]
 
 
 def test_post_model_config_rejects_missing_model(monkeypatch):
     monkeypatch.setenv("AUTH_ENABLED", "false")
     app = _build_gateway_app()
     with TestClient(app) as client:
-        resp = client.post("/api/claudia/v1/model-config", json={})
+        resp = client.post("/api/nexus/v1/model-config", json={})
     assert resp.status_code == 422
 
 
 @pytest.mark.asyncio
 async def test_get_model_config_forwards_to_core(monkeypatch):
-    monkeypatch.setenv("CLAUDIA_CORE_URL", "http://core.test:8080")
-    sys.modules.pop("src.claudia_client", None)
-    mod = importlib.import_module("src.claudia_client")
+    monkeypatch.setenv("NEXUS_CORE_URL", "http://core.test:8080")
+    sys.modules.pop("src.nexus_client", None)
+    mod = importlib.import_module("src.nexus_client")
 
     core_payload = {
         "ok": True,
@@ -113,7 +113,7 @@ async def test_get_model_config_forwards_to_core(monkeypatch):
     mock_client.__aenter__ = AsyncMock(return_value=mock_client)
     mock_client.__aexit__ = AsyncMock(return_value=None)
 
-    with patch("src.claudia_client.httpx.AsyncClient", return_value=mock_client):
+    with patch("src.nexus_client.httpx.AsyncClient", return_value=mock_client):
         result = await mod.get_model_config()
 
     assert result["forwarded"] is True
@@ -124,9 +124,9 @@ async def test_get_model_config_forwards_to_core(monkeypatch):
 
 @pytest.mark.asyncio
 async def test_update_model_config_forwards_to_core(monkeypatch):
-    monkeypatch.setenv("CLAUDIA_CORE_URL", "http://core.test:8080")
-    sys.modules.pop("src.claudia_client", None)
-    mod = importlib.import_module("src.claudia_client")
+    monkeypatch.setenv("NEXUS_CORE_URL", "http://core.test:8080")
+    sys.modules.pop("src.nexus_client", None)
+    mod = importlib.import_module("src.nexus_client")
 
     core_payload = {
         "ok": True,
@@ -148,7 +148,7 @@ async def test_update_model_config_forwards_to_core(monkeypatch):
     mock_client.__aenter__ = AsyncMock(return_value=mock_client)
     mock_client.__aexit__ = AsyncMock(return_value=None)
 
-    with patch("src.claudia_client.httpx.AsyncClient", return_value=mock_client):
+    with patch("src.nexus_client.httpx.AsyncClient", return_value=mock_client):
         result = await mod.update_model_config("openai/gpt-4.1")
 
     assert result["forwarded"] is True
@@ -159,7 +159,7 @@ async def test_update_model_config_forwards_to_core(monkeypatch):
 
 
 def test_gateway_does_not_import_hermes_config_modules():
-    for rel in ("routes/claudia_routes.py", "src/claudia_client.py"):
+    for rel in ("routes/nexus_routes.py", "src/nexus_client.py"):
         tree = ast.parse((REPO / rel).read_text(encoding="utf-8"))
         for node in ast.walk(tree):
             if isinstance(node, ast.Import):
@@ -173,6 +173,6 @@ def test_gateway_does_not_import_hermes_config_modules():
 
 
 def test_gateway_client_does_not_reference_hermes_yaml_path():
-    text = (REPO / "src/claudia_client.py").read_text(encoding="utf-8")
+    text = (REPO / "src/nexus_client.py").read_text(encoding="utf-8")
     assert ".hermes" not in text
     assert "config.yaml" not in text

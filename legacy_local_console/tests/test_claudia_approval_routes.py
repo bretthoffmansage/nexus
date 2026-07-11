@@ -1,4 +1,4 @@
-"""Tests for Claudia Gateway approval queue routes (Package 10)."""
+"""Tests for Nexus Gateway approval queue routes (Package 10)."""
 
 import importlib
 import sys
@@ -22,23 +22,23 @@ def _token_middleware(scopes: list[str]):
 
 
 def _build_gateway_app(middleware_cls=None):
-    sys.modules.pop("routes.claudia_routes", None)
-    sys.modules.pop("src.claudia_client", None)
-    from routes.claudia_routes import setup_claudia_routes
+    sys.modules.pop("routes.nexus_routes", None)
+    sys.modules.pop("src.nexus_client", None)
+    from routes.nexus_routes import setup_nexus_routes
 
     app = FastAPI()
     if middleware_cls:
         app.add_middleware(middleware_cls)
-    app.include_router(setup_claudia_routes())
+    app.include_router(setup_nexus_routes())
     return app
 
 
 def test_get_approvals_core_unconfigured_placeholder(monkeypatch):
-    monkeypatch.delenv("CLAUDIA_CORE_URL", raising=False)
+    monkeypatch.delenv("NEXUS_CORE_URL", raising=False)
     monkeypatch.setenv("AUTH_ENABLED", "false")
     app = _build_gateway_app()
     with TestClient(app) as client:
-        resp = client.get("/api/claudia/v1/approvals")
+        resp = client.get("/api/nexus/v1/approvals")
     assert resp.status_code == 200
     data = resp.json()
     assert data["surface"] == "approvals"
@@ -46,39 +46,39 @@ def test_get_approvals_core_unconfigured_placeholder(monkeypatch):
     assert data["approvals"] == []
 
 
-def test_get_approvals_requires_claudia_read_bearer(monkeypatch):
-    monkeypatch.delenv("CLAUDIA_CORE_URL", raising=False)
+def test_get_approvals_requires_nexus_read_bearer(monkeypatch):
+    monkeypatch.delenv("NEXUS_CORE_URL", raising=False)
     monkeypatch.setenv("AUTH_ENABLED", "true")
-    app = _build_gateway_app(_token_middleware(["claudia_intake"]))
+    app = _build_gateway_app(_token_middleware(["nexus_intake"]))
     with TestClient(app) as client:
         resp = client.get(
-            "/api/claudia/v1/approvals",
+            "/api/nexus/v1/approvals",
             headers={"Authorization": "Bearer ody_fake"},
         )
     assert resp.status_code == 403
 
 
-def test_resolve_requires_claudia_admin_bearer(monkeypatch):
-    monkeypatch.delenv("CLAUDIA_CORE_URL", raising=False)
+def test_resolve_requires_nexus_admin_bearer(monkeypatch):
+    monkeypatch.delenv("NEXUS_CORE_URL", raising=False)
     monkeypatch.setenv("AUTH_ENABLED", "true")
-    app = _build_gateway_app(_token_middleware(["claudia_read"]))
+    app = _build_gateway_app(_token_middleware(["nexus_read"]))
     with TestClient(app) as client:
         resp = client.post(
-            "/api/claudia/v1/approvals/apr-1/resolve",
+            "/api/nexus/v1/approvals/apr-1/resolve",
             json={"decision": "approved"},
             headers={"Authorization": "Bearer ody_fake"},
         )
     assert resp.status_code == 403
-    assert "Claudia admin" in resp.json()["detail"]
+    assert "Nexus admin" in resp.json()["detail"]
 
 
-def test_resolve_accepts_claudia_admin_when_core_unconfigured(monkeypatch):
-    monkeypatch.delenv("CLAUDIA_CORE_URL", raising=False)
+def test_resolve_accepts_nexus_admin_when_core_unconfigured(monkeypatch):
+    monkeypatch.delenv("NEXUS_CORE_URL", raising=False)
     monkeypatch.setenv("AUTH_ENABLED", "true")
-    app = _build_gateway_app(_token_middleware(["claudia_admin"]))
+    app = _build_gateway_app(_token_middleware(["nexus_admin"]))
     with TestClient(app) as client:
         resp = client.post(
-            "/api/claudia/v1/approvals/apr-99/resolve",
+            "/api/nexus/v1/approvals/apr-99/resolve",
             json={"decision": "rejected", "reason": "test"},
             headers={"Authorization": "Bearer ody_fake"},
         )
@@ -95,7 +95,7 @@ def test_resolve_rejects_invalid_decision(monkeypatch):
     app = _build_gateway_app()
     with TestClient(app) as client:
         resp = client.post(
-            "/api/claudia/v1/approvals/apr-1/resolve",
+            "/api/nexus/v1/approvals/apr-1/resolve",
             json={"decision": "maybe"},
         )
     assert resp.status_code == 422
@@ -106,7 +106,7 @@ def test_resolve_rejects_missing_decision(monkeypatch):
     app = _build_gateway_app()
     with TestClient(app) as client:
         resp = client.post(
-            "/api/claudia/v1/approvals/apr-1/resolve",
+            "/api/nexus/v1/approvals/apr-1/resolve",
             json={},
         )
     assert resp.status_code == 422
@@ -114,9 +114,9 @@ def test_resolve_rejects_missing_decision(monkeypatch):
 
 @pytest.mark.asyncio
 async def test_resolve_forwards_to_core_path(monkeypatch):
-    monkeypatch.setenv("CLAUDIA_CORE_URL", "http://core.test:9000")
-    sys.modules.pop("src.claudia_client", None)
-    mod = importlib.import_module("src.claudia_client")
+    monkeypatch.setenv("NEXUS_CORE_URL", "http://core.test:9000")
+    sys.modules.pop("src.nexus_client", None)
+    mod = importlib.import_module("src.nexus_client")
 
     mock_client = AsyncMock()
     mock_resp = AsyncMock()
@@ -132,7 +132,7 @@ async def test_resolve_forwards_to_core_path(monkeypatch):
         "resolved_by": "alice",
         "route": "approvals",
     }
-    with patch("src.claudia_client.httpx.AsyncClient", return_value=mock_client):
+    with patch("src.nexus_client.httpx.AsyncClient", return_value=mock_client):
         result = await mod.resolve_approval("apr-1", resolution)
 
     assert result["forwarded"] is True
@@ -143,7 +143,7 @@ async def test_resolve_forwards_to_core_path(monkeypatch):
 
 
 def test_build_approval_resolution_fields():
-    from src.claudia_approvals import build_approval_resolution
+    from src.nexus_approvals import build_approval_resolution
 
     out = build_approval_resolution(
         {
@@ -162,7 +162,7 @@ def test_build_approval_resolution_fields():
 
 
 def test_resolve_does_not_call_agent_loop(monkeypatch):
-    monkeypatch.delenv("CLAUDIA_CORE_URL", raising=False)
+    monkeypatch.delenv("NEXUS_CORE_URL", raising=False)
     monkeypatch.setenv("AUTH_ENABLED", "false")
     agent_calls = []
 
@@ -174,7 +174,7 @@ def test_resolve_does_not_call_agent_loop(monkeypatch):
     app = _build_gateway_app()
     with TestClient(app) as client:
         client.post(
-            "/api/claudia/v1/approvals/x/resolve",
+            "/api/nexus/v1/approvals/x/resolve",
             json={"decision": "cancelled"},
         )
     assert not agent_calls

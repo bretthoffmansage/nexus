@@ -2,18 +2,18 @@
 
 **Package:** `nexus_legacy_cookbook_functionality_audit_v1`  
 **Date:** 2026-07-02  
-**Repository:** `claudia_console`  
+**Repository:** `console`  
 **Scope:** Read-only audit — no implementation
 
 ## Executive summary
 
-**Cookbook is not a prompt library, workflow catalog, or food-recipe feature.** In Odysseus / the Claudia local console it is a **local LLM operations console**: hardware fit scoring (llmfit / hwfit), Hugging Face model download, vLLM / llama.cpp / Ollama / diffusers **serve** management, saved **serve presets** (internally called “recipes”), remote SSH GPU servers, dependency installation, and tmux-backed background tasks. It is **admin-gated**, **executable**, and **local-only** (`legacy_local_console/routes/cookbook_routes.py`, `data/cookbook_state.json`).
+**Cookbook is not a prompt library, workflow catalog, or food-recipe feature.** In Odysseus / the Nexus local console it is a **local LLM operations console**: hardware fit scoring (llmfit / hwfit), Hugging Face model download, vLLM / llama.cpp / Ollama / diffusers **serve** management, saved **serve presets** (internally called “recipes”), remote SSH GPU servers, dependency installation, and tmux-backed background tasks. It is **admin-gated**, **executable**, and **local-only** (`legacy_local_console/routes/cookbook_routes.py`, `data/cookbook_state.json`).
 
 Hosted Nexus exposes `/knowledge` labeled **Cookbook** with misleading subtitle *“Recipe library and serve workflows”* — a pun on serve presets, not Nexus product recipes. The page is a **dead legacy UI shell** (`KnowledgeWorkspace.tsx`): one disabled button, no adapter, no Convex schema, no API routes. The `local_only` sidebar badge is **accurate**.
 
 **Classification:** placeholder over a missing hosted backend; legacy backend **still exists** under `legacy_local_console/` but is **unreachable** from hosted Nexus.
 
-**Recommendation:** Do **not** revive Cookbook on hosted Nexus. **Hide or remove** the sidebar entry and route (Option F). Keep full Cookbook on the Claudia Mac legacy console for operators who run local models. Do not repurpose this page as Chat/Tasks/Calendar templates without renaming — the name and legacy code unambiguously mean local model infrastructure.
+**Recommendation:** Do **not** revive Cookbook on hosted Nexus. **Hide or remove** the sidebar entry and route (Option F). Keep full Cookbook on the Nexus Mac legacy console for operators who run local models. Do not repurpose this page as Chat/Tasks/Calendar templates without renaming — the name and legacy code unambiguously mean local model infrastructure.
 
 ---
 
@@ -32,7 +32,7 @@ Hosted Nexus exposes `/knowledge` labeled **Cookbook** with misleading subtitle 
 
 | Control | File | Handler | Status | Original legacy intent |
 |---------|------|---------|--------|------------------------|
-| Availability banner | `KnowledgeWorkspace.tsx` | `ToolAvailabilityBanner` `local_only` | Always shown | Correct: local Claudia console only |
+| Availability banner | `KnowledgeWorkspace.tsx` | `ToolAvailabilityBanner` `local_only` | Always shown | Correct: local Nexus console only |
 | Title | `KnowledgeWorkspace.tsx` | — | Static **Cookbook** | Same |
 | Subtitle | `KnowledgeWorkspace.tsx` | — | *Recipe library and serve workflows* | Misleading on hosted; meant serve **presets** |
 | Body copy | `KnowledgeWorkspace.tsx` | — | Points to legacy console | Accurate deferral |
@@ -44,7 +44,7 @@ No search, categories, tabs, editor, run, import/export, or data queries exist o
 
 ## Original intended purpose (legacy)
 
-**Local model lifecycle management** for Claudia / Odysseus operators.
+**Local model lifecycle management** for Nexus / Odysseus operators.
 
 Source evidence:
 
@@ -88,7 +88,7 @@ From `cookbook.js`, slash-command tour, and modules:
 
 **Admin required:** `require_admin` on state and destructive routes (`cookbook_routes.py`).
 
-**Console Mode / hosted guard:** `block_local_execution("cookbook", …)` — cookbook subprocesses blocked when Claudia runs in governed console mode.
+**Console Mode / hosted guard:** `block_local_execution("cookbook", …)` — cookbook subprocesses blocked when Nexus runs in governed console mode.
 
 ---
 
@@ -140,7 +140,7 @@ Model catalog entries with fit scoring against detected GPU/VRAM (llmfit integra
 5. Running serves register OpenAI-compatible endpoints (model picker listens for `ge:model-endpoints-updated`).
 6. Agent tools in `tool_implementations.py` can list presets, serve models, stop serves — all call **local** `/api/cookbook/*`.
 
-**Requires:** local Claudia Mac (or legacy server), admin role, tmux, often GPU; remote SSH optional.
+**Requires:** local Nexus Mac (or legacy server), admin role, tmux, often GPU; remote SSH optional.
 
 **Not compatible with hosted Nexus queue:** execution is shell/subprocess, not `nexusTasks` / Connector tool IDs.
 
@@ -170,7 +170,7 @@ Files: `legacy_local_console/routes/cookbook_routes.py`, `cookbook_helpers.py`, 
 |----------|--------|
 | Ever had working hosted backend? | **No** — port inventory explicitly lists “Cookbook install/start/stop” as **not ported** (`nexus_p4_4_legacy_frontend_port_inventory_v1.md`) |
 | Convex / Connector cookbook? | **No** — zero `cookbook` references in `convex/` |
-| Usable backend today from Nexus? | **No** — only `legacy_local_console/` on Claudia Mac |
+| Usable backend today from Nexus? | **No** — only `legacy_local_console/` on Nexus Mac |
 
 ---
 
@@ -182,13 +182,13 @@ Files: `legacy_local_console/routes/cookbook_routes.py`, `cookbook_helpers.py`, 
 | **Tasks** | None — `nexusTasks` is Connector governed tools, not tmux shell |
 | **Calendar** | None |
 | **Skills** | Low — Skills documents **approved Nexus tools**; legacy Brain Skills taught **agent procedures** (filesystem); neither is model download/serve |
-| **Deep Research** | **Superficial** — DR has **read-only model picker** from Gateway catalog (`/api/deep-research/models`); Claudia owns execution. Cookbook **downloads and serves** local weights |
+| **Deep Research** | **Superficial** — DR has **read-only model picker** from Gateway catalog (`/api/deep-research/models`); Nexus owns execution. Cookbook **downloads and serves** local weights |
 | **Notes** | None |
 | **Vault Library** | None — documents vs binary model weights |
 | **Settings / Status** | Status shows Connector/system health, not local GPU serve |
-| **Claudia tools** | Legacy agent had cookbook HTTP tools; **no** `research.hermes_deep_research`-style cookbook tool in Nexus registry |
+| **Nexus tools** | Legacy agent had cookbook HTTP tools; **no** `research.hermes_deep_research`-style cookbook tool in Nexus registry |
 
-**Unique legacy value:** local operator control of GPU model inventory and OpenAI-compatible local endpoints. **Not unique on hosted Nexus** — hosted path uses Gateway/Claudia-managed models.
+**Unique legacy value:** local operator control of GPU model inventory and OpenAI-compatible local endpoints. **Not unique on hosted Nexus** — hosted path uses Gateway/Nexus-managed models.
 
 ---
 
@@ -208,7 +208,7 @@ Files: `legacy_local_console/routes/cookbook_routes.py`, `cookbook_helpers.py`, 
 ## Recommendation (no implementation)
 
 1. **Future purpose:** None on hosted Nexus for the Cookbook name/surface.
-2. **Authority:** Keep `cookbook_state.json` + local routes on Claudia Mac only (**D3**).
+2. **Authority:** Keep `cookbook_state.json` + local routes on Nexus Mac only (**D3**).
 3. **Execution:** No hosted execution path; do not wire to `nexusTasks`.
 4. **UI:** Remove sidebar entry and `/knowledge` route **or** replace with a short **“Local model operations”** doc link that points operators to legacy console — not an interactive tool.
 5. **Do not** build Convex tables or Connector tools for cookbook without a full product redesign and rename.
@@ -257,4 +257,4 @@ Files: `legacy_local_console/routes/cookbook_routes.py`, `cookbook_helpers.py`, 
 | Hosted Nexus ever supported it? | **No** |
 | Is Connector/local_only badge accurate? | **Yes** |
 | Unique value alongside Chat/Tasks/…? | **No** on hosted Nexus |
-| Revive, repurpose, merge, or remove? | **Remove or hide** on hosted; **retain locally** on Claudia Mac |
+| Revive, repurpose, merge, or remove? | **Remove or hide** on hosted; **retain locally** on Nexus Mac |

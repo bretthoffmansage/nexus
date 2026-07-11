@@ -1,32 +1,32 @@
-# Claudia Console
+# legacy local console
 
 > **Repository layout (2026):** This repo contains two applications:
 >
 > | Application | Directory | Stack | Deployment |
 > |-------------|-----------|-------|------------|
 > | **Nexus** (hosted) | [`nexus/`](nexus/) | Next.js, TypeScript, Clerk, Convex | Vercel via GitHub |
-> | **Claudia Console** (local legacy) | `app.py`, `static/` | FastAPI + static SPA | Local Mac (`./start-macos.sh`) |
+> | **legacy local console** (local legacy) | `app.py`, `static/` | FastAPI + static SPA | Local Mac (`./start-macos.sh`) |
 >
-> Nexus is the future user-facing hosted product. Claudia Console remains the local operator shell and is **not** built or deployed to Vercel.
+> Nexus is the future user-facing hosted product. legacy local console remains the local operator shell and is **not** built or deployed to Vercel.
 
-> **Claudia Console / Gateway** — The legacy tree is **Claudia Console UI** and **Claudia Gateway API** (`/api/claudia/v1`). **Claudia Core** (task loop, workers, final authority) is developed separately in the `claudia_system` repository — not in this repo. For dedicated Mac / private PWA deployment, see [`docs/claudia_console_reform/private_pwa_deployment_hardening.md`](docs/claudia_console_reform/private_pwa_deployment_hardening.md).
+> **legacy local console / Gateway** — The legacy tree is **legacy local console UI** and **Nexus Gateway API** (`/api/nexus/v1`). **Nexus Core** (task loop, workers, final authority) is developed separately in the `system` repository — not in this repo. For dedicated Mac / private PWA deployment, see [`docs/console_reform/private_pwa_deployment_hardening.md`](docs/console_reform/private_pwa_deployment_hardening.md).
 >
-> **Dedicated Claudia Mac launch** (repository checkout at `claudia_console`):
+> **Dedicated Nexus Mac launch** (repository checkout at `console`):
 >
 > ```bash
-> cd /Users/bretthoffman/Documents/claudia_console
+> cd /Users/bretthoffman/Documents/console
 > ./start-macos.sh
 > ```
 >
-> Opens at `http://127.0.0.1:7860`. Recommended Console Mode: `CLAUDIA_CONSOLE_MODE=true ./start-macos.sh` (or set `CLAUDIA_CONSOLE_MODE=true` in `.env`).
+> Opens at `http://127.0.0.1:7860`. Recommended Console Mode: `NEXUS_CONSOLE_MODE=true ./start-macos.sh` (or set `NEXUS_CONSOLE_MODE=true` in `.env`).
 
 ```
 ───────────────────────────────────────────────
- ⊹ ࣪ ˖ ૮( ˶ᵔ ᵕ ᵔ˶ )っ  Claudia Console vers. 1.0
+ ⊹ ࣪ ˖ ૮( ˶ᵔ ᵕ ᵔ˶ )っ  legacy local console vers. 1.0
 ───────────────────────────────────────────────
 ```
 
-![Claudia Console](docs/odysseus.jpg)
+![legacy local console](docs/odysseus.jpg)
 
 A self-hosted AI workspace (formerly Odysseus) — meant to be the self-hosted version of the UI experience you get from ChatGPT and Claude. But with more jank and fun. Running on your own hardware, with your own data -- local-first, privacy-first, and no trojan.
 

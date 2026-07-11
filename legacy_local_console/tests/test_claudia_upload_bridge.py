@@ -1,4 +1,4 @@
-"""Tests for Console Mode upload → Claudia source packet bridge (Package 8)."""
+"""Tests for Console Mode upload → Nexus source packet bridge (Package 8)."""
 
 import sys
 from types import SimpleNamespace
@@ -31,7 +31,7 @@ class _Request:
 
 
 def test_create_upload_source_packet_fields():
-    from src.claudia_packets import create_upload_source_packet
+    from src.nexus_packets import create_upload_source_packet
 
     pkt = create_upload_source_packet(
         upload_id="abc123def4567890abcdef1234567890.png",
@@ -61,9 +61,9 @@ def test_create_upload_source_packet_fields():
 
 @pytest.mark.asyncio
 async def test_bridge_core_unconfigured(monkeypatch):
-    monkeypatch.delenv("CLAUDIA_CORE_URL", raising=False)
-    sys.modules.pop("src.claudia_client", None)
-    from src.claudia_upload_bridge import bridge_upload_to_claudia_source
+    monkeypatch.delenv("NEXUS_CORE_URL", raising=False)
+    sys.modules.pop("src.nexus_client", None)
+    from src.nexus_upload_bridge import bridge_upload_to_nexus_source
 
     meta = {
         "id": "f" * 32,
@@ -73,7 +73,7 @@ async def test_bridge_core_unconfigured(monkeypatch):
         "hash": "h1",
         "uploaded_at": "2026-06-02T00:00:00Z",
     }
-    status = await bridge_upload_to_claudia_source(meta, created_by="alice")
+    status = await bridge_upload_to_nexus_source(meta, created_by="alice")
     assert status["ok"] is False
     assert status["status"] == "core_not_configured"
     assert status["forwarded"] is False
@@ -81,9 +81,9 @@ async def test_bridge_core_unconfigured(monkeypatch):
 
 
 @pytest.mark.asyncio
-async def test_api_upload_console_mode_adds_claudia_source_packet(monkeypatch):
-    monkeypatch.setenv("CLAUDIA_CONSOLE_MODE", "true")
-    monkeypatch.delenv("CLAUDIA_CORE_URL", raising=False)
+async def test_api_upload_console_mode_adds_nexus_source_packet(monkeypatch):
+    monkeypatch.setenv("NEXUS_CONSOLE_MODE", "true")
+    monkeypatch.delenv("NEXUS_CORE_URL", raising=False)
     sys.modules.pop("src.console_mode", None)
 
     handler = MagicMock()
@@ -113,15 +113,15 @@ async def test_api_upload_console_mode_adds_claudia_source_packet(monkeypatch):
     assert len(resp["files"]) == 1
     f0 = resp["files"][0]
     assert f0["id"] == meta["id"]
-    assert "claudia_source_packet" in f0
-    csp = f0["claudia_source_packet"]
+    assert "nexus_source_packet" in f0
+    csp = f0["nexus_source_packet"]
     assert csp["status"] == "core_not_configured"
     assert csp["forwarded"] is False
 
 
 @pytest.mark.asyncio
 async def test_api_upload_legacy_mode_unchanged_shape(monkeypatch):
-    monkeypatch.delenv("CLAUDIA_CONSOLE_MODE", raising=False)
+    monkeypatch.delenv("NEXUS_CONSOLE_MODE", raising=False)
     sys.modules.pop("src.console_mode", None)
 
     handler = MagicMock()
@@ -144,13 +144,13 @@ async def test_api_upload_legacy_mode_unchanged_shape(monkeypatch):
     with patch("routes.upload_routes.get_current_user", return_value="bob"):
         resp = await api_upload(_Request(), files=[fake_file])
 
-    assert "claudia_source_packet" not in resp["files"][0]
+    assert "nexus_source_packet" not in resp["files"][0]
 
 
 @pytest.mark.asyncio
 async def test_api_upload_forwards_source_packet(monkeypatch):
-    monkeypatch.setenv("CLAUDIA_CONSOLE_MODE", "true")
-    monkeypatch.setenv("CLAUDIA_CORE_URL", "http://core.test:9000")
+    monkeypatch.setenv("NEXUS_CONSOLE_MODE", "true")
+    monkeypatch.setenv("NEXUS_CORE_URL", "http://core.test:9000")
     sys.modules.pop("src.console_mode", None)
 
     handler = MagicMock()
@@ -185,7 +185,7 @@ async def test_api_upload_forwards_source_packet(monkeypatch):
     api_upload = endpoints["api_upload"]
 
     with patch("routes.upload_routes.get_current_user", return_value="alice"), patch(
-        "src.claudia_upload_bridge.forward_source_packet", _fake_forward
+        "src.nexus_upload_bridge.forward_source_packet", _fake_forward
     ):
         resp = await api_upload(_Request(), files=[MagicMock(spec=UploadFile)])
 
@@ -194,13 +194,13 @@ async def test_api_upload_forwards_source_packet(monkeypatch):
     assert pkt["type"] == "source"
     assert pkt["route"] == "upload"
     assert pkt["payload"]["source_type"] == "file_upload"
-    assert resp["files"][0]["claudia_source_packet"]["forwarded"] is True
+    assert resp["files"][0]["nexus_source_packet"]["forwarded"] is True
 
 
 @pytest.mark.asyncio
 async def test_api_upload_no_agent_loop(monkeypatch):
-    monkeypatch.setenv("CLAUDIA_CONSOLE_MODE", "true")
-    monkeypatch.delenv("CLAUDIA_CORE_URL", raising=False)
+    monkeypatch.setenv("NEXUS_CONSOLE_MODE", "true")
+    monkeypatch.delenv("NEXUS_CORE_URL", raising=False)
     sys.modules.pop("src.console_mode", None)
 
     agent_calls = []
@@ -237,7 +237,7 @@ def test_upload_bridge_modules_avoid_agent_loop():
     from pathlib import Path
 
     repo = Path(__file__).resolve().parents[1]
-    for rel in ("routes/upload_routes.py", "src/claudia_upload_bridge.py"):
+    for rel in ("routes/upload_routes.py", "src/nexus_upload_bridge.py"):
         tree = ast.parse((repo / rel).read_text(encoding="utf-8"))
         for node in ast.walk(tree):
             if isinstance(node, ast.Import):

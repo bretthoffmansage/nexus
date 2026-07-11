@@ -1,7 +1,7 @@
-"""Console Mode browser chat → Claudia Gateway message packets (Package 6, Bridge 04B).
+"""Console Mode browser chat → Nexus Gateway message packets (Package 6, Bridge 04B).
 
 Routes chat through Gateway/Core without local agent, LLM, or tool execution.
-Renders Claudia Core message stub ``response.content`` when available.
+Renders Nexus Core message stub ``response.content`` when available.
 """
 
 from __future__ import annotations
@@ -12,11 +12,11 @@ from typing import Any, AsyncGenerator
 from fastapi import Request
 
 from src.auth_helpers import effective_user
-from src.claudia_client import forward_message
-from src.claudia_packets import PacketNormalizeError, create_chat_message_packet
+from src.nexus_client import forward_message
+from src.nexus_packets import PacketNormalizeError, create_chat_message_packet
 
 MISSING_RESPONSE_CONTENT = (
-    "Claudia Core accepted the message, but no response content was returned."
+    "Nexus Core accepted the message, but no response content was returned."
 )
 
 
@@ -45,25 +45,25 @@ def _is_core_auth_error(result: dict[str, Any]) -> bool:
 def _user_visible_from_result(result: dict[str, Any]) -> str:
     if not result.get("core_configured"):
         return (
-            "Claudia Core is not configured. Local Odysseus chat execution is disabled; "
+            "Nexus Core is not configured. Local Odysseus chat execution is disabled; "
             "your message was not run by the local agent."
         )
 
     if _is_core_auth_error(result):
         return (
-            "Claudia Core rejected the Gateway request (authentication failed). "
+            "Nexus Core rejected the Gateway request (authentication failed). "
             "Local Odysseus chat execution is disabled; your message was not run locally."
         )
 
     if result.get("status") == "core_timeout":
         return (
-            "Claudia Core did not respond in time. Local Odysseus chat execution "
+            "Nexus Core did not respond in time. Local Odysseus chat execution "
             "is disabled; your message was not run locally."
         )
 
     if result.get("status") == "core_unreachable":
         return (
-            "Claudia Core is unreachable. Local Odysseus chat execution is disabled; "
+            "Nexus Core is unreachable. Local Odysseus chat execution is disabled; "
             "your message was not run locally."
         )
 
@@ -71,7 +71,7 @@ def _user_visible_from_result(result: dict[str, Any]) -> str:
         result.get("forwarded") and result.get("ok") is False
     ):
         return (
-            "Claudia Core is unavailable. Local Odysseus chat execution is disabled; "
+            "Nexus Core is unavailable. Local Odysseus chat execution is disabled; "
             "your message was not run locally."
         )
 
@@ -90,7 +90,7 @@ def _user_visible_from_result(result: dict[str, Any]) -> str:
 
         return MISSING_RESPONSE_CONTENT
 
-    return result.get("message") or "Message accepted by Claudia Gateway."
+    return result.get("message") or "Message accepted by Nexus Gateway."
 
 
 def _metadata_from_result(result: dict[str, Any]) -> dict[str, Any]:
@@ -118,7 +118,7 @@ def build_chat_response_payload(result: dict[str, Any]) -> dict[str, Any]:
         "status": result.get("status"),
         "core_configured": result.get("core_configured"),
         "forwarded": result.get("forwarded"),
-        "claudia_console_mode": True,
+        "console_mode": True,
         "agent_disabled": True,
     }
     payload.update(_metadata_from_result(result))
@@ -131,14 +131,14 @@ def build_chat_response_payload(result: dict[str, Any]) -> dict[str, Any]:
 async def sse_from_gateway_result(result: dict[str, Any]) -> AsyncGenerator[str, None]:
     """Frontend-safe SSE from a Gateway forward result (no local agent output)."""
     payload = build_chat_response_payload(result)
-    payload["type"] = "claudia_message"
+    payload["type"] = "nexus_message"
     payload["delta"] = payload["response"]
     yield f"data: {json.dumps(payload)}\n\n"
     yield "data: [DONE]\n\n"
 
 
 async def console_mode_chat_stream(request: Request) -> AsyncGenerator[str, None]:
-    """Handle ``POST /api/chat_stream`` in Claudia Console Mode."""
+    """Handle ``POST /api/chat_stream`` in legacy local console Mode."""
     form = await request.form()
     message = form.get("message")
     session = form.get("session")
@@ -146,7 +146,7 @@ async def console_mode_chat_stream(request: Request) -> AsyncGenerator[str, None
         err = {
             "type": "error",
             "message": "Message is required",
-            "claudia_console_mode": True,
+            "console_mode": True,
         }
         yield f"data: {json.dumps(err)}\n\n"
         yield "data: [DONE]\n\n"
@@ -169,7 +169,7 @@ async def console_mode_chat_stream(request: Request) -> AsyncGenerator[str, None
             "type": "validation_error",
             "message": str(exc),
             "field": exc.field,
-            "claudia_console_mode": True,
+            "console_mode": True,
         }
         yield f"data: {json.dumps(err)}\n\n"
         yield "data: [DONE]\n\n"
@@ -183,15 +183,15 @@ async def console_mode_chat_stream(request: Request) -> AsyncGenerator[str, None
 async def console_mode_resume_stream(session_id: str) -> AsyncGenerator[str, None]:
     """``GET /api/chat/resume`` — no detached Odysseus agent runs in Console Mode."""
     visible = (
-        "Detached agent resume is disabled in Claudia Console Mode. "
-        "Send chat messages to forward them to Claudia Core."
+        "Detached agent resume is disabled in legacy local console Mode. "
+        "Send chat messages to forward them to Nexus Core."
     )
     payload = {
-        "type": "claudia_message",
+        "type": "nexus_message",
         "message": visible,
         "delta": visible,
         "session_id": session_id,
-        "claudia_console_mode": True,
+        "console_mode": True,
         "agent_disabled": True,
         "status": "resume_disabled",
     }
@@ -205,7 +205,7 @@ async def console_mode_sync_chat(
     session_id: str | None,
     created_by: str | None,
 ) -> dict[str, Any]:
-    """Handle ``POST /api/chat`` in Claudia Console Mode."""
+    """Handle ``POST /api/chat`` in legacy local console Mode."""
     packet = create_chat_message_packet(
         message,
         session_id=session_id,

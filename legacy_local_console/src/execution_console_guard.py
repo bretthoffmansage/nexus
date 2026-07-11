@@ -1,4 +1,4 @@
-"""Claudia Console Mode guards for local execution surfaces (Package 12).
+"""legacy local console Mode guards for local execution surfaces (Package 12).
 
 Blocks shell command execution, MCP host connections/tool paths, workspace file
 mutations, and autonomous research starts when Console Mode is on.
@@ -9,11 +9,11 @@ from __future__ import annotations
 import json
 from typing import Any, AsyncIterator
 
-from src.console_mode import is_claudia_console_mode
+from src.console_mode import is_console_mode
 
 CORE_ROUTING_GUIDANCE = (
-    "Route execution requests through Claudia Core worker/task governance. "
-    "Use Claudia Gateway packets (intake, messages, source packets) for intake."
+    "Route execution requests through Nexus Core worker/task governance. "
+    "Use Nexus Gateway packets (intake, messages, source packets) for intake."
 )
 
 
@@ -28,13 +28,13 @@ def local_execution_disabled(
         "ok": False,
         "success": False,
         "status": "local_execution_disabled",
-        "claudia_console_mode": True,
+        "console_mode": True,
         "surface": surface,
         "operation": operation,
         "message": message
         or (
-            "Claudia Console Mode is active. Direct local execution is disabled. "
-            "Route this request through Claudia Core worker/task governance."
+            "legacy local console Mode is active. Direct local execution is disabled. "
+            "Route this request through Nexus Core worker/task governance."
         ),
         "guidance": CORE_ROUTING_GUIDANCE,
     }
@@ -42,7 +42,7 @@ def local_execution_disabled(
 
 def block_local_execution(surface: str, operation: str) -> dict[str, Any] | None:
     """Return a blocked-response dict in Console Mode, else None."""
-    if not is_claudia_console_mode():
+    if not is_console_mode():
         return None
     return local_execution_disabled(surface, operation)
 

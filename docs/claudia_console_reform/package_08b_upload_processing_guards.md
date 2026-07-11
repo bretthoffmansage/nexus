@@ -9,7 +9,7 @@
 
 ## Objective
 
-When `CLAUDIA_CONSOLE_MODE=true`, block upload-adjacent routes that still invoked local vision/OCR models or personal RAG indexing. Return explicit non-authoritative JSON; preserve file staging/download and Package 8 source-packet bridge.
+When `NEXUS_CONSOLE_MODE=true`, block upload-adjacent routes that still invoked local vision/OCR models or personal RAG indexing. Return explicit non-authoritative JSON; preserve file staging/download and Package 8 source-packet bridge.
 
 ## Files changed
 
@@ -18,12 +18,12 @@ When `CLAUDIA_CONSOLE_MODE=true`, block upload-adjacent routes that still invoke
 | `src/upload_console_guard.py` | **New** — `local_processing_disabled` responses |
 | `routes/upload_routes.py` | Early return on `GET /{file_id}/vision` in Console Mode |
 | `routes/personal_routes.py` | Early return on `POST /upload` in Console Mode |
-| `tests/test_claudia_upload_processing_guards.py` | **New** |
-| `docs/claudia_console_reform/package_08b_upload_processing_guards.md` | **New** — this note |
+| `tests/test_nexus_upload_processing_guards.py` | **New** |
+| `docs/console_reform/package_08b_upload_processing_guards.md` | **New** — this note |
 
 ## Behavior changed
 
-### Claudia Console Mode (`CLAUDIA_CONSOLE_MODE=true`)
+### legacy local console Mode (`NEXUS_CONSOLE_MODE=true`)
 
 - **`GET /api/upload/{file_id}/vision`** — returns `status: local_processing_disabled` before auth, cache, or `analyze_image_with_vl`.
 - **`POST /api/personal/upload`** — returns `local_processing_disabled` before RAG init, file write, or `add_document`.
@@ -56,7 +56,7 @@ Unchanged vision OCR and personal RAG upload paths (subject to existing auth/RAG
 | **GET /api/upload/{file_id}/vision** | Cache or `analyze_image_with_vl` | `local_processing_disabled` JSON | **No** |
 | **PUT /api/upload/{file_id}/vision** | Save user-edited text to cache | Unchanged (manual override file write) | **No** (no model/index) |
 | **POST /api/personal/upload** | Save files + RAG chunk/index | `local_processing_disabled` JSON | **No** |
-| **POST /api/upload** | Stage files; return metadata | Stage + `claudia_source_packet` (Package 8) | **No** (forward only) |
+| **POST /api/upload** | Stage files; return metadata | Stage + `nexus_source_packet` (Package 8) | **No** (forward only) |
 
 ## Console Mode fallback behavior
 
@@ -64,12 +64,12 @@ Unchanged vision OCR and personal RAG upload paths (subject to existing auth/RAG
 {
   "ok": false,
   "status": "local_processing_disabled",
-  "claudia_console_mode": true,
+  "console_mode": true,
   "local_processing_disabled": true,
   "route": "/api/upload/{file_id}/vision",
   "processing": "vision_ocr",
-  "message": "Claudia Console Mode is active. Local Odysseus processing for this route (vision_ocr) is disabled. This was not handled by Claudia Core.",
-  "guidance": "Use POST /api/upload to stage files; Claudia source packets are forwarded via the Gateway when CLAUDIA_CORE_URL is configured."
+  "message": "legacy local console Mode is active. Local Odysseus processing for this route (vision_ocr) is disabled. This was not handled by Nexus Core.",
+  "guidance": "Use POST /api/upload to stage files; Nexus source packets are forwarded via the Gateway when NEXUS_CORE_URL is configured."
 }
 ```
 
@@ -77,7 +77,7 @@ Personal upload uses `processing: personal_rag_indexing` and route `/api/persona
 
 ## Safety guarantees
 
-1. Guards only when `CLAUDIA_CONSOLE_MODE=true`.
+1. Guards only when `NEXUS_CONSOLE_MODE=true`.
 2. Vision guard runs before `analyze_image_with_vl` and vision cache reads.
 3. Personal upload guard runs before `_rag()`, file writes, and indexing.
 4. No local agent, task scheduler, MCP, shell, memory, skills, or research from guard paths.
@@ -88,15 +88,15 @@ Personal upload uses `processing: personal_rag_indexing` and route `/api/persona
 ```bash
 python3 -m compileall -q app.py core routes src
 venv/bin/python -m pytest -q \
-  tests/test_claudia_upload_processing_guards.py \
-  tests/test_claudia_upload_bridge.py \
-  tests/test_claudia_source_worker_routes.py \
-  tests/test_claudia_messages.py \
-  tests/test_claudia_chat_demotion.py \
-  tests/test_claudia_gateway_routes.py \
-  tests/test_claudia_token_scopes.py \
-  tests/test_claudia_packets.py \
-  tests/test_claudia_console_mode.py
+  tests/test_nexus_upload_processing_guards.py \
+  tests/test_nexus_upload_bridge.py \
+  tests/test_nexus_source_worker_routes.py \
+  tests/test_nexus_messages.py \
+  tests/test_nexus_chat_demotion.py \
+  tests/test_nexus_gateway_routes.py \
+  tests/test_nexus_token_scopes.py \
+  tests/test_nexus_packets.py \
+  tests/test_console_mode.py
 ```
 
 **Results:** compileall pass; **81 passed**.
@@ -111,12 +111,12 @@ Full-suite `pytest --collect-only` still has 2 pre-existing collection errors:
 ## Risks
 
 - **`PUT /api/upload/{file_id}/vision`** still writes local OCR override cache in Console Mode (user-provided text only).
-- Personal upload does not yet route to Claudia Core; clients must use `POST /api/upload` + source packets.
+- Personal upload does not yet route to Nexus Core; clients must use `POST /api/upload` + source packets.
 
 ## Follow-ups
 
 - Optional Console Mode guard on `PUT .../vision` if manual cache is undesirable.
-- Future: personal docs intake via Claudia source packets.
+- Future: personal docs intake via Nexus source packets.
 
 ## Next recommended package
 

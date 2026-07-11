@@ -4,7 +4,7 @@
 |-------|-------|
 | **Package** | Bridge 11A — CLI Mirror Viewport Scroll and Input Accessibility Fix |
 | **Date** | 2026-06-02 |
-| **Repo** | `claudia_console` |
+| **Repo** | `console` |
 
 ## Objective
 
@@ -16,7 +16,7 @@ The app shell uses a fixed-height flex layout:
 
 - `body { overflow: hidden; height: 100dvh; }` — page does not scroll
 - `.chat-container { overflow: hidden; flex: 1; min-height: 0; }` — main column clips overflow
-- `.claudia-cli-mirror-panel { flex: 1; overflow: hidden; }` — panel tried to fill remaining height and hid content below the fold
+- `.nexus-cli-mirror-panel { flex: 1; overflow: hidden; }` — panel tried to fill remaining height and hid content below the fold
 
 Bridge 11 added operator warning, session list, title input, and attach UI — increasing total panel height beyond the viewport. With `overflow: hidden` at both container and panel levels, the lower input bar was trapped off-screen with no scroll path.
 
@@ -25,29 +25,29 @@ Bridge 11 added operator warning, session list, title input, and attach UI — i
 | File | Change |
 |------|--------|
 | `static/style.css` | CLI Mirror scroll/overflow layout fix (Bridge 11A rules) |
-| `tests/test_claudia_cli_mirror_ui.py` | Static CSS checks for scroll behavior |
-| `docs/claudia_console_reform/package_bridge_11a_cli_mirror_viewport_scroll_fix.md` | This note |
+| `tests/test_nexus_cli_mirror_ui.py` | Static CSS checks for scroll behavior |
+| `docs/console_reform/package_bridge_11a_cli_mirror_viewport_scroll_fix.md` | This note |
 
 ## CSS/layout changes made
 
-**`.chat-container.claudia-cli-mirror-active`**
+**`.chat-container.nexus-cli-mirror-active`**
 
 - `overflow-y: auto` — main column scrolls when mirror content exceeds viewport
 - `overflow-x: hidden`, `overscroll-behavior-y: contain`
 - Bottom padding + safe-area inset so input is not flush against viewport edge
 
-**`.claudia-cli-mirror-panel`**
+**`.nexus-cli-mirror-panel`**
 
 - `overflow: visible` (was `hidden`)
 - `flex: 0 0 auto` + `min-height: min-content` — panel sizes to content instead of clipping
 - Extra bottom padding
 
-**`.claudia-cli-mirror-transcript`**
+**`.nexus-cli-mirror-transcript`**
 
 - Bounded internal scroll: `max-height: clamp(160px, 36vh, 400px)`
 - `overflow-y: auto` — transcript scrolls independently
 
-**`.claudia-cli-mirror-input-bar`**
+**`.nexus-cli-mirror-input-bar`**
 
 - `flex-shrink: 0` + `scroll-margin-bottom` — input stays reachable when scrolling
 
@@ -56,13 +56,13 @@ Bridge 11 added operator warning, session list, title input, and attach UI — i
 - Mobile: shorter transcript clamp, extra container padding
 - `@media (max-height: 820px)`: tighter transcript max-height on short laptop windows
 
-Simple Chat unchanged: base `.chat-container { overflow: hidden; }` remains; only `.claudia-cli-mirror-active` enables scroll.
+Simple Chat unchanged: base `.chat-container { overflow: hidden; }` remains; only `.nexus-cli-mirror-active` enables scroll.
 
 ## Tests/checks run
 
 ```bash
-cd claudia_console
-pytest tests/test_claudia_cli_mirror_ui.py tests/test_claudia_cli_relay.py tests/test_claudia_messages.py -q
+cd console
+pytest tests/test_nexus_cli_mirror_ui.py tests/test_nexus_cli_relay.py tests/test_nexus_messages.py -q
 ```
 
 Static checks verify:
@@ -75,8 +75,8 @@ Static checks verify:
 
 ## Manual smoke instructions
 
-**Core:** `CLAUDIA_ENABLE_HERMES_PTY=true ./start-core-api.sh`  
-**Console:** `CLAUDIA_CONSOLE_MODE=true CLAUDIA_CORE_URL=http://127.0.0.1:8080 ./start-macos.sh`
+**Core:** `NEXUS_ENABLE_HERMES_PTY=true ./start-core-api.sh`  
+**Console:** `NEXUS_CONSOLE_MODE=true NEXUS_CORE_URL=http://127.0.0.1:8080 ./start-macos.sh`
 
 1. Open http://127.0.0.1:7860 — admin login
 2. Switch to **CLI Mirror**

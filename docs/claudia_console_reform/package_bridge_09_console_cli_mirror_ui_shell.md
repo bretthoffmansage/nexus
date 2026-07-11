@@ -4,18 +4,18 @@
 |-------|-------|
 | **Package** | Bridge 09 — Console CLI Mirror UI Shell |
 | **Date** | 2026-06-02 |
-| **Repo** | `claudia_console` |
+| **Repo** | `console` |
 
 ## Objective
 
-Build the first polished Claudia Console UI shell for **CLI Mirror Mode**, connecting to Bridge 08 Gateway CLI relay endpoints while preserving Simple Chat (Bridge 05) and the Odysseus-derived design language.
+Build the first polished legacy local console UI shell for **CLI Mirror Mode**, connecting to Bridge 08 Gateway CLI relay endpoints while preserving Simple Chat (Bridge 05) and the Odysseus-derived design language.
 
 ## Simple Chat vs CLI Mirror
 
 | Mode | Path | Who runs Hermes |
 |------|------|-----------------|
 | **Simple Chat** | Console → Gateway → Core `POST /messages` → `hermes -z` | Core (one-shot) |
-| **CLI Mirror** | Console → Gateway `/api/claudia/v1/cli/sessions/*` → Core PTY | Core (persistent PTY) |
+| **CLI Mirror** | Console → Gateway `/api/nexus/v1/cli/sessions/*` → Core PTY | Core (persistent PTY) |
 
 - **Simple Chat** is the default operator experience for message packets.
 - **CLI Mirror** is an admin/operator mode that mirrors a Core-owned Hermes CLI session.
@@ -25,16 +25,16 @@ Build the first polished Claudia Console UI shell for **CLI Mirror Mode**, conne
 
 | File | Change |
 |------|--------|
-| `static/js/claudiaCliMirrorHelpers.js` | **New** — sanitize text, event classification, error mapping, Gateway URLs |
-| `static/js/claudiaCliMirror.js` | **New** — CLI Mirror panel, session controls, SSE, transcript rendering |
-| `static/js/claudiaConsoleMode.js` | Wire `initClaudiaCliMirror()` after Console Mode UI |
+| `static/js/nexusCliMirrorHelpers.js` | **New** — sanitize text, event classification, error mapping, Gateway URLs |
+| `static/js/nexusCliMirror.js` | **New** — CLI Mirror panel, session controls, SSE, transcript rendering |
+| `static/js/nexusConsoleMode.js` | Wire `initNexusCliMirror()` after Console Mode UI |
 | `static/style.css` | CLI Mirror panel styles (card-based, responsive) |
-| `tests/test_claudia_cli_mirror_ui.py` | **New** — static/syntax/gateway checks |
-| `docs/claudia_console_reform/package_bridge_09_console_cli_mirror_ui_shell.md` | **New** — this note |
+| `tests/test_nexus_cli_mirror_ui.py` | **New** — static/syntax/gateway checks |
+| `docs/console_reform/package_bridge_09_console_cli_mirror_ui_shell.md` | **New** — this note |
 
 ## UI surfaces changed
 
-- **Interaction mode toggle** (Console Mode only): `Simple Chat | CLI Mirror` in the chat input toolbar; persisted in `localStorage` key `claudia_console_interaction_mode`.
+- **Interaction mode toggle** (Console Mode only): `Simple Chat | CLI Mirror` in the chat input toolbar; persisted in `localStorage` key `console_interaction_mode`.
 - **CLI Mirror panel** (injected into `#chat-container`):
   - Header with status chip (`not connected` / `ready` / `running` / `stopped` / `error` / `stream disconnected`)
   - Session controls: Start, Refresh/list, Stop, Interrupt, session ID + copy
@@ -49,13 +49,13 @@ When CLI Mirror is active, the normal chat history and chat input bar are hidden
 
 | Method | Gateway path |
 |--------|----------------|
-| `GET` | `/api/claudia/v1/cli/sessions` |
-| `POST` | `/api/claudia/v1/cli/sessions` |
-| `GET` | `/api/claudia/v1/cli/sessions/{id}/transcript` |
-| `POST` | `/api/claudia/v1/cli/sessions/{id}/input` |
-| `GET` | `/api/claudia/v1/cli/sessions/{id}/stream` (SSE via `EventSource`) |
-| `POST` | `/api/claudia/v1/cli/sessions/{id}/stop` |
-| `POST` | `/api/claudia/v1/cli/sessions/{id}/interrupt` |
+| `GET` | `/api/nexus/v1/cli/sessions` |
+| `POST` | `/api/nexus/v1/cli/sessions` |
+| `GET` | `/api/nexus/v1/cli/sessions/{id}/transcript` |
+| `POST` | `/api/nexus/v1/cli/sessions/{id}/input` |
+| `GET` | `/api/nexus/v1/cli/sessions/{id}/stream` (SSE via `EventSource`) |
+| `POST` | `/api/nexus/v1/cli/sessions/{id}/stop` |
+| `POST` | `/api/nexus/v1/cli/sessions/{id}/interrupt` |
 
 No direct Core URL calls from the browser.
 
@@ -71,7 +71,7 @@ No direct Core URL calls from the browser.
 
 Styled cards (not raw JSON) for:
 
-- Claudia Core not configured (`core_not_configured`)
+- Nexus Core not configured (`core_not_configured`)
 - Core unreachable
 - Admin/auth required (401/403)
 - Hermes PTY disabled on Core (`pty_disabled`)
@@ -85,14 +85,14 @@ Backend admin gating is unchanged; the UI does not bypass it.
 ## Enable Core PTY
 
 ```bash
-cd claudia_system
-CLAUDIA_ENABLE_HERMES_PTY=true ./start-core-api.sh
+cd system
+NEXUS_ENABLE_HERMES_PTY=true ./start-core-api.sh
 ```
 
 Simple Chat Hermes one-shot remains separate:
 
 ```bash
-CLAUDIA_ENABLE_HERMES_EXECUTION=true  # Bridge 05 Simple Chat only
+NEXUS_ENABLE_HERMES_EXECUTION=true  # Bridge 05 Simple Chat only
 ```
 
 ## Start both services
@@ -100,15 +100,15 @@ CLAUDIA_ENABLE_HERMES_EXECUTION=true  # Bridge 05 Simple Chat only
 **Terminal 1 — Core:**
 
 ```bash
-cd claudia_system
-CLAUDIA_ENABLE_HERMES_PTY=true ./start-core-api.sh
+cd system
+NEXUS_ENABLE_HERMES_PTY=true ./start-core-api.sh
 ```
 
 **Terminal 2 — Console:**
 
 ```bash
-cd claudia_console
-CLAUDIA_CONSOLE_MODE=true CLAUDIA_CORE_URL=http://127.0.0.1:8080 ./start-macos.sh
+cd console
+NEXUS_CONSOLE_MODE=true NEXUS_CORE_URL=http://127.0.0.1:8080 ./start-macos.sh
 ```
 
 **Browser:** http://127.0.0.1:7860
@@ -116,7 +116,7 @@ CLAUDIA_CONSOLE_MODE=true CLAUDIA_CORE_URL=http://127.0.0.1:8080 ./start-macos.s
 ## Manual smoke instructions
 
 1. Log in as admin (or use auth-disabled local dev).
-2. Open chat/command center — confirm **Claudia Console Mode** banner.
+2. Open chat/command center — confirm **legacy local console Mode** banner.
 3. Switch **Simple Chat → CLI Mirror** via the new toggle.
 4. Click **Start session** — status chip should show **Running**; session ID appears.
 5. Send `/help` in the CLI Mirror input — Hermes output cards appear in the transcript; raw drawer optional.
@@ -128,16 +128,16 @@ CLAUDIA_CONSOLE_MODE=true CLAUDIA_CORE_URL=http://127.0.0.1:8080 ./start-macos.s
 Optional script (Gateway relay, no UI):
 
 ```bash
-cd claudia_console
-./scripts/test_claudia_cli_relay.sh
+cd console
+./scripts/test_nexus_cli_relay.sh
 ```
 
 ## Tests/checks run
 
 ```bash
-cd claudia_console
-pytest tests/test_claudia_cli_mirror_ui.py tests/test_claudia_cli_relay.py tests/test_claudia_messages.py -q
-node --check static/js/claudiaCliMirror.js static/js/claudiaCliMirrorHelpers.js
+cd console
+pytest tests/test_nexus_cli_mirror_ui.py tests/test_nexus_cli_relay.py tests/test_nexus_messages.py -q
+node --check static/js/nexusCliMirror.js static/js/nexusCliMirrorHelpers.js
 ```
 
 Checks include:

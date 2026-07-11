@@ -9,35 +9,35 @@
 
 ## Objective
 
-Harden and document Claudia Console/Gateway private deployment expectations for a local/private PWA control surface on the dedicated Claudia Mac — documentation, env guidance, and read-only health warnings without public hosting automation or auth rewrites.
+Harden and document legacy local console/Gateway private deployment expectations for a local/private PWA control surface on the dedicated Nexus Mac — documentation, env guidance, and read-only health warnings without public hosting automation or auth rewrites.
 
 ## Files changed
 
 | File | Change |
 |------|--------|
-| `docs/claudia_console_reform/private_pwa_deployment_hardening.md` | **New** — operator private/PWA guide |
-| `docs/claudia_console_reform/package_16_private_pwa_deployment_hardening.md` | **New** — this note |
-| `src/claudia_deployment_posture.py` | **New** — `collect_deployment_warnings()` |
-| `routes/claudia_routes.py` | Health enriched with `deployment_warnings` |
-| `.env.example` | Claudia private deployment comment block |
-| `static/js/claudiaDashboard.js` | Read-only deployment warnings in health card |
+| `docs/console_reform/private_pwa_deployment_hardening.md` | **New** — operator private/PWA guide |
+| `docs/console_reform/package_16_private_pwa_deployment_hardening.md` | **New** — this note |
+| `src/nexus_deployment_posture.py` | **New** — `collect_deployment_warnings()` |
+| `routes/nexus_routes.py` | Health enriched with `deployment_warnings` |
+| `.env.example` | Nexus private deployment comment block |
+| `static/js/nexusDashboard.js` | Read-only deployment warnings in health card |
 | `static/style.css` | Dashboard warning list styles |
-| `tests/test_claudia_private_deployment_hardening.py` | **New** |
-| `SECURITY.md` | Pointer to Claudia private deployment guide |
+| `tests/test_nexus_private_deployment_hardening.py` | **New** |
+| `SECURITY.md` | Pointer to Nexus private deployment guide |
 
 ## Behavior changed
 
-### `GET /api/claudia/v1/health`
+### `GET /api/nexus/v1/health`
 
 Adds `deployment_warnings`: array of `{code, severity, message}` objects. No secret values. Existing fields unchanged.
 
-### Claudia dashboard
+### Nexus dashboard
 
 Health card shows Console Mode badge and deployment posture warnings when present (read-only).
 
 ### `.env.example`
 
-Expanded Claudia Console/Gateway section with Tailscale, bind, auth, bypass, in-process flags, Core URL/secret placeholders.
+Expanded legacy local console/Gateway section with Tailscale, bind, auth, bypass, in-process flags, Core URL/secret placeholders.
 
 ## Behavior intentionally unchanged
 
@@ -49,17 +49,17 @@ Expanded Claudia Console/Gateway section with Tailscale, bind, auth, bypass, in-
 
 ## Deployment docs added/updated
 
-- **New:** `docs/claudia_console_reform/private_pwa_deployment_hardening.md`
+- **New:** `docs/console_reform/private_pwa_deployment_hardening.md`
 - **Updated:** `SECURITY.md` (one bullet + link)
 - **Updated:** `.env.example` comments
 
 ## Env guidance added/updated
 
-`.env.example` now documents: `CLAUDIA_CONSOLE_MODE`, `APP_BIND`, `AUTH_ENABLED`, `LOCALHOST_BYPASS`, `SECURE_COOKIES`, `ODYSSEUS_INPROCESS_*`, `CLAUDIA_CORE_URL`, `CLAUDIA_GATEWAY_SHARED_SECRET`, Tailscale/private LAN, no public raw ports.
+`.env.example` now documents: `NEXUS_CONSOLE_MODE`, `APP_BIND`, `AUTH_ENABLED`, `LOCALHOST_BYPASS`, `SECURE_COOKIES`, `ODYSSEUS_INPROCESS_*`, `NEXUS_CORE_URL`, `NEXUS_GATEWAY_SHARED_SECRET`, Tailscale/private LAN, no public raw ports.
 
 ## Health/status warnings
 
-**Implemented** in `src/claudia_deployment_posture.py` and exposed on health.
+**Implemented** in `src/nexus_deployment_posture.py` and exposed on health.
 
 ### Health warning matrix
 
@@ -68,8 +68,8 @@ Expanded Claudia Console/Gateway section with Tailscale, bind, auth, bypass, in-
 | `auth_disabled` | `AUTH_ENABLED=false` | No | Set `AUTH_ENABLED=true` |
 | `localhost_bypass_enabled` | `LOCALHOST_BYPASS=true` | No | Disable outside localhost dev |
 | `bind_all_interfaces` | `APP_BIND` or `ODYSSEUS_HOST` is `0.0.0.0` / `::` | No | Bind `127.0.0.1`; use Tailscale/proxy |
-| `console_mode_off` | `CLAUDIA_CONSOLE_MODE` not true | No | Enable on dedicated Claudia Mac |
-| `gateway_secret_missing` | Core URL set, secret empty | No | Set `CLAUDIA_GATEWAY_SHARED_SECRET` |
+| `console_mode_off` | `NEXUS_CONSOLE_MODE` not true | No | Enable on dedicated Nexus Mac |
+| `gateway_secret_missing` | Core URL set, secret empty | No | Set `NEXUS_GATEWAY_SHARED_SECRET` |
 | `core_url_public_or_unknown` | Core host not loopback/private/Tailscale | No | Use private Core URL only |
 | `inprocess_tasks_enabled` | `ODYSSEUS_INPROCESS_TASKS` on and console mode off | No | Console mode or set tasks=0 |
 
@@ -80,14 +80,14 @@ Expanded Claudia Console/Gateway section with Tailscale, bind, auth, bypass, in-
 | Area | Required posture | Package 16 change | Remaining follow-up |
 |------|------------------|-------------------|---------------------|
 | local dev | `127.0.0.1`, auth on, bypass dev-only | Documented in guide + `.env.example` | Optional dev checklist in README |
-| dedicated Claudia Mac | Console mode, no in-process authority | Documented + health `console_mode_off` | LaunchAgent/plist hardening out of scope |
+| dedicated Nexus Mac | Console mode, no in-process authority | Documented + health `console_mode_off` | LaunchAgent/plist hardening out of scope |
 | Tailscale/private LAN | Private access only, no public bind | Documented + `core_url` / bind warnings | Tailscale Serve examples not automated |
 | PWA/mobile | Trusted private URL + auth | Documented | Manifest/cache refresh UX |
 | auth | `AUTH_ENABLED=true` | Warning `auth_disabled` | No auth rewrite |
 | localhost bypass | `false` outside dev | Warning `localhost_bypass_enabled` | — |
 | cookies/HTTPS | `SECURE_COOKIES=true` behind TLS | Documented in guide | No runtime warning yet |
 | CORS/origins | Restrict to private hosts | Documented | No CORS audit in health |
-| Claudia Core URL | Loopback/private/Tailscale | Warning `core_url_public_or_unknown` | — |
+| Nexus Core URL | Loopback/private/Tailscale | Warning `core_url_public_or_unknown` | — |
 | Gateway shared secret | Set when Core configured | Warning `gateway_secret_missing` | — |
 | API tokens | Least privilege, rotate on leak | Documented | No token scanner |
 | Ollama/local model ports | Internal-only | Documented | No port probe |
@@ -100,7 +100,7 @@ See `private_pwa_deployment_hardening.md`: install PWA only from trusted private
 
 ## Secrets handling notes
 
-- Health warnings never include env secret values or `CLAUDIA_GATEWAY_SHARED_SECRET`.
+- Health warnings never include env secret values or `NEXUS_GATEWAY_SHARED_SECRET`.
 - `.env.example` uses placeholders only.
 - Guide stresses protect Core URL, gateway secret, API tokens, `.env`, `data/`.
 
@@ -109,29 +109,29 @@ See `private_pwa_deployment_hardening.md`: install PWA only from trusted private
 ```bash
 python3 -m compileall -q app.py core routes src
 venv/bin/python -m pytest -q \
-  tests/test_claudia_private_deployment_hardening.py \
-  tests/test_claudia_legacy_ui_classification.py \
-  tests/test_claudia_branding.py \
-  tests/test_claudia_authority_demotion.py \
-  tests/test_claudia_execution_surface_guards.py \
-  tests/test_claudia_connector_email_calendar_guards.py \
-  tests/test_claudia_approval_routes.py \
-  tests/test_claudia_dashboard_skeleton.py \
-  tests/test_claudia_upload_processing_guards.py \
-  tests/test_claudia_upload_bridge.py \
-  tests/test_claudia_source_worker_routes.py \
-  tests/test_claudia_messages.py \
-  tests/test_claudia_chat_demotion.py \
-  tests/test_claudia_gateway_routes.py \
-  tests/test_claudia_token_scopes.py \
-  tests/test_claudia_packets.py \
-  tests/test_claudia_console_mode.py
+  tests/test_nexus_private_deployment_hardening.py \
+  tests/test_nexus_legacy_ui_classification.py \
+  tests/test_nexus_branding.py \
+  tests/test_nexus_authority_demotion.py \
+  tests/test_nexus_execution_surface_guards.py \
+  tests/test_nexus_connector_email_calendar_guards.py \
+  tests/test_nexus_approval_routes.py \
+  tests/test_nexus_dashboard_skeleton.py \
+  tests/test_nexus_upload_processing_guards.py \
+  tests/test_nexus_upload_bridge.py \
+  tests/test_nexus_source_worker_routes.py \
+  tests/test_nexus_messages.py \
+  tests/test_nexus_chat_demotion.py \
+  tests/test_nexus_gateway_routes.py \
+  tests/test_nexus_token_scopes.py \
+  tests/test_nexus_packets.py \
+  tests/test_console_mode.py
 ```
 
 ## Results
 
 - `python3 -m compileall -q app.py core routes src`: **pass**
-- Focused Claudia tests (P1–P16): **147 passed**
+- Focused Nexus tests (P1–P16): **147 passed**
 - New Package 16 tests: **11 passed**
 
 ## Known pytest baseline issue from Package 0
@@ -153,7 +153,7 @@ Not fixed in Package 16.
 
 - Package 17: final competing-authority cleanup audit.
 - Optional: `SECURE_COOKIES` / CORS warnings when served over HTTPS.
-- README pointer to Claudia guide (skipped to minimize scope).
+- README pointer to Nexus guide (skipped to minimize scope).
 
 ## Next recommended package
 

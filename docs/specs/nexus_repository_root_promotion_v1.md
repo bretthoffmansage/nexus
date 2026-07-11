@@ -11,7 +11,7 @@
 ### Before (P2–P3)
 
 ```
-claudia_console/
+console/
 ├── app.py, routes/, static/, …     # legacy defined repository root
 ├── package.json                    # legacy minimal Node deps
 └── nexus/                          # nested hosted Next.js app
@@ -22,7 +22,7 @@ claudia_console/
 ### After (P3.5)
 
 ```
-claudia_console/                    # repository root = Nexus (Vercel target)
+console/                    # repository root = Nexus (Vercel target)
 ├── app/, components/, convex/, lib/, styles/, tests/
 ├── package.json                    # Nexus authoritative
 ├── scripts/verify-nexus-boundary.sh
@@ -60,7 +60,7 @@ The `nexus/` directory was **removed** after promotion (no duplicate authoritati
 - `launch-windows.ps1`, `update_windows.bat`
 - `routes/`, `core/`, `src/`, `static/`, `companion/`, `services/`, `config/`, `mcp_servers/`
 - `tests/` (Python suite)
-- `scripts/` (Odysseus/Claudia CLI helpers)
+- `scripts/` (Odysseus/Nexus CLI helpers)
 - `data/` (runtime, gitignored — moved with legacy if present)
 - Legacy `.env.example`, `README_LEGACY_CONSOLE.md`
 - Legacy `package.json` → `legacy-node-package.json`
@@ -166,7 +166,7 @@ Operator has external backup. To rollback locally:
 ## Next operator command
 
 ```bash
-cd /Users/bretthoffman/Documents/claudia_console
+cd /Users/bretthoffman/Documents/console
 npx convex dev
 ```
 

@@ -8,7 +8,7 @@
 
 P4.1 connects the repository-root Nexus application to the real Clerk application and embeds Clerk’s sign-in/sign-up panels inside the existing Nexus auth page design. P4 Convex approval, roles, webhooks, and fail-closed behavior were preserved.
 
-No P5 task persistence, P6 connector work, or Claudia execution was added.
+No P5 task persistence, P6 connector work, or Nexus execution was added.
 
 ## Remote warning
 

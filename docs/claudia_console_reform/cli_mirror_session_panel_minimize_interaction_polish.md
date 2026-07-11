@@ -2,7 +2,7 @@
 
 **Package / pass name:** CLI Mirror Session Panel Minimize Interaction Polish Pass  
 **Date / time:** 2026-06-03 (local)  
-**Repo path:** `/Users/bretthoffman/Documents/claudia_console`
+**Repo path:** `/Users/bretthoffman/Documents/console`
 
 ## Summary
 
@@ -12,10 +12,10 @@ Replaced explicit +/- minimize buttons with click-to-collapse/expand on the Sess
 
 | File | Change |
 |------|--------|
-| `static/js/claudiaCliMirror.js` | Removed +/- buttons; split header vs inactive labels; click handlers |
+| `static/js/nexusCliMirror.js` | Removed +/- buttons; split header vs inactive labels; click handlers |
 | `static/style.css` | Header visibility; click cursors; minimized Stop button layout |
-| `tests/test_claudia_cli_mirror_ui.py` | Interaction and layout static tests |
-| `docs/claudia_console_reform/cli_mirror_session_panel_minimize_interaction_polish.md` | This note |
+| `tests/test_nexus_cli_mirror_ui.py` | Interaction and layout static tests |
+| `docs/console_reform/cli_mirror_session_panel_minimize_interaction_polish.md` | This note |
 
 ## Behavior changed
 
@@ -36,7 +36,7 @@ Replaced explicit +/- minimize buttons with click-to-collapse/expand on the Sess
 ```bash
 bash -n start-macos.sh
 python3 -m compileall -q app.py core routes src
-venv/bin/python -m pytest -q tests/test_claudia_cli_mirror_ui.py
+venv/bin/python -m pytest -q tests/test_nexus_cli_mirror_ui.py
 ```
 
 ## Recommended live smoke test

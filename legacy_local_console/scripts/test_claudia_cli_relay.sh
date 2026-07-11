@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
-# Bridge 08 — Claudia Gateway CLI Mirror relay smoke test (Console → Core PTY).
+# Bridge 08 — Nexus Gateway CLI Mirror relay smoke test (Console → Core PTY).
 set -eo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
-CORE_URL="${CLAUDIA_CORE_URL:-http://127.0.0.1:8080}"
-CONSOLE_URL="${CLAUDIA_CONSOLE_URL:-http://127.0.0.1:7860}"
-SECRET="${CLAUDIA_GATEWAY_SHARED_SECRET:-}"
-BEARER="${CLAUDIA_GATEWAY_BEARER_TOKEN:-}"
+CORE_URL="${NEXUS_CORE_URL:-http://127.0.0.1:8080}"
+CONSOLE_URL="${NEXUS_CONSOLE_URL:-http://127.0.0.1:7860}"
+SECRET="${NEXUS_GATEWAY_SHARED_SECRET:-}"
+BEARER="${NEXUS_GATEWAY_BEARER_TOKEN:-}"
 
 PASS=0
 FAIL=0
@@ -33,14 +33,14 @@ echo "  Console: $CONSOLE_URL"
 echo
 
 if [[ "$(curl -sS -o /dev/null -w '%{http_code}' "${CORE_URL}/health")" != "200" ]]; then
-  fail "Core not reachable — start with CLAUDIA_ENABLE_HERMES_PTY=true ./start-core-api.sh"
+  fail "Core not reachable — start with NEXUS_ENABLE_HERMES_PTY=true ./start-core-api.sh"
   echo "Result: ${PASS} passed, ${FAIL} failed, ${SKIP} skipped"
   exit 1
 fi
 pass "Core reachable"
 
-if [[ "$(curl -sS -o /dev/null -w '%{http_code}' "${CONSOLE_URL}/api/claudia/v1/health")" != "200" ]]; then
-  skip "Console not running — start with CLAUDIA_CONSOLE_MODE=true CLAUDIA_CORE_URL=${CORE_URL} ./start-macos.sh"
+if [[ "$(curl -sS -o /dev/null -w '%{http_code}' "${CONSOLE_URL}/api/nexus/v1/health")" != "200" ]]; then
+  skip "Console not running — start with NEXUS_CONSOLE_MODE=true NEXUS_CORE_URL=${CORE_URL} ./start-macos.sh"
   echo "Result: ${PASS} passed, ${FAIL} failed, ${SKIP} skipped"
   exit 0
 fi
@@ -48,19 +48,19 @@ pass "Console reachable"
 
 START_RESP="$(curl -sS -w "\n%{http_code}" -X POST "${CURL_AUTH[@]}" \
   -H "Content-Type: application/json" \
-  "${CONSOLE_URL}/api/claudia/v1/cli/sessions" \
+  "${CONSOLE_URL}/api/nexus/v1/cli/sessions" \
   -d '{"title":"Bridge 08 CLI relay test"}')"
 START_HTTP="$(printf '%s' "$START_RESP" | tail -n1)"
 START_JSON="$(printf '%s' "$START_RESP" | sed '$d')"
 
 if [[ "$START_HTTP" == "401" || "$START_HTTP" == "403" ]]; then
-  skip "CLI session start returned HTTP ${START_HTTP} — set CLAUDIA_GATEWAY_BEARER_TOKEN with claudia_admin scope or authenticate as admin"
+  skip "CLI session start returned HTTP ${START_HTTP} — set NEXUS_GATEWAY_BEARER_TOKEN with nexus_admin scope or authenticate as admin"
   echo "Result: ${PASS} passed, ${FAIL} failed, ${SKIP} skipped"
   exit 0
 fi
 
 if [[ "$START_HTTP" != "200" ]]; then
-  fail "POST /api/claudia/v1/cli/sessions returned HTTP ${START_HTTP}: ${START_JSON}"
+  fail "POST /api/nexus/v1/cli/sessions returned HTTP ${START_HTTP}: ${START_JSON}"
   echo "Result: ${PASS} passed, ${FAIL} failed, ${SKIP} skipped"
   exit 1
 fi
@@ -75,7 +75,7 @@ fi
 
 INPUT_HTTP="$(curl -sS -o /dev/null -w '%{http_code}' -X POST "${CURL_AUTH[@]}" \
   -H "Content-Type: application/json" \
-  "${CONSOLE_URL}/api/claudia/v1/cli/sessions/${SESSION_ID}/input" \
+  "${CONSOLE_URL}/api/nexus/v1/cli/sessions/${SESSION_ID}/input" \
   -d '{"text":"/help"}')"
 if [[ "$INPUT_HTTP" == "200" ]]; then
   pass "CLI input forwarded via Gateway"
@@ -84,7 +84,7 @@ else
 fi
 
 sleep 2
-TRANSCRIPT="$(curl -sS "${CURL_AUTH[@]}" "${CONSOLE_URL}/api/claudia/v1/cli/sessions/${SESSION_ID}/transcript")"
+TRANSCRIPT="$(curl -sS "${CURL_AUTH[@]}" "${CONSOLE_URL}/api/nexus/v1/cli/sessions/${SESSION_ID}/transcript")"
 if printf '%s' "$TRANSCRIPT" | grep -q '"events"'; then
   pass "CLI transcript returned via Gateway"
 else
@@ -92,7 +92,7 @@ else
 fi
 
 STREAM_SAMPLE="$(curl -sS -N --max-time 3 "${CURL_AUTH[@]}" \
-  "${CONSOLE_URL}/api/claudia/v1/cli/sessions/${SESSION_ID}/stream" 2>/dev/null | head -c 800 || true)"
+  "${CONSOLE_URL}/api/nexus/v1/cli/sessions/${SESSION_ID}/stream" 2>/dev/null | head -c 800 || true)"
 if printf '%s' "$STREAM_SAMPLE" | grep -Eq 'event:|data:'; then
   pass "CLI stream relay returned SSE"
 else
@@ -100,7 +100,7 @@ else
 fi
 
 STOP_HTTP="$(curl -sS -o /dev/null -w '%{http_code}' -X POST "${CURL_AUTH[@]}" \
-  "${CONSOLE_URL}/api/claudia/v1/cli/sessions/${SESSION_ID}/stop")"
+  "${CONSOLE_URL}/api/nexus/v1/cli/sessions/${SESSION_ID}/stop")"
 if [[ "$STOP_HTTP" == "200" ]]; then
   pass "CLI stop forwarded via Gateway"
 else

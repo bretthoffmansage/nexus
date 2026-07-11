@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Claudia Console — first-time setup script.
+"""legacy local console — first-time setup script.
 
 Creates data directories, initializes the database, and sets up an
 initial admin user. Safe to re-run (skips what already exists).
@@ -168,7 +168,7 @@ def check_deps():
 
 
 def main():
-    print("\n=== Claudia Console Setup ===\n")
+    print("\n=== legacy local console Setup ===\n")
 
     print("1. Creating directories...")
     create_dirs()

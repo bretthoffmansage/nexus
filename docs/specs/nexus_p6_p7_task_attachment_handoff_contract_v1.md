@@ -14,7 +14,7 @@
 | `convex/http.ts` | `POST /api/connector/v1/attachment` |
 | `convex/schema.ts` | Library + attachment tables, task extensions |
 
-**Recommended next Claudia package:** **Claudia Trusted Attachment Ingress and Nexus Connector Transport v1**
+**Recommended next Nexus package:** **Nexus Trusted Attachment Ingress and Nexus Connector Transport v1**
 
 ---
 
@@ -221,11 +221,11 @@ Optional `dropzoneResult`:
 
 ## 13. Smoke-test state
 
-Local automated verification only. Deployed HTTP binary download and Claudia end-to-end not executed.
+Local automated verification only. Deployed HTTP binary download and Nexus end-to-end not executed.
 
-## 14. Claudia readiness
+## 14. Nexus readiness
 
-Claudia **may not** safely execute end-to-end until implementing:
+Nexus **may not** safely execute end-to-end until implementing:
 
 1. Parse `attachments[]` from claim
 2. Signed download with lease-bound POST

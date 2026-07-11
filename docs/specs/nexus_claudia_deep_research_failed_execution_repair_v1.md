@@ -1,8 +1,8 @@
-# Nexus — Claudia Deep Research Failed-Execution Repair v1
+# Nexus — Nexus Deep Research Failed-Execution Repair v1
 
 Package: `cross_repo_deep_research_failed_execution_repair_v1`
 Status: **Nexus side verified correct — no Nexus code change required.** Root
-cause and repair are entirely Claudia-side.
+cause and repair are entirely Nexus-side.
 
 ## Purpose
 
@@ -55,14 +55,14 @@ connector polls `doting-raven-338.convex.site` and **successfully claimed** the
 task, proving the UI and connector operate on the same deployment. No dev/prod
 task-routing mismatch was involved in this failure.
 
-## First failing boundary (Claudia)
+## First failing boundary (Nexus)
 
-The request reached the connector, was claimed and fetched, accepted by Claudia
-ingress, and Hermes ran to completion. It then failed inside the Claudia research
+The request reached the connector, was claimed and fetched, accepted by Nexus
+ingress, and Hermes ran to completion. It then failed inside the Nexus research
 runtime's post-run tool-policy guard, which misread `hermes tools list` toolset
-registration (`browser` enabled) as an unapproved callable tool. See the Claudia
-spec: `docs/specs/claudia_nexus_deep_research_failed_execution_repair_v1.md`
-(claudia_system repo).
+registration (`browser` enabled) as an unapproved callable tool. See the Nexus
+spec: `docs/specs/nexus_nexus_deep_research_failed_execution_repair_v1.md`
+(system repo).
 
 ## Error-propagation conclusion (Phase 5)
 
@@ -85,4 +85,4 @@ No Nexus code change; nothing to roll back on this side.
 ## Remaining items
 
 - Live end-to-end re-run pending operator approval (paid providers) and a
-  connector restart to load the Claudia fix.
+  connector restart to load the Nexus fix.

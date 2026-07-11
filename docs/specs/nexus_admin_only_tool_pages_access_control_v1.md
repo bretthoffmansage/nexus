@@ -176,4 +176,4 @@ Revocation:
 Revert this commit. All changes are additive/narrow: registry `requiredRole` flags,
 per-page `requiredRole` props, the `requireNexusAdmin` helper and its use in the
 six pages' private functions, plus tests and this spec. No schema, role model, or
-Claudia System changes were made.
+Nexus System changes were made.

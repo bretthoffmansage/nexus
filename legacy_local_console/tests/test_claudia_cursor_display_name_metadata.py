@@ -6,11 +6,11 @@ from pathlib import Path
 import pytest
 
 REPO = Path(__file__).resolve().parents[1]
-REFORM = REPO / "docs/claudia_console_reform"
+REFORM = REPO / "docs/console_reform"
 
-CONSOLE_PATH = "/Users/bretthoffman/Documents/claudia_console"
-DISPLAY_NAME = "claudia-console"
-DISPLAY_TITLE = "Claudia Console"
+CONSOLE_PATH = "/Users/bretthoffman/Documents/console"
+DISPLAY_NAME = "nexus-console"
+DISPLAY_TITLE = "legacy local console"
 
 IMPLEMENTATION_NOTE = REFORM / "cursor_project_display_name_cleanup.md"
 
@@ -22,7 +22,7 @@ def test_implementation_note_exists():
     assert CONSOLE_PATH in body
 
 
-def test_readme_h1_is_claudia_console():
+def test_readme_h1_is_console():
     first = (REPO / "README.md").read_text(encoding="utf-8").splitlines()[0]
     assert first.strip() == f"# {DISPLAY_TITLE}"
 
@@ -44,20 +44,20 @@ def test_package_lock_root_name_matches():
     assert data["name"] == DISPLAY_NAME
 
 
-def test_manifest_pwa_name_is_claudia():
+def test_manifest_pwa_name_is_nexus():
     data = json.loads((REPO / "static/manifest.json").read_text(encoding="utf-8"))
-    assert data["name"] == "Claudia"
-    assert "Claudia Console" in data["description"]
+    assert data["name"] == "Nexus"
+    assert "legacy local console" in data["description"]
 
 
-def test_app_fastapi_title_is_claudia_console():
+def test_app_fastapi_title_is_console():
     text = (REPO / "app.py").read_text(encoding="utf-8")
-    assert 'title="Claudia Console"' in text
+    assert 'title="legacy local console"' in text
 
 
 def test_setup_script_display_banner():
     text = (REPO / "setup.py").read_text(encoding="utf-8")
-    assert "Claudia Console Setup" in text
+    assert "legacy local console Setup" in text
     assert "ODYSSEUS_ADMIN_USER" in text
 
 
@@ -67,7 +67,7 @@ def test_no_code_workspace_or_vscode_in_repo():
 
 
 def test_git_remote_still_upstream_odysseus():
-    """Upstream repo identity retained; local folder is claudia_console."""
+    """Upstream repo identity retained; local folder is console."""
     config = (REPO / ".git/config").read_text(encoding="utf-8")
     assert "odysseus.git" in config
 

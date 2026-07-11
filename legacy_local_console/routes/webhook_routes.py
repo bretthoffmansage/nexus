@@ -233,9 +233,9 @@ def setup_webhook_routes(
 
     @router.post("/v1/chat")
     async def sync_chat(request: Request, body: SyncChatRequest):
-        from src.claudia_scopes import require_legacy_chat_api_token
-        from src.console_mode import is_claudia_console_mode
-        from src.claudia_chat_bridge import console_mode_sync_chat
+        from src.nexus_scopes import require_legacy_chat_api_token
+        from src.console_mode import is_console_mode
+        from src.nexus_chat_bridge import console_mode_sync_chat
 
         require_legacy_chat_api_token(request)
         token_owner = getattr(request.state, "api_token_owner", None)
@@ -244,7 +244,7 @@ def setup_webhook_routes(
         if not message:
             raise HTTPException(400, "Message is required")
 
-        if is_claudia_console_mode():
+        if is_console_mode():
             out = await console_mode_sync_chat(
                 message=message,
                 session_id=body.session,

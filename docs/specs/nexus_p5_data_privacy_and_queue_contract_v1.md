@@ -17,7 +17,7 @@ operator decision.
 > Connector payload), claiming changes only scheduling state (never ownership,
 > priority, or `queueSequence`), worker functions are internal-only, the global
 > queue is never exposed to ordinary users, and `nexus_admin` still receives no
-> private content. The local execution poller (P7, inside `claudia_system`)
+> private content. The local execution poller (P7, inside `system`)
 > remains unimplemented. See the P6 spec and the P6→P7 handoff contract.
 
 ## 1. Two visibility planes
@@ -58,7 +58,7 @@ Nexus data has exactly two visibility planes, and they must never be conflated:
   (counts and one timestamp — no content) and are reserved for the future
   worker's claim query.
 - Any user-visible queue position is limited to a truthful status
-  ("Queued — waiting for the Claudia Connector"); no cross-user counts.
+  ("Queued — waiting for the Console Connector"); no cross-user counts.
 
 ## 4. Global ordering guarantees
 

@@ -5,37 +5,37 @@
 | **Package** | Package 4 — Packet envelope normalization and route preservation |
 | **Date/time** | 2026-06-02 |
 | **Repo path** | `/Users/bretthoffman/Documents/odysseus` |
-| **Prior notes** | `package_00` … `package_03_claudia_token_scopes.md` |
+| **Prior notes** | `package_00` … `package_03_nexus_token_scopes.md` |
 
 ## Objective
 
-Normalize `POST /api/claudia/v1/intake` bodies into a stable Claudia Core packet envelope before forwarding or returning a safe stub response. Preserve caller route/source/reply metadata; use explicit technical fallbacks only when missing.
+Normalize `POST /api/nexus/v1/intake` bodies into a stable Nexus Core packet envelope before forwarding or returning a safe stub response. Preserve caller route/source/reply metadata; use explicit technical fallbacks only when missing.
 
 ## Files changed
 
 | File | Change |
 |------|--------|
-| `src/claudia_packets.py` | **New** — `normalize_claudia_packet`, validation, constants |
-| `routes/claudia_routes.py` | Normalize before `forward_intake`; 422 on validation errors; `created_by` from `effective_user` |
-| `src/claudia_client.py` | `forward_intake` expects pre-normalized packet (removed duplicate ID generation) |
-| `tests/test_claudia_packets.py` | **New** — normalization and forwarding tests |
-| `tests/test_claudia_gateway_routes.py` | Updated forward tests for normalized packets; AST check includes `claudia_packets.py` |
-| `docs/claudia_console_reform/package_04_packet_envelope_route_preservation.md` | **New** — this note |
+| `src/nexus_packets.py` | **New** — `normalize_nexus_packet`, validation, constants |
+| `routes/nexus_routes.py` | Normalize before `forward_intake`; 422 on validation errors; `created_by` from `effective_user` |
+| `src/nexus_client.py` | `forward_intake` expects pre-normalized packet (removed duplicate ID generation) |
+| `tests/test_nexus_packets.py` | **New** — normalization and forwarding tests |
+| `tests/test_nexus_gateway_routes.py` | Updated forward tests for normalized packets; AST check includes `nexus_packets.py` |
+| `docs/console_reform/package_04_packet_envelope_route_preservation.md` | **New** — this note |
 
 ## Behavior changed
 
-- **`POST /api/claudia/v1/intake`** always normalizes the JSON body into a full envelope before Core forward or stub response.
+- **`POST /api/nexus/v1/intake`** always normalizes the JSON body into a full envelope before Core forward or stub response.
 - Invalid `type`, `priority`, `status`, or non-object `payload`/`permissions` → **422** with `{"status":"validation_error","message":...,"field":...}`.
 - Gateway response `packet_id` / `trace_id` reflect the **normalized** envelope (including generated IDs).
 - Core receives the normalized packet JSON, not the raw unnormalized body.
 
 ## Behavior intentionally unchanged
 
-- `GET /api/claudia/v1/health`, Package 3 auth (`claudia_intake` / session), Package 1 Console Mode, chat routes, Ollama, token scopes, no new Gateway routes.
+- `GET /api/nexus/v1/health`, Package 3 auth (`nexus_intake` / session), Package 1 Console Mode, chat routes, Ollama, token scopes, no new Gateway routes.
 
 ## Packet fields supported
 
-All Claudia Core envelope fields are emitted on every normalized packet:
+All Nexus Core envelope fields are emitted on every normalized packet:
 
 `packet_id`, `type`, `route`, `source_id`, `reply_channel`, `payload`, `created_by`, `created_at`, `workspace`, `priority`, `permissions`, `status`, `parent_packet_id`, `trace_id`, `audit_required`
 
@@ -96,28 +96,28 @@ Unchanged from Package 2: `core_unreachable` / `core_timeout` / `core_error` wit
 
 ## Forwarding behavior
 
-`POST {CLAUDIA_CORE_URL}/intake` receives the **full normalized envelope** JSON. Headers unchanged (`X-Claudia-Gateway-Secret` when configured).
+`POST {NEXUS_CORE_URL}/intake` receives the **full normalized envelope** JSON. Headers unchanged (`X-Nexus-Gateway-Secret` when configured).
 
 ## Auth behavior (Package 3)
 
-Unchanged: Bearer requires `claudia_intake`; session users allowed when authenticated; `AUTH_ENABLED=false` for tests/operator mode.
+Unchanged: Bearer requires `nexus_intake`; session users allowed when authenticated; `AUTH_ENABLED=false` for tests/operator mode.
 
 ## Safety guarantees
 
-- `src/claudia_packets.py` does not import `agent_loop`, `task_scheduler`, MCP, shell, or email modules.
+- `src/nexus_packets.py` does not import `agent_loop`, `task_scheduler`, MCP, shell, or email modules.
 - Normalization does not execute tasks, tools, or local models.
-- Gateway remains non-authoritative; Claudia Core owns decisions.
-- Does not depend on `CLAUDIA_CONSOLE_MODE`.
+- Gateway remains non-authoritative; Nexus Core owns decisions.
+- Does not depend on `NEXUS_CONSOLE_MODE`.
 
 ## Tests / checks run
 
 | Check | Result |
 |-------|--------|
 | `python3 -m compileall -q app.py core routes src` | **Pass** |
-| `pytest -q tests/test_claudia_packets.py` | **Pass** (12 tests) |
-| `pytest -q tests/test_claudia_gateway_routes.py` | **Pass** (7 tests) |
-| `pytest -q tests/test_claudia_token_scopes.py` | **Pass** (9 tests) |
-| `pytest -q tests/test_claudia_console_mode.py` | **Pass** (17 tests) |
+| `pytest -q tests/test_nexus_packets.py` | **Pass** (12 tests) |
+| `pytest -q tests/test_nexus_gateway_routes.py` | **Pass** (7 tests) |
+| `pytest -q tests/test_nexus_token_scopes.py` | **Pass** (9 tests) |
+| `pytest -q tests/test_console_mode.py` | **Pass** (17 tests) |
 | Full pytest suite | **Not run** |
 
 ### Known pytest baseline (Package 0)

@@ -1,6 +1,6 @@
 {
-  "name": "claudia-console",
-  "description": "Claudia Console UI and Claudia Gateway API",
+  "name": "nexus-console",
+  "description": "legacy local console UI and Nexus Gateway API",
   "repository": {
     "type": "git",
     "url": "https://github.com/pewdiepie-archdaemon/odysseus.git"

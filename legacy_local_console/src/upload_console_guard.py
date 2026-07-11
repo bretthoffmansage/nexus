@@ -1,18 +1,18 @@
-"""Claudia Console Mode guards for upload-adjacent local processing (Package 8B).
+"""legacy local console Mode guards for upload-adjacent local processing (Package 8B).
 
 Blocks vision/OCR model calls and personal RAG indexing when Console Mode is on.
-Does not invoke Claudia Core or local models from these fallbacks.
+Does not invoke Nexus Core or local models from these fallbacks.
 """
 
 from __future__ import annotations
 
 from typing import Any
 
-from src.console_mode import is_claudia_console_mode
+from src.console_mode import is_console_mode
 
 UPLOAD_INTAKE_GUIDANCE = (
-    "Use POST /api/upload to stage files; Claudia source packets are forwarded "
-    "via the Gateway when CLAUDIA_CORE_URL is configured."
+    "Use POST /api/upload to stage files; Nexus source packets are forwarded "
+    "via the Gateway when NEXUS_CORE_URL is configured."
 )
 
 
@@ -25,13 +25,13 @@ def console_mode_local_processing_disabled(
     return {
         "ok": False,
         "status": "local_processing_disabled",
-        "claudia_console_mode": True,
+        "console_mode": True,
         "local_processing_disabled": True,
         "route": route,
         "processing": processing,
         "message": (
-            "Claudia Console Mode is active. Local Odysseus processing for this "
-            f"route ({processing}) is disabled. This was not handled by Claudia Core."
+            "legacy local console Mode is active. Local Odysseus processing for this "
+            f"route ({processing}) is disabled. This was not handled by Nexus Core."
         ),
         "guidance": UPLOAD_INTAKE_GUIDANCE,
     }

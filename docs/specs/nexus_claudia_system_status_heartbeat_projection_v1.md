@@ -1,11 +1,11 @@
-# Nexus Claudia system status heartbeat projection (v1)
+# Nexus Nexus system status heartbeat projection (v1)
 
-Package: `nexus_claudia_system_status_heartbeat_projection_v1`
+Package: `nexus_system_status_heartbeat_projection_v1`
 
 ## Architecture
 
 ```
-Claudia Control Center / service-control
+Nexus Control Center / service-control
   → existing Connector heartbeat
   → POST /api/connector/v1/heartbeat
   → Nexus heartbeat parser + `nexusConnectors` persistence
@@ -25,8 +25,8 @@ Allowed component keys (exactly seven):
 
 - `core_api`
 - `nexus_connector`
-- `viktor_retrieval`
-- `sage_knowledge_base`
+- `vault_retrieval`
+- `vault`
 - `claude_cli`
 - `codex_cli`
 - `cleanup_storage`
@@ -79,8 +79,8 @@ Fresh heartbeat without `systemStatus`:
 ## Status page
 
 - Removed `ToolAvailabilityBanner` (“Partially available”).
-- Removed legacy Claudia yellow presence card, empty diagnostics shell, protocol note.
-- Subtitle: `Claudia system connectivity and service health`
+- Removed legacy Nexus yellow presence card, empty diagnostics shell, protocol note.
+- Subtitle: `Nexus system connectivity and service health`
 - Seven hardcoded cards in responsive two-column grid (`SystemStatusPanel`).
 
 ## Focused tests
@@ -91,7 +91,7 @@ Fresh heartbeat without `systemStatus`:
 
 ## Activation (operator)
 
-On Claudia host after Nexus deploy:
+On Nexus host after Nexus deploy:
 
 ```yaml
 # config/service_control.yaml
@@ -99,12 +99,12 @@ status_publication:
   enabled: true
 ```
 
-Restart the Claudia Nexus Connector.
+Restart the Nexus Nexus Connector.
 
 ## Live smoke
 
 1. Deploy Nexus with this package.
-2. Enable `status_publication.enabled: true` on Claudia.
+2. Enable `status_publication.enabled: true` on Nexus.
 3. Restart Connector.
 4. Confirm heartbeat includes `systemStatus`.
 5. Open `/status` — seven cards; active fresh components green.

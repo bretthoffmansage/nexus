@@ -4,7 +4,7 @@ Package: `nexus_deep_research_report_rules_and_model_ui_cleanup_v1`
 
 ## Report rules purpose
 
-Operators can add plain-text guidance that is folded into the governed `requestText` before queueing. Rules are not a separate Claudia field or metadata key.
+Operators can add plain-text guidance that is folded into the governed `requestText` before queueing. Rules are not a separate Nexus field or metadata key.
 
 ## Default text
 
@@ -70,7 +70,7 @@ Exactly five metadata keys. No `reportRules`, `rules`, `model`, or `provider` in
 
 ## Model authority boundary
 
-`ResearchModelSelector` remains a searchable UI preference. **No `requestedModelId` is sent** from `ResearchWorkspace` — Claudia owns model selection. Server mutation still accepts optional model for backward compatibility, but Nexus UI omits it per governed contract.
+`ResearchModelSelector` remains a searchable UI preference. **No `requestedModelId` is sent** from `ResearchWorkspace` — Nexus owns model selection. Server mutation still accepts optional model for backward compatibility, but Nexus UI omits it per governed contract.
 
 ## Focused tests
 
@@ -79,4 +79,4 @@ Exactly five metadata keys. No `reportRules`, `rules`, `model`, or `provider` in
 
 ## Live verification
 
-Component tests used in place of authenticated `/research` browser session. No live Claudia/Hermes/Tavily submission.
+Component tests used in place of authenticated `/research` browser session. No live Nexus/Hermes/Tavily submission.

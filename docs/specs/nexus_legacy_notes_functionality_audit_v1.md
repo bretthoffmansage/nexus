@@ -2,12 +2,12 @@
 
 **Package:** `nexus_legacy_notes_functionality_audit_v1`  
 **Date:** 2026-07-02  
-**Repository:** `claudia_console`  
+**Repository:** `console`  
 **Scope:** Read-only audit — no implementation
 
 ## Executive summary
 
-The hosted Nexus `/notes` page is a **P4.4 layout port** of the legacy Claudia local console Notes panel. It preserves header controls (search, Select, Archive, Toggle, New note) and availability chrome, but **does not load, create, edit, or sync any notes**. The original feature was a **Google Keep–style notes + checklist + reminder** system backed by **local SQLite** on the Claudia Mac (`notes` table, `/api/notes/*`). It was **not** Obsidian, not Vault Library markdown, and not Nexus `nexusTasks`.
+The hosted Nexus `/notes` page is a **P4.4 layout port** of the legacy Nexus local console Notes panel. It preserves header controls (search, Select, Archive, Toggle, New note) and availability chrome, but **does not load, create, edit, or sync any notes**. The original feature was a **Google Keep–style notes + checklist + reminder** system backed by **local SQLite** on the Nexus Mac (`notes` table, `/api/notes/*`). It was **not** Obsidian, not Vault Library markdown, and not Nexus `nexusTasks`.
 
 The current Connector banner and sidebar badge describe a **planned** `notes.sync` handoff that **was never implemented** in hosted Convex or P6 connector tooling.
 
@@ -65,7 +65,7 @@ First-open copy: *“Notes is your basic todo list, and also where reminders are
 
 - Obsidian / vault markdown files (no references in `notes.js`)
 - Nexus Vault Library documents
-- Claudia “memory” JSON store (`manage_memory` is explicitly separate in `agent_loop.py`)
+- Nexus “memory” JSON store (`manage_memory` is explicitly separate in `agent_loop.py`)
 
 ---
 
@@ -173,15 +173,15 @@ First-open copy: *“Notes is your basic todo list, and also where reminders are
 
 ---
 
-## Connector / Claudia relationship
+## Connector / Nexus relationship
 
 | Question | Finding |
 |----------|---------|
-| What did “Connector required” mean? | P4.4 **adapter boundary** — future read/sync from Claudia Mac; **not built** |
-| Planned tool/kind | `lib/adapters/notes/adapter.ts`: `futureClaudiaTaskKind: "notes.sync"`, `futureConvexCollection: "notes"` |
+| What did “Connector required” mean? | P4.4 **adapter boundary** — future read/sync from Nexus Mac; **not built** |
+| Planned tool/kind | `lib/adapters/notes/adapter.ts`: `futureNexusTaskKind: "notes.sync"`, `futureConvexCollection: "notes"` |
 | In `KNOWN_CONNECTOR_TOOL_IDS`? | **No** |
 | Convex notes functions? | **None** |
-| Claudia-side notes in hosted repo? | Only **legacy** `manage_notes` + SQLite |
+| Nexus-side notes in hosted repo? | Only **legacy** `manage_notes` + SQLite |
 | Sync vs task execution? | Adapter naming implies **state sync**, not `nexusTasks` job pattern |
 | Legacy local console authority? | **Yes** — SQLite `notes` table was source of truth |
 | Nexus ever had hosted notes backend? | **No** |
@@ -242,8 +242,8 @@ No hosted Notes-specific functional tests beyond port inventory guards.
 1. **Keep** `/notes` as a standalone surface if product wants quick capture + reminders distinct from Chat tasks and Calendar scheduled events.
 2. **Do not revive** by reconnecting to `legacy_local_console` HTTP from the browser — hosted architecture explicitly forbids that (`p4-4` tests).
 3. **Choose authority** before UI work:
-   - **Option A (matrix-aligned):** Claudia-owned SQLite on Mac, exposed via future Connector read/write sync (`D8`).
-   - **Option B:** Convex-owned `nexusNotes` table for hosted-first capture (would diverge from matrix D8 unless Claudia sync is added later).
+   - **Option A (matrix-aligned):** Nexus-owned SQLite on Mac, exposed via future Connector read/write sync (`D8`).
+   - **Option B:** Convex-owned `nexusNotes` table for hosted-first capture (would diverge from matrix D8 unless Nexus sync is added later).
    - **Not recommended:** `nexusTasks` queue — wrong model for CRUD/sync notes (unlike Deep Research jobs).
 4. **Next package:** `nexus_notes_authority_and_handoff_v1` — decide authority, envelope/sync contract, reminder model, then port legacy behaviors (grid/list, bulk select, archive view, due_date reminders) onto real data.
 
@@ -251,4 +251,4 @@ No hosted Notes-specific functional tests beyond port inventory guards.
 
 ## Dormant smoke (future — not applicable today)
 
-No hosted smoke path exists. Legacy smoke: run local Claudia console, open Notes panel, CRUD via UI or `odysseus-notes` CLI against SQLite.
+No hosted smoke path exists. Legacy smoke: run local Nexus console, open Notes panel, CRUD via UI or `odysseus-notes` CLI against SQLite.

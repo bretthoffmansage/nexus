@@ -12,7 +12,7 @@
 
 ## 1. Summary
 
-Implemented the hosted **Nexus** application foundation under `nexus/` as a **Next.js 16** App Router project with **TypeScript strict**, **Clerk** middleware/provider scaffolding, and **Convex** bootstrap (`appMeta.get` query only). The legacy FastAPI Claudia Console tree is unchanged.
+Implemented the hosted **Nexus** application foundation under `nexus/` as a **Next.js 16** App Router project with **TypeScript strict**, **Clerk** middleware/provider scaffolding, and **Convex** bootstrap (`appMeta.get` query only). The legacy FastAPI legacy local console tree is unchanged.
 
 ---
 
@@ -163,7 +163,7 @@ Placeholder detection in `lib/env.ts` treats values containing `your_`, `placeho
 | Path | Role |
 |------|------|
 | `nexus/` | Hosted Nexus (Vercel) |
-| `app.py`, `static/`, `routes/`, … | Local Claudia Console — **not in Vercel build** |
+| `app.py`, `static/`, `routes/`, … | Local legacy local console — **not in Vercel build** |
 | `static/style.css` | Visual reference — tokens extracted to `nexus/styles/tokens.css` |
 
 Documented in `nexus/README.md` and root `README.md` (two-application table).
@@ -233,7 +233,7 @@ npm run build                    # pass (with placeholder Clerk/Convex env)
 | **P4** | `approvedUsers`, `userRoles`, Clerk webhook, `knowledge_reader` |
 | **P5** | `nexusTasks`, user task APIs |
 | **P6** | Connector route handlers + claim/lease Convex mutations |
-| **P7+** | `claudia_system` Console Connector |
+| **P7+** | `system` Console Connector |
 
 ---
 

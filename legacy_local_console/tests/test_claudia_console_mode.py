@@ -1,4 +1,4 @@
-"""Unit tests for Claudia Console Mode env gates (Package 1)."""
+"""Unit tests for legacy local console Mode env gates (Package 1)."""
 
 import importlib
 import sys
@@ -12,43 +12,43 @@ def _load_console_mode():
     return importlib.import_module("src.console_mode")
 
 
-def test_claudia_console_mode_unset_is_legacy(monkeypatch):
+def test_console_mode_unset_is_legacy(monkeypatch):
     mod = _load_console_mode()
-    monkeypatch.delenv("CLAUDIA_CONSOLE_MODE", raising=False)
-    assert mod.is_claudia_console_mode() is False
+    monkeypatch.delenv("NEXUS_CONSOLE_MODE", raising=False)
+    assert mod.is_console_mode() is False
 
 
 @pytest.mark.parametrize("on", ("1", "true", "yes", "on", "TRUE", "On"))
-def test_claudia_console_mode_enabled_values(monkeypatch, on):
+def test_console_mode_enabled_values(monkeypatch, on):
     mod = _load_console_mode()
-    monkeypatch.setenv("CLAUDIA_CONSOLE_MODE", on)
-    assert mod.is_claudia_console_mode() is True
+    monkeypatch.setenv("NEXUS_CONSOLE_MODE", on)
+    assert mod.is_console_mode() is True
 
 
 @pytest.mark.parametrize("off", ("0", "false", "no", "off", "", "maybe"))
-def test_claudia_console_mode_disabled_values(monkeypatch, off):
+def test_console_mode_disabled_values(monkeypatch, off):
     mod = _load_console_mode()
-    monkeypatch.setenv("CLAUDIA_CONSOLE_MODE", off)
-    assert mod.is_claudia_console_mode() is False
+    monkeypatch.setenv("NEXUS_CONSOLE_MODE", off)
+    assert mod.is_console_mode() is False
 
 
 def test_console_mode_forces_tasks_off_even_when_inprocess_on(monkeypatch):
     mod = _load_console_mode()
-    monkeypatch.setenv("CLAUDIA_CONSOLE_MODE", "true")
+    monkeypatch.setenv("NEXUS_CONSOLE_MODE", "true")
     monkeypatch.setenv("ODYSSEUS_INPROCESS_TASKS", "1")
     assert mod.inprocess_tasks_enabled() is False
 
 
 def test_console_mode_forces_pollers_off_even_when_inprocess_on(monkeypatch):
     mod = _load_console_mode()
-    monkeypatch.setenv("CLAUDIA_CONSOLE_MODE", "true")
+    monkeypatch.setenv("NEXUS_CONSOLE_MODE", "true")
     monkeypatch.setenv("ODYSSEUS_INPROCESS_POLLERS", "1")
     assert mod.inprocess_pollers_enabled() is False
 
 
 def test_legacy_inprocess_tasks_kill_switch(monkeypatch):
     mod = _load_console_mode()
-    monkeypatch.delenv("CLAUDIA_CONSOLE_MODE", raising=False)
+    monkeypatch.delenv("NEXUS_CONSOLE_MODE", raising=False)
     monkeypatch.delenv("ODYSSEUS_INPROCESS_TASKS", raising=False)
     assert mod.inprocess_tasks_enabled() is True
     for off in ("0", "false", "no", "off"):
@@ -58,7 +58,7 @@ def test_legacy_inprocess_tasks_kill_switch(monkeypatch):
 
 def test_email_pollers_gate_delegates_to_console_mode(monkeypatch):
     """routes.email_pollers._inprocess_pollers_enabled honours console mode."""
-    monkeypatch.setenv("CLAUDIA_CONSOLE_MODE", "true")
+    monkeypatch.setenv("NEXUS_CONSOLE_MODE", "true")
     monkeypatch.setenv("ODYSSEUS_INPROCESS_POLLERS", "1")
     sys.modules.pop("routes.email_pollers", None)
     sys.modules.pop("src.console_mode", None)

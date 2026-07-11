@@ -1,12 +1,12 @@
 # Nexus Library Auth, Upload, and Create to Vault v1
 
 **Package:** `nexus_library_auth_upload_and_create_to_vault_v1`  
-**Repository:** `claudia_console` (Nexus only)  
+**Repository:** `console` (Nexus only)  
 **Builds on:** `7be92ac` (Library Dropzone upload + attachment protocol)
 
 ## Summary
 
-Focused Nexus UI and access repair for the hosted Library page, plus a **Create** view mode that submits freeform Markdown through the existing upload and Process pipeline. No changes to P6/P7 attachment protocol, queue schema, or Claudia contracts.
+Focused Nexus UI and access repair for the hosted Library page, plus a **Create** view mode that submits freeform Markdown through the existing upload and Process pipeline. No changes to P6/P7 attachment protocol, queue schema, or Nexus contracts.
 
 ## Library sidebar badge
 
@@ -67,7 +67,7 @@ Example: `nexus-created-2026-07-01-143025.md`
 3. `libraryUpload.finalizeUpload` action (server SHA-256 authority)
 4. `libraryDocuments.processMyDocumentVersion` mutation (same as Process button)
 
-No separate queue, route, or Claudia call.
+No separate queue, route, or Nexus call.
 
 ## Post-success UX
 

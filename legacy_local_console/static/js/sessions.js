@@ -62,7 +62,7 @@ function _deselectCurrentSession(sid) {
   if (currentSessionId !== sid) return;
   currentSessionId = null;
   uiModule.el('chat-history').innerHTML = '';
-  uiModule.el('current-meta').textContent = 'Claudia Chat';
+  uiModule.el('current-meta').textContent = 'Nexus Chat';
   Storage.remove('lastSessionId');
   history.replaceState(null, '', window.location.pathname);
   if (window.chatModule && window.chatModule.showWelcomeScreen) {
@@ -1572,7 +1572,7 @@ export async function selectSession(id, { keepSidebar = false } = {}) {
 
     const currentMetaEl = uiModule.el('current-meta');
     if (currentMetaEl) {
-      currentMetaEl.textContent = meta ? meta.name : 'Claudia Chat';
+      currentMetaEl.textContent = meta ? meta.name : 'Nexus Chat';
     }
     // Update model picker visibility
     updateModelPicker();
@@ -1879,16 +1879,16 @@ export async function materializePendingSession() {
 export function hasPendingChat() { return !!_pendingChat; }
 export function getPendingChat() { return _pendingChat; }
 
-const CLAUDIA_BRIDGE_SESSION_KEY = 'claudiaBridgeSessionId';
+const NEXUS_BRIDGE_SESSION_KEY = 'nexusBridgeSessionId';
 
-/** Minimal session for Claudia Gateway chat (no local model endpoint). */
-export async function ensureClaudiaBridgeSession() {
+/** Minimal session for Nexus Gateway chat (no local model endpoint). */
+export async function ensureNexusBridgeSession() {
   if (currentSessionId) {
     const existing = sessions.find((x) => x.id === currentSessionId);
     if (existing) return currentSessionId;
   }
 
-  const stored = Storage.get(CLAUDIA_BRIDGE_SESSION_KEY);
+  const stored = Storage.get(NEXUS_BRIDGE_SESSION_KEY);
   if (stored) {
     const hit = sessions.find((x) => x.id === stored);
     if (hit) {
@@ -1899,7 +1899,7 @@ export async function ensureClaudiaBridgeSession() {
   }
 
   const fd = new FormData();
-  fd.append('name', 'Claudia Chat');
+  fd.append('name', 'Nexus Chat');
   fd.append('endpoint_url', '');
   fd.append('model', '');
   fd.append('skip_validation', 'true');
@@ -1920,13 +1920,13 @@ export async function ensureClaudiaBridgeSession() {
   }
 
   if (!res.ok || !payload.id) {
-    uiModule.showError(`Claudia chat session create failed (${res.status})`);
+    uiModule.showError(`Nexus chat session create failed (${res.status})`);
     return null;
   }
 
   currentSessionId = payload.id;
   Storage.set('lastSessionId', payload.id);
-  Storage.set(CLAUDIA_BRIDGE_SESSION_KEY, payload.id);
+  Storage.set(NEXUS_BRIDGE_SESSION_KEY, payload.id);
   history.replaceState(null, '', '#' + payload.id);
   await loadSessions().catch(() => {});
   return currentSessionId;
@@ -3132,7 +3132,7 @@ const sessionModule = {
   selectSession,
   createDirectChat,
   materializePendingSession,
-  ensureClaudiaBridgeSession,
+  ensureNexusBridgeSession,
   hasPendingChat,
   getPendingChat,
   getCurrentSessionId,

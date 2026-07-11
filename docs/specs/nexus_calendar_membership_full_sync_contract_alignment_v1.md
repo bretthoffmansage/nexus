@@ -1,13 +1,13 @@
 # Nexus Calendar Membership.io Full Sync — Contract Alignment v1
 
 **Package:** `nexus_calendar_membership_full_sync_contract_alignment_v1`  
-**Repository:** `/Users/bretthoffman/Documents/claudia_console`  
+**Repository:** `/Users/bretthoffman/Documents/console`  
 **Branch at start:** `main`  
 **Starting HEAD:** `a83572b`  
 **Prior Calendar package:** `a83572b` — Add Membership.io full sync to Nexus Calendar  
-**Claudia implementation reference:** branch `claudia-core-reconciliation-and-tooling`, HEAD `ffaa8d8`
+**Nexus implementation reference:** branch `nexus-core-reconciliation-and-tooling`, HEAD `ffaa8d8`
 
-## Claudia contract (authoritative)
+## Nexus contract (authoritative)
 
 When a Calendar event becomes due, Nexus creates one task on the global `nexusTasks` queue:
 
@@ -31,7 +31,7 @@ Example idempotency key: `abc123:2026-07-02T00:55:00.000Z`
 
 ## Contract correction (this package)
 
-**Before:** `taskMetadata.scheduledForUtc` was epoch milliseconds (misaligned with Claudia).
+**Before:** `taskMetadata.scheduledForUtc` was epoch milliseconds (misaligned with Nexus).
 
 **After:** `taskMetadata.scheduledForUtc` is canonical ISO 8601 UTC from `buildMembershipFullSyncTaskMetadata()` in `convex/lib/calendarScheduledTools.ts`. The Calendar event continues storing `scheduledForUtc` as numeric UTC ms internally.
 
@@ -49,18 +49,18 @@ No `lateDispatch`, Notes, timezone, local time, or client-supplied fields.
 
 ## Capability gating (unchanged)
 
-Tool id `membership_io.catalog_refresh_and_vault_update` must appear on an active Connector `allowedToolIds`. Save and dispatch reject when absent. Not inferred from Claudia source.
+Tool id `membership_io.catalog_refresh_and_vault_update` must appear on an active Connector `allowedToolIds`. Save and dispatch reject when absent. Not inferred from Nexus source.
 
 ## Operator dependency
 
-Before the option is available, the Claudia operator must enable in `config/nexus_connector/connector.yaml`:
+Before the option is available, the Nexus operator must enable in `config/nexus_connector/connector.yaml`:
 
 ```yaml
 membership_full_sync:
   ingress: membership_full_sync  # canonical ingress name
 ```
 
-…and include `membership_io.catalog_refresh_and_vault_update` in the Connector tool allowlist, then restart the Claudia Nexus Connector.
+…and include `membership_io.catalog_refresh_and_vault_update` in the Connector tool allowlist, then restart the Nexus Nexus Connector.
 
 Nexus observes capability through the existing Connector registry only.
 
@@ -93,15 +93,15 @@ No Membership.io report parsing, counts, paths, or worker output.
 
 ## Live verification plan
 
-1. Enable Claudia Connector capability and restart Connector.
+1. Enable Console Connector capability and restart Connector.
 2. Confirm Nexus shows Membership.io full sync as available.
 3. Schedule one controlled future event.
 4. When due, confirm exactly one task with ISO `scheduledForUtc` and matching idempotency key.
-5. Confirm Claudia claims and runs the canonical tool.
+5. Confirm Nexus claims and runs the canonical tool.
 6. Confirm completion/failure/uncertain projection on the Calendar event.
 
 **Not executed in this package.**
 
 ## Rollback
 
-Revert this commit; restores ms-based metadata (breaks Claudia contract). Coordinate with Claudia before rollback if Connector is live.
+Revert this commit; restores ms-based metadata (breaks Nexus contract). Coordinate with Nexus before rollback if Connector is live.

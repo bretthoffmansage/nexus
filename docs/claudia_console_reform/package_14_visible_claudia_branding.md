@@ -1,36 +1,36 @@
-# Package 14 — Visible Claudia branding pass
+# Package 14 — Visible Nexus branding pass
 
 | Field | Value |
 |-------|-------|
-| **Package** | Package 14 — Visible Claudia branding pass |
+| **Package** | Package 14 — Visible Nexus branding pass |
 | **Date/time** | 2026-06-02 |
 | **Repo path** | `/Users/bretthoffman/Documents/odysseus` |
 | **Prior notes** | `package_00` … `package_13_memory_skills_model_demotion.md` |
 
 ## Objective
 
-Replace visible user-facing “Odysseus” branding with “Claudia” / “Claudia Console” while preserving login design, layout, auth, and internal compatibility identifiers.
+Replace visible user-facing “Odysseus” branding with “Nexus” / “legacy local console” while preserving login design, layout, auth, and internal compatibility identifiers.
 
 ## Files changed
 
 | File | Change |
 |------|--------|
-| `static/login.html` | Title + logo text → Claudia |
+| `static/login.html` | Title + logo text → Nexus |
 | `static/manifest.json` | PWA name/short_name/description |
 | `static/index.html` | Title, sidebar, welcome, placeholder, route titles, theme labels |
 | `static/app.js` | Default session name, chat placeholder |
-| `static/js/sessions.js`, `keyboard-shortcuts.js` | Default “Claudia Chat” |
+| `static/js/sessions.js`, `keyboard-shortcuts.js` | Default “Nexus Chat” |
 | `static/js/chatRenderer.js`, `chat.js`, `slashCommands.js` | Assistant role label + tour copy |
-| `static/js/theme.js` | “Claudia Logo” color label |
+| `static/js/theme.js` | “Nexus Logo” color label |
 | `static/js/emailLibrary.js`, `settings.js`, `cookbook.js`, `cookbookServe.js` | User-visible helper strings |
 | `companion/routes.py` | Pairing page warning text |
-| `app.py` | FastAPI title → “Claudia Console” |
-| `tests/test_claudia_branding.py` | **New** |
-| `docs/claudia_console_reform/package_14_visible_claudia_branding.md` | **New** |
+| `app.py` | FastAPI title → “legacy local console” |
+| `tests/test_nexus_branding.py` | **New** |
+| `docs/console_reform/package_14_visible_nexus_branding.md` | **New** |
 
 ## Behavior changed
 
-Visible UI copy, PWA manifest display names, chat assistant role labels in the main renderer/tour, and OpenAPI app title now say **Claudia** / **Claudia Console** instead of Odysseus.
+Visible UI copy, PWA manifest display names, chat assistant role labels in the main renderer/tour, and OpenAPI app title now say **Nexus** / **legacy local console** instead of Odysseus.
 
 ## Behavior intentionally unchanged
 
@@ -47,15 +47,15 @@ Login, main app chrome, welcome screen, chat placeholder, PWA manifest, per-rout
 
 | File | Visible string changed | New visible string | Reason |
 |------|------------------------|-------------------|--------|
-| `static/login.html` | `Odysseus — Login`, logo span | `Claudia — Login`, `Claudia` | Primary sign-in brand |
-| `static/index.html` | `Odysseus Chat`, sidebar, welcome, placeholder | `Claudia Console`, `Claudia`, `Message Claudia...` | Main app chrome |
-| `static/index.html` | Route titles `— Odysseus` | `— Claudia` | Bookmarks/PWA per-route |
-| `static/manifest.json` | name/short_name `Odysseus` | `Claudia` | Install-to-homescreen |
-| `static/app.js` | `Odysseus Chat`, `Message Odysseus...` | `Claudia Chat`, `Message Claudia...` | Runtime defaults |
-| `static/js/chatRenderer.js` | Role `Odysseus` | `Claudia` | Chat message headers |
-| `static/js/slashCommands.js` | Tour + role labels | `Claudia` | Onboarding + UI |
-| `companion/routes.py` | “your Odysseus” | “your Claudia Console” | Pairing page |
-| `app.py` | FastAPI title | `Claudia Console` | API/docs title |
+| `static/login.html` | `Odysseus — Login`, logo span | `Nexus — Login`, `Nexus` | Primary sign-in brand |
+| `static/index.html` | `Odysseus Chat`, sidebar, welcome, placeholder | `legacy local console`, `Nexus`, `Message Nexus...` | Main app chrome |
+| `static/index.html` | Route titles `— Odysseus` | `— Nexus` | Bookmarks/PWA per-route |
+| `static/manifest.json` | name/short_name `Odysseus` | `Nexus` | Install-to-homescreen |
+| `static/app.js` | `Odysseus Chat`, `Message Odysseus...` | `Nexus Chat`, `Message Nexus...` | Runtime defaults |
+| `static/js/chatRenderer.js` | Role `Odysseus` | `Nexus` | Chat message headers |
+| `static/js/slashCommands.js` | Tour + role labels | `Nexus` | Onboarding + UI |
+| `companion/routes.py` | “your Odysseus” | “your legacy local console” | Pairing page |
+| `app.py` | FastAPI title | `legacy local console` | API/docs title |
 
 ## Internal identifiers intentionally unchanged
 
@@ -97,13 +97,13 @@ This package is **visible branding only**. Internal compatibility cleanup may be
 
 ```bash
 python3 -m compileall -q app.py core routes src
-venv/bin/python -m pytest -q tests/test_claudia_branding.py + P1–P13 Claudia tests
+venv/bin/python -m pytest -q tests/test_nexus_branding.py + P1–P13 Nexus tests
 ```
 
 ## Results
 
 - `compileall`: pass
-- Focused Claudia tests (P1–P14): **129 passed**
+- Focused Nexus tests (P1–P14): **129 passed**
 - New branding tests: **6 passed**
 
 ## Known pytest baseline issue from Package 0

@@ -1,12 +1,12 @@
 # Nexus First GitHub and Vercel Deployment Readiness v1
 
 **Package:** `nexus_first_github_and_vercel_deployment_readiness_v1`  
-**Repository:** `/Users/bretthoffman/Documents/claudia_console`  
+**Repository:** `/Users/bretthoffman/Documents/console`  
 **Branch at audit:** `main`  
 **HEAD at audit:** `ab7e122` (*Initial Push*)  
 **Remote:** `origin` → `https://github.com/bretthoffmansage/nexus.git` (configured; not pushed during this pass)  
 **Date:** 2026-07-02  
-**Scope:** Read-only audit + this spec. No push, deploy, cloud provisioning, or `claudia_system` edits.
+**Scope:** Read-only audit + this spec. No push, deploy, cloud provisioning, or `system` edits.
 
 ---
 
@@ -94,7 +94,7 @@ GitHub (private) → Vercel (Next.js 16)
 Browser → Clerk (auth) → Next.js (proxy.ts / clerkMiddleware)
                       → Convex (.convex.cloud client, .convex.site HTTP actions)
 
-Claudia Mac Connector (outbound only) → https://<prod-deployment>.convex.site/api/connector/v1/*
+Nexus Mac Connector (outbound only) → https://<prod-deployment>.convex.site/api/connector/v1/*
 ```
 
 **Human auth:** Clerk session → Convex native integration (`applicationID: "convex"`).  
@@ -187,7 +187,7 @@ Set via `npx convex env set --prod`:
 | `CLERK_JWT_ISSUER_DOMAIN` | P | Optional alias | Same value as above if only one set |
 | `NEXUS_INTERNAL_API_SECRET` | S | **Yes** | Must match Vercel; gates `webhookIngest.processClerkWebhook` |
 | `NEXUS_BOOTSTRAP_ADMIN_EMAILS` | S | **Yes until first admin** | Comma-separated admin emails for first-login bootstrap |
-| `NEXUS_CONNECTOR_ID` | P | **Yes before Connector** | e.g. `claudia-mac-prod` |
+| `NEXUS_CONNECTOR_ID` | P | **Yes before Connector** | e.g. `nexus-mac-prod` |
 | `NEXUS_CONNECTOR_SHARED_SECRET` | S | **Yes before Connector** | ≥32 random chars; never logged |
 | `NEXUS_CONNECTOR_SECRET_<NORMALIZED_ID>` | S | Optional | Additional Connectors |
 
@@ -210,16 +210,16 @@ Same variable **names** as production; values point at dev Clerk (`pk_test_`/`sk
 | Session claim **email** | **Required** — `{{user.primary_email_address}}` (or Convex integration managed claims) for bootstrap + identity |
 | Public sign-up | **Intentional** — new users land `pending` until admin approval (`/pending-approval`) |
 
-### 5.6 Claudia Mac only (never GitHub / never Vercel)
+### 5.6 Nexus Mac only (never GitHub / never Vercel)
 
 | Variable | Purpose |
 |----------|---------|
 | `NEXUS_CONNECTOR_BASE_URL` | `https://<prod-deployment>.convex.site` |
 | `NEXUS_CONNECTOR_ID` | Same as Convex prod |
 | `NEXUS_CONNECTOR_SHARED_SECRET` | Same as Convex prod (local secret store) |
-| `allowedToolIds` / Connector config | Claudia System — see §10 |
-| `status_publication.enabled` | Claudia System heartbeat projection |
-| All `CLAUDIA_*`, `legacy_local_console/.env` | Local execution only |
+| `allowedToolIds` / Connector config | Nexus System — see §10 |
+| `status_publication.enabled` | Nexus System heartbeat projection |
+| All `NEXUS_*`, `legacy_local_console/.env` | Local execution only |
 
 ### 5.7 Never stored in GitHub
 
@@ -259,9 +259,9 @@ Same variable **names** as production; values point at dev Clerk (`pk_test_`/`sk
 
 ---
 
-## 8. Connector production handoff (Claudia System — do not edit in this pass)
+## 8. Connector production handoff (Nexus System — do not edit in this pass)
 
-After Nexus production Convex is live, configure Claudia System:
+After Nexus production Convex is live, configure Nexus System:
 
 | Item | Production value |
 |------|------------------|
@@ -269,8 +269,8 @@ After Nexus production Convex is live, configure Claudia System:
 | `NEXUS_CONNECTOR_ID` | Match Convex `NEXUS_CONNECTOR_ID` |
 | `NEXUS_CONNECTOR_SHARED_SECRET` | Match Convex `NEXUS_CONNECTOR_SHARED_SECRET` |
 | `allowedToolIds` | Default allowlist: P5 tools + Library dropzone (`convex/lib/p6config.ts` `DEFAULT_CONNECTOR_TOOL_IDS`). Explicitly add for calendar-only tools: `membership_io.catalog_refresh_and_vault_update`, `vault.expansion_pass`, `research.hermes_deep_research` |
-| `status_publication.enabled` | `true` on Claudia for heartbeat/status projection |
-| Restart | Restart Claudia Connector poller after secret/URL changes |
+| `status_publication.enabled` | `true` on Nexus for heartbeat/status projection |
+| Restart | Restart Console Connector poller after secret/URL changes |
 
 Reference: `docs/specs/nexus_p6_p7_connector_handoff_contract_v1.md`
 
@@ -287,7 +287,7 @@ Reference: `docs/specs/nexus_p6_p7_connector_handoff_contract_v1.md`
 7. **Deploy Vercel Production** — verify build succeeds.
 8. **Configure Clerk webhook** — point to `https://<domain>/api/webhooks/clerk`.
 9. **Bootstrap first admin** — sign up with bootstrap email; verify `nexus_admin` in Convex.
-10. **Configure Claudia Connector** — point at prod `.convex.site`; restart; smoke-test heartbeat + claim.
+10. **Configure Console Connector** — point at prod `.convex.site`; restart; smoke-test heartbeat + claim.
 11. **Clear bootstrap allowlist** — remove `NEXUS_BOOTSTRAP_ADMIN_EMAILS` from Convex prod.
 12. **Approve additional users** — `/admin/access`.
 
@@ -321,7 +321,7 @@ Reference: `docs/specs/nexus_p6_p7_connector_handoff_contract_v1.md`
 | **P1** | README Vercel section omits integrated Convex build command | Docs |
 | **P1** | Clerk webhook + `NEXUS_INTERNAL_API_SECRET` must be coordinated before identity sync | Operator |
 | **P1** | Clerk email session claim required for bootstrap | Operator |
-| **P2** | P7 Connector poller not built — tasks queue but do not execute locally | `claudia_system` |
+| **P2** | P7 Connector poller not built — tasks queue but do not execute locally | `system` |
 | **P2** | Preview deployment strategy undefined | Operator |
 | **P3** | `AI_GATEWAY_API_KEY` optional — catalog works without it | Operator |
 
@@ -347,4 +347,4 @@ Reference: `docs/specs/nexus_p6_p7_connector_handoff_contract_v1.md`
 |------|--------|
 | `docs/specs/nexus_first_github_and_vercel_deployment_readiness_v1.md` | Created (this document) |
 
-No application code, env files, or `claudia_system` changes.
+No application code, env files, or `system` changes.

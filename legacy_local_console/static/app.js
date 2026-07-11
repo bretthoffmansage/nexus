@@ -21,8 +21,8 @@ import voiceRecorderModule from './js/voiceRecorder.js';
 import censorModule from './js/censor.js';
 import galleryModule from './js/gallery.js';
 import tasksModule from './js/tasks.js';
-import claudiaDashboardModule from './js/claudiaDashboard.js';
-import { initClaudiaConsoleMode } from './js/claudiaConsoleMode.js';
+import nexusDashboardModule from './js/nexusDashboard.js';
+import { initNexusConsoleMode } from './js/nexusConsoleMode.js';
 import { syncWebSearchStateBanner, removeLegacyWebSearchSplashes } from './js/toolStateBanner.js';
 import calendarModule from './js/calendar.js';
 import notesModule from './js/notes.js';
@@ -350,7 +350,7 @@ function initializeEventListeners() {
       e.stopPropagation();
       exportMenu.classList.remove('open');
       const meta = sessionModule.getSessions().find(s => s.id === sessionModule.getCurrentSessionId());
-      const sessionName = meta ? meta.name : 'Claudia Chat';
+      const sessionName = meta ? meta.name : 'Nexus Chat';
       const originalTitle = document.title;
       document.title = sessionName;
       const chatHistory = document.getElementById('chat-history');
@@ -885,13 +885,13 @@ function initializeEventListeners() {
     });
   }
 
-  const toolClaudiaBtn = el('tool-claudia-dashboard-btn');
-  if (toolClaudiaBtn && claudiaDashboardModule) {
-    toolClaudiaBtn.addEventListener('click', () => {
-      if (claudiaDashboardModule.isDashboardOpen()) {
-        claudiaDashboardModule.closeDashboard();
+  const toolNexusBtn = el('tool-nexus-dashboard-btn');
+  if (toolNexusBtn && nexusDashboardModule) {
+    toolNexusBtn.addEventListener('click', () => {
+      if (nexusDashboardModule.isDashboardOpen()) {
+        nexusDashboardModule.closeDashboard();
       } else {
-        claudiaDashboardModule.openDashboard();
+        nexusDashboardModule.openDashboard();
       }
     });
   }
@@ -2127,7 +2127,7 @@ function initializeEventListeners() {
       pickerWrap.classList.toggle('picker-auto-hidden', w < PICKER_HIDE_WIDTH);
       // Hide placeholder text
       if (textarea) {
-        textarea.setAttribute('placeholder', w < PLACEHOLDER_HIDE_WIDTH ? '' : 'Message Claudia...');
+        textarea.setAttribute('placeholder', w < PLACEHOLDER_HIDE_WIDTH ? '' : 'Message Nexus...');
       }
       // Hide entire bottom toolbar (tools, mode toggle) — only send button remains
       if (inputBottom) {
@@ -3398,7 +3398,7 @@ async function startOdysseusApp() {
   if (window.__odysseusAppStarted) return;
   window.__odysseusAppStarted = true;
   try {
-    await initClaudiaConsoleMode();
+    await initNexusConsoleMode();
   } catch (_) { /* non-fatal */ }
   // Set CSS variables
   document.documentElement.style.setProperty('--line-height', '20px');
@@ -3782,8 +3782,8 @@ async function startOdysseusApp() {
     const _debouncedUpdateIcon = uiModule.debounce(_updateSendBtnIcon, 50);
     const _MODEL_PICKER_HIDE_CHARS = 10;
     const _syncModelPickerAutohide = () => {
-      const bridgeActive = (window.claudiaBrowserChatBridge?.shouldUseBridge?.() === true)
-        || (window.claudiaCoreModel?.useCoreSelector?.() === true);
+      const bridgeActive = (window.nexusBrowserChatBridge?.shouldUseBridge?.() === true)
+        || (window.nexusCoreModel?.useCoreSelector?.() === true);
       const hidePicker = !bridgeActive
         && (messageInput.value || '').replace(/\s/g, '').length >= _MODEL_PICKER_HIDE_CHARS;
       if (modelPickerWrap) {

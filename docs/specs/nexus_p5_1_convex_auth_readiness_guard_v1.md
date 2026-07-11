@@ -199,7 +199,7 @@ Unchanged by this repair. As before P5.1: the composer, once
 `submitKnowledgeRequest` creates the conversation/message/task rows and
 allocates a global queue sequence. It is not blocked pending Connector
 availability. What is blocked is **execution**: the UI always shows the
-truthful "Requests are saved and queued. Execution waits for the Claudia
+truthful "Requests are saved and queued. Execution waits for the Nexus
 Connector (not configured yet)" copy, and no task transitions past `queued`
 in P5. This package did not change that behavior.
 
@@ -262,4 +262,4 @@ root cause and call site described in §1. Post-fix:
 ## 14. P6 boundary
 
 No Connector, claim, lease, heartbeat, HMAC, or execution work was performed.
-`claudia_system` is unchanged. P6 has not started.
+`system` is unchanged. P6 has not started.

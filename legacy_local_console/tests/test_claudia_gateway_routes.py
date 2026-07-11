@@ -1,4 +1,4 @@
-"""Tests for Claudia Gateway routes (/api/claudia/v1) — Package 2."""
+"""Tests for Nexus Gateway routes (/api/nexus/v1) — Package 2."""
 
 import importlib
 import sys
@@ -10,27 +10,27 @@ from fastapi.testclient import TestClient
 
 
 def _build_gateway_app():
-    sys.modules.pop("routes.claudia_routes", None)
-    sys.modules.pop("src.claudia_client", None)
-    from routes.claudia_routes import setup_claudia_routes
+    sys.modules.pop("routes.nexus_routes", None)
+    sys.modules.pop("src.nexus_client", None)
+    from routes.nexus_routes import setup_nexus_routes
 
     app = FastAPI()
-    app.include_router(setup_claudia_routes())
+    app.include_router(setup_nexus_routes())
     return app
 
 
 def _reload_client(monkeypatch):
-    monkeypatch.delenv("CLAUDIA_CORE_URL", raising=False)
-    monkeypatch.delenv("CLAUDIA_GATEWAY_SHARED_SECRET", raising=False)
-    sys.modules.pop("src.claudia_client", None)
-    return importlib.import_module("src.claudia_client")
+    monkeypatch.delenv("NEXUS_CORE_URL", raising=False)
+    monkeypatch.delenv("NEXUS_GATEWAY_SHARED_SECRET", raising=False)
+    sys.modules.pop("src.nexus_client", None)
+    return importlib.import_module("src.nexus_client")
 
 
 def test_health_core_unconfigured(monkeypatch):
-    monkeypatch.delenv("CLAUDIA_CORE_URL", raising=False)
+    monkeypatch.delenv("NEXUS_CORE_URL", raising=False)
     app = _build_gateway_app()
     with TestClient(app) as client:
-        resp = client.get("/api/claudia/v1/health")
+        resp = client.get("/api/nexus/v1/health")
     assert resp.status_code == 200
     data = resp.json()
     assert data["ok"] is True
@@ -40,12 +40,12 @@ def test_health_core_unconfigured(monkeypatch):
 
 
 def test_intake_core_unconfigured(monkeypatch):
-    monkeypatch.delenv("CLAUDIA_CORE_URL", raising=False)
+    monkeypatch.delenv("NEXUS_CORE_URL", raising=False)
     monkeypatch.setenv("AUTH_ENABLED", "false")
     app = _build_gateway_app()
     with TestClient(app) as client:
         resp = client.post(
-            "/api/claudia/v1/intake",
+            "/api/nexus/v1/intake",
             json={"packet_id": "pkt-1", "trace_id": "trace-abc", "payload": {"x": 1}},
         )
     assert resp.status_code == 200
@@ -59,7 +59,7 @@ def test_intake_core_unconfigured(monkeypatch):
 
 
 def test_intake_does_not_call_stream_agent_loop(monkeypatch):
-    monkeypatch.delenv("CLAUDIA_CORE_URL", raising=False)
+    monkeypatch.delenv("NEXUS_CORE_URL", raising=False)
     monkeypatch.setenv("AUTH_ENABLED", "false")
     agent_calls = []
 
@@ -72,17 +72,17 @@ def test_intake_does_not_call_stream_agent_loop(monkeypatch):
     )
     app = _build_gateway_app()
     with TestClient(app) as client:
-        resp = client.post("/api/claudia/v1/intake", json={"hello": "world"})
+        resp = client.post("/api/nexus/v1/intake", json={"hello": "world"})
     assert resp.status_code == 200
     assert not agent_calls
 
 
 def test_intake_generates_trace_id_when_missing(monkeypatch):
-    monkeypatch.delenv("CLAUDIA_CORE_URL", raising=False)
+    monkeypatch.delenv("NEXUS_CORE_URL", raising=False)
     monkeypatch.setenv("AUTH_ENABLED", "false")
     app = _build_gateway_app()
     with TestClient(app) as client:
-        resp = client.post("/api/claudia/v1/intake", json={"packet_id": "p2"})
+        resp = client.post("/api/nexus/v1/intake", json={"packet_id": "p2"})
     data = resp.json()
     assert data["trace_id"]
     assert isinstance(data["trace_id"], str)
@@ -90,13 +90,13 @@ def test_intake_generates_trace_id_when_missing(monkeypatch):
 
 @pytest.mark.asyncio
 async def test_forward_intake_to_core(monkeypatch):
-    from src.claudia_packets import normalize_claudia_packet
+    from src.nexus_packets import normalize_nexus_packet
 
     mod = _reload_client(monkeypatch)
-    monkeypatch.setenv("CLAUDIA_CORE_URL", "http://core.test:9000")
-    monkeypatch.setenv("CLAUDIA_GATEWAY_SHARED_SECRET", "test-secret")
+    monkeypatch.setenv("NEXUS_CORE_URL", "http://core.test:9000")
+    monkeypatch.setenv("NEXUS_GATEWAY_SHARED_SECRET", "test-secret")
 
-    packet = normalize_claudia_packet({"trace_id": "t1", "data": 1}, created_by="gateway")
+    packet = normalize_nexus_packet({"trace_id": "t1", "data": 1}, created_by="gateway")
 
     mock_resp = type(
         "R",
@@ -113,7 +113,7 @@ async def test_forward_intake_to_core(monkeypatch):
     mock_client.__aenter__ = AsyncMock(return_value=mock_client)
     mock_client.__aexit__ = AsyncMock(return_value=None)
 
-    with patch("src.claudia_client.httpx.AsyncClient", return_value=mock_client):
+    with patch("src.nexus_client.httpx.AsyncClient", return_value=mock_client):
         result = await mod.forward_intake(packet)
 
     assert result["forwarded"] is True
@@ -133,7 +133,7 @@ async def test_forward_intake_to_core(monkeypatch):
 @pytest.mark.asyncio
 async def test_forward_intake_core_unreachable(monkeypatch):
     mod = _reload_client(monkeypatch)
-    monkeypatch.setenv("CLAUDIA_CORE_URL", "http://core.test:9000")
+    monkeypatch.setenv("NEXUS_CORE_URL", "http://core.test:9000")
 
     import httpx
 
@@ -142,10 +142,10 @@ async def test_forward_intake_core_unreachable(monkeypatch):
     mock_client.__aenter__ = AsyncMock(return_value=mock_client)
     mock_client.__aexit__ = AsyncMock(return_value=None)
 
-    from src.claudia_packets import normalize_claudia_packet
+    from src.nexus_packets import normalize_nexus_packet
 
-    packet = normalize_claudia_packet({"trace_id": "t2"}, created_by="gateway")
-    with patch("src.claudia_client.httpx.AsyncClient", return_value=mock_client):
+    packet = normalize_nexus_packet({"trace_id": "t2"}, created_by="gateway")
+    with patch("src.nexus_client.httpx.AsyncClient", return_value=mock_client):
         result = await mod.forward_intake(packet)
 
     assert result["ok"] is False
@@ -159,7 +159,7 @@ def test_gateway_modules_do_not_import_agent_loop():
     from pathlib import Path
 
     repo = Path(__file__).resolve().parents[1]
-    for rel in ("routes/claudia_routes.py", "src/claudia_client.py", "src/claudia_packets.py"):
+    for rel in ("routes/nexus_routes.py", "src/nexus_client.py", "src/nexus_packets.py"):
         tree = ast.parse((repo / rel).read_text(encoding="utf-8"))
         for node in ast.walk(tree):
             if isinstance(node, ast.Import):

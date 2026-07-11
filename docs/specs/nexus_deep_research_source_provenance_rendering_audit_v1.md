@@ -6,8 +6,8 @@ Package: `cross_repo_deep_research_internal_source_truth_and_wait_behavior_audit
 
 A completed Deep Research report claimed both internal sources were unavailable
 while five Membership.io transcript sources rendered beneath it. The root cause
-and primary repair are Claudia-side (see the Claudia spec:
-`claudia_deep_research_internal_source_truth_and_wait_behavior_v1`). This spec
+and primary repair are Nexus-side (see the Nexus spec:
+`nexus_deep_research_internal_source_truth_and_wait_behavior_v1`). This spec
 records the Nexus-side audit and the two minimal presentation/robustness changes.
 
 ## Source rendering audit — findings
@@ -21,7 +21,7 @@ records the Nexus-side audit and the two minimal presentation/robustness changes
   `args.sources` as task sources. The UI renders `detailResult.answerText`
   (the report, verbatim) and the task's own `detailSources`. Nexus does **not**
   rewrite or infer source-availability claims.
-- **Genuine provenance.** The five Membership sources originated from Claudia's
+- **Genuine provenance.** The five Membership sources originated from Nexus's
   `TrustedToolResult.sources` (real `membership_io.transcript_retrieve` output),
   forwarded through `completeTask`. Not Nexus enrichment or fabrication.
 - **The only issue: ambiguous label.** The block was titled simply "Sources",
@@ -77,6 +77,6 @@ reproduce at `HEAD` without these changes and are out of scope.
 
 ## Remaining limitations
 
-- The authoritative source-availability truth is enforced Claudia-side (report
+- The authoritative source-availability truth is enforced Nexus-side (report
   prose + provenance). Nexus renders that faithfully; it intentionally does not
   independently police availability.

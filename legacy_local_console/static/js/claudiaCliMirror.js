@@ -1,5 +1,5 @@
 /**
- * Claudia CLI Mirror UI shell (Bridge 09 + Bridge 10 transcript polish).
+ * Nexus CLI Mirror UI shell (Bridge 09 + Bridge 10 transcript polish).
  * Operator panel for Core-owned Hermes PTY sessions via Gateway relay.
  */
 
@@ -38,7 +38,7 @@ import {
   TRANSCRIPT_GROUP_ROLES,
   hasVisibleTranscriptText,
   createHermesOutputClassifier,
-} from './claudiaCliMirrorHelpers.js';
+} from './nexusCliMirrorHelpers.js';
 
 let _initialized = false;
 let _mode = CLI_MIRROR_MODES.SIMPLE_CHAT;
@@ -69,32 +69,32 @@ const MAX_RECONNECT = 6;
 
 function _els() {
   return {
-    panel: document.getElementById('claudia-cli-mirror-panel'),
-    transcript: document.getElementById('claudia-cli-mirror-transcript'),
-    rawPre: document.getElementById('claudia-cli-mirror-raw-pre'),
-    alerts: document.getElementById('claudia-cli-mirror-alerts'),
-    statusChip: document.getElementById('claudia-cli-mirror-status-chip'),
-    sessionIdEl: document.getElementById('claudia-cli-mirror-session-id'),
-    sessionList: document.getElementById('claudia-cli-mirror-session-list'),
-    sessionNote: document.getElementById('claudia-cli-mirror-session-note'),
-    attachOffer: document.getElementById('claudia-cli-mirror-attach-offer'),
-    startBtn: document.getElementById('claudia-cli-mirror-start'),
-    stopBtn: document.getElementById('claudia-cli-mirror-stop'),
-    interruptBtn: document.getElementById('claudia-cli-mirror-interrupt'),
-    titleInput: document.getElementById('claudia-cli-mirror-title-input'),
-    input: document.getElementById('claudia-cli-mirror-input'),
-    sendBtn: document.getElementById('claudia-cli-mirror-send-btn'),
-    rawToggle: document.getElementById('claudia-cli-mirror-raw-toggle'),
-    rawSection: document.getElementById('claudia-cli-mirror-raw-section'),
-    transcriptExpandBtn: document.getElementById('claudia-cli-mirror-transcript-expand'),
-    transcriptMeta: document.getElementById('claudia-cli-mirror-transcript-meta'),
-    transcriptMetaTitle: document.getElementById('claudia-cli-mirror-transcript-meta-title'),
-    transcriptMetaStatus: document.getElementById('claudia-cli-mirror-transcript-meta-status'),
-    headerCard: document.querySelector('.claudia-cli-mirror-header'),
-    setupSection: document.getElementById('claudia-cli-mirror-setup-section'),
-    modeToggle: document.getElementById('claudia-interaction-mode-toggle'),
-    simpleBtn: document.getElementById('claudia-mode-simple-chat'),
-    mirrorBtn: document.getElementById('claudia-mode-cli-mirror'),
+    panel: document.getElementById('nexus-cli-mirror-panel'),
+    transcript: document.getElementById('nexus-cli-mirror-transcript'),
+    rawPre: document.getElementById('nexus-cli-mirror-raw-pre'),
+    alerts: document.getElementById('nexus-cli-mirror-alerts'),
+    statusChip: document.getElementById('nexus-cli-mirror-status-chip'),
+    sessionIdEl: document.getElementById('nexus-cli-mirror-session-id'),
+    sessionList: document.getElementById('nexus-cli-mirror-session-list'),
+    sessionNote: document.getElementById('nexus-cli-mirror-session-note'),
+    attachOffer: document.getElementById('nexus-cli-mirror-attach-offer'),
+    startBtn: document.getElementById('nexus-cli-mirror-start'),
+    stopBtn: document.getElementById('nexus-cli-mirror-stop'),
+    interruptBtn: document.getElementById('nexus-cli-mirror-interrupt'),
+    titleInput: document.getElementById('nexus-cli-mirror-title-input'),
+    input: document.getElementById('nexus-cli-mirror-input'),
+    sendBtn: document.getElementById('nexus-cli-mirror-send-btn'),
+    rawToggle: document.getElementById('nexus-cli-mirror-raw-toggle'),
+    rawSection: document.getElementById('nexus-cli-mirror-raw-section'),
+    transcriptExpandBtn: document.getElementById('nexus-cli-mirror-transcript-expand'),
+    transcriptMeta: document.getElementById('nexus-cli-mirror-transcript-meta'),
+    transcriptMetaTitle: document.getElementById('nexus-cli-mirror-transcript-meta-title'),
+    transcriptMetaStatus: document.getElementById('nexus-cli-mirror-transcript-meta-status'),
+    headerCard: document.querySelector('.nexus-cli-mirror-header'),
+    setupSection: document.getElementById('nexus-cli-mirror-setup-section'),
+    modeToggle: document.getElementById('nexus-interaction-mode-toggle'),
+    simpleBtn: document.getElementById('nexus-mode-simple-chat'),
+    mirrorBtn: document.getElementById('nexus-mode-cli-mirror'),
     chatHistory: document.getElementById('chat-history'),
     welcome: document.getElementById('welcome-screen'),
     chatInputBar: document.querySelector('.chat-input-bar'),
@@ -139,30 +139,30 @@ function _createTranscriptGroup(role, payload, { prepend = false } = {}) {
   card.dataset.groupRole = role;
 
   const head = document.createElement('div');
-  head.className = 'claudia-cli-mirror-stream-head';
+  head.className = 'nexus-cli-mirror-stream-head';
 
   const label = document.createElement('span');
-  label.className = 'claudia-cli-mirror-stream-label';
+  label.className = 'nexus-cli-mirror-stream-label';
   label.textContent = getTranscriptGroupLabel(role);
   head.appendChild(label);
 
   const timeStr = _formatCardTime(payload);
   if (timeStr) {
     const timeEl = document.createElement('span');
-    timeEl.className = 'claudia-cli-mirror-stream-time';
+    timeEl.className = 'nexus-cli-mirror-stream-time';
     timeEl.textContent = timeStr;
     head.appendChild(timeEl);
   }
   if (payload?.seq != null) {
     const seqEl = document.createElement('span');
-    seqEl.className = 'claudia-cli-mirror-stream-seq';
+    seqEl.className = 'nexus-cli-mirror-stream-seq';
     seqEl.textContent = `#${payload.seq}`;
     head.appendChild(seqEl);
     card.dataset.seq = String(payload.seq);
   }
 
   const body = document.createElement('pre');
-  body.className = 'claudia-cli-mirror-stream-body';
+  body.className = 'nexus-cli-mirror-stream-body';
 
   card.appendChild(head);
   card.appendChild(body);
@@ -188,7 +188,7 @@ function _setStatusChip(state) {
   const chip = deriveStatusChip(state);
   statusChip.dataset.status = state;
   statusChip.textContent = chip.label;
-  statusChip.className = `claudia-cli-mirror-status-chip tone-${chip.tone}`;
+  statusChip.className = `nexus-cli-mirror-status-chip tone-${chip.tone}`;
   _updateTranscriptExpandedMeta();
 }
 
@@ -236,14 +236,14 @@ function _updateTranscriptExpandedMeta() {
 
   const sess =
     _sessionsCache.find((s) => (s.session_id || s.id) === _sessionId) || null;
-  const titleInput = document.getElementById('claudia-cli-mirror-title-input');
+  const titleInput = document.getElementById('nexus-cli-mirror-title-input');
   const title = sess?.title || titleInput?.value?.trim() || 'CLI Mirror session';
   if (transcriptMetaTitle) transcriptMetaTitle.textContent = title;
 
   if (transcriptMetaStatus) {
     const chip = deriveStatusChip(_sessionStatus);
     transcriptMetaStatus.textContent = chip.label;
-    transcriptMetaStatus.className = `claudia-cli-mirror-status-chip tone-${chip.tone}`;
+    transcriptMetaStatus.className = `nexus-cli-mirror-status-chip tone-${chip.tone}`;
     transcriptMetaStatus.dataset.status = _sessionStatus;
   }
 }
@@ -266,7 +266,7 @@ function _hasRunningSession(sessionMeta = null) {
 
 function _updateSetupPanelUi(sessionMeta = null) {
   const { titleInput } = _els();
-  const setupSection = document.getElementById('claudia-cli-mirror-setup-section');
+  const setupSection = document.getElementById('nexus-cli-mirror-setup-section');
   const active = _hasRunningSession(sessionMeta);
   const sess =
     sessionMeta ||
@@ -315,7 +315,7 @@ function _onSetupPanelClick(e) {
     return;
   }
 
-  const header = document.getElementById('claudia-cli-mirror-setup-header');
+  const header = document.getElementById('nexus-cli-mirror-setup-header');
   if (header && header.contains(e.target)) {
     _setSetupPanelMinimized(true);
   }
@@ -371,12 +371,12 @@ function _renderAttachOffer(summary) {
   const title = running.title || 'Running session';
   attachOffer.classList.remove('hidden');
   attachOffer.innerHTML =
-    `<span class="claudia-cli-mirror-attach-text">` +
+    `<span class="nexus-cli-mirror-attach-text">` +
     `<strong>Attach to running session:</strong> ${title}` +
     `</span>`;
   const btn = document.createElement('button');
   btn.type = 'button';
-  btn.className = 'admin-btn-sm claudia-cli-mirror-btn-primary';
+  btn.className = 'admin-btn-sm nexus-cli-mirror-btn-primary';
   btn.textContent = 'Attach to running session';
   btn.addEventListener('click', () => _attachSession(running));
   attachOffer.appendChild(btn);
@@ -386,20 +386,20 @@ function _showAlert(err, { dismissible = true, attachSessionId = '' } = {}) {
   const { alerts } = _els();
   if (!alerts || !err) return;
   const card = document.createElement('div');
-  card.className = 'claudia-cli-mirror-alert admin-card admin-danger-card';
+  card.className = 'nexus-cli-mirror-alert admin-card admin-danger-card';
   card.dataset.code = err.code || '';
   let html =
-    `<div class="claudia-cli-mirror-alert-title">${err.title || 'Notice'}</div>` +
-    `<div class="claudia-cli-mirror-alert-body">${err.message || ''}</div>`;
+    `<div class="nexus-cli-mirror-alert-title">${err.title || 'Notice'}</div>` +
+    `<div class="nexus-cli-mirror-alert-body">${err.message || ''}</div>`;
   if (err.action) {
-    html += `<div class="claudia-cli-mirror-alert-action">${err.action}</div>`;
+    html += `<div class="nexus-cli-mirror-alert-action">${err.action}</div>`;
   }
   card.innerHTML = html;
   if (attachSessionId || err.attachSessionId) {
     const sid = attachSessionId || err.attachSessionId;
     const attachBtn = document.createElement('button');
     attachBtn.type = 'button';
-    attachBtn.className = 'admin-btn-sm claudia-cli-mirror-btn-primary';
+    attachBtn.className = 'admin-btn-sm nexus-cli-mirror-btn-primary';
     attachBtn.textContent = 'Attach to running session';
     attachBtn.addEventListener('click', () => {
       const sess = _sessionsCache.find((s) => (s.session_id || s.id) === sid) || { session_id: sid, status: 'running' };
@@ -411,7 +411,7 @@ function _showAlert(err, { dismissible = true, attachSessionId = '' } = {}) {
   if (dismissible) {
     const btn = document.createElement('button');
     btn.type = 'button';
-    btn.className = 'claudia-cli-mirror-alert-dismiss';
+    btn.className = 'nexus-cli-mirror-alert-dismiss';
     btn.textContent = 'Dismiss';
     btn.addEventListener('click', () => card.remove());
     card.appendChild(btn);
@@ -745,14 +745,14 @@ async function _loadTranscript({ appendOlder = false } = {}) {
 }
 
 function _renderTranscriptPaginationControls() {
-  const section = document.querySelector('.claudia-cli-mirror-section-transcript');
+  const section = document.querySelector('.nexus-cli-mirror-section-transcript');
   if (!section) return;
-  let bar = document.getElementById('claudia-cli-mirror-transcript-pagination');
+  let bar = document.getElementById('nexus-cli-mirror-transcript-pagination');
   if (!bar) {
     bar = document.createElement('div');
-    bar.id = 'claudia-cli-mirror-transcript-pagination';
-    bar.className = 'claudia-cli-mirror-transcript-pagination';
-    const transcript = document.getElementById('claudia-cli-mirror-transcript');
+    bar.id = 'nexus-cli-mirror-transcript-pagination';
+    bar.className = 'nexus-cli-mirror-transcript-pagination';
+    const transcript = document.getElementById('nexus-cli-mirror-transcript');
     if (transcript) transcript.insertAdjacentElement('afterend', bar);
   }
   bar.innerHTML = '';
@@ -774,24 +774,24 @@ function _renderTranscriptPaginationControls() {
 function _buildSessionRow(sess) {
   const sid = sess.session_id || sess.id || '';
   const row = document.createElement('div');
-  row.className = 'claudia-cli-mirror-session-item';
+  row.className = 'nexus-cli-mirror-session-item';
   row.dataset.sessionId = sid;
   if (sid === _sessionId) row.classList.add('is-attached');
 
   const status = sess.status || 'unknown';
   const chip = document.createElement('span');
-  chip.className = `claudia-cli-mirror-session-status tone-${isRunningSession(sess) ? 'ok' : 'muted'}`;
+  chip.className = `nexus-cli-mirror-session-status tone-${isRunningSession(sess) ? 'ok' : 'muted'}`;
   chip.textContent = sess.phase || status;
 
   const main = document.createElement('div');
-  main.className = 'claudia-cli-mirror-session-item-main';
+  main.className = 'nexus-cli-mirror-session-item-main';
 
   const titleEl = document.createElement('div');
-  titleEl.className = 'claudia-cli-mirror-session-item-title';
+  titleEl.className = 'nexus-cli-mirror-session-item-title';
   titleEl.textContent = sess.title || 'CLI Mirror session';
 
   const metaEl = document.createElement('div');
-  metaEl.className = 'claudia-cli-mirror-session-item-meta';
+  metaEl.className = 'nexus-cli-mirror-session-item-meta';
   const times = formatSessionTimes(sess);
   const parts = [];
   if (times.started) parts.push(`Started ${times.started}`);
@@ -808,7 +808,7 @@ function _buildSessionRow(sess) {
 
   if (!isRunningSession(sess) && sess.resume_unavailable_reason) {
     const reasonEl = document.createElement('div');
-    reasonEl.className = 'claudia-cli-mirror-session-resume-note';
+    reasonEl.className = 'nexus-cli-mirror-session-resume-note';
     reasonEl.textContent = sess.resume_unavailable_reason;
     main.appendChild(reasonEl);
   }
@@ -858,7 +858,7 @@ function _renderSessionList(sessions, listMeta = {}) {
   for (const section of sections) {
     if (!section.items.length) continue;
     const heading = document.createElement('div');
-    heading.className = 'claudia-cli-mirror-session-section-title';
+    heading.className = 'nexus-cli-mirror-session-section-title';
     heading.textContent = section.title;
     sessionList.appendChild(heading);
     for (const sess of section.items) {
@@ -873,7 +873,7 @@ function _renderSessionList(sessions, listMeta = {}) {
 function _highlightAttachedSession() {
   const { sessionList } = _els();
   if (!sessionList) return;
-  sessionList.querySelectorAll('.claudia-cli-mirror-session-item').forEach((row) => {
+  sessionList.querySelectorAll('.nexus-cli-mirror-session-item').forEach((row) => {
     const sid = row.dataset.sessionId;
     row.classList.toggle('is-attached', sid === _sessionId);
     const btn = row.querySelector('button');
@@ -949,7 +949,7 @@ async function _startSession() {
   _setStatusChip('connecting');
 
   const { titleInput } = _els();
-  const title = titleInput?.value?.trim() || 'Claudia Console CLI Mirror';
+  const title = titleInput?.value?.trim() || 'legacy local console CLI Mirror';
 
   const result = await _apiFetch(CLI_SESSIONS_API, {
     method: 'POST',
@@ -1180,10 +1180,10 @@ function _applyInteractionMode(mode) {
 
   const mirror = mode === CLI_MIRROR_MODES.CLI_MIRROR;
   if (panel) panel.classList.toggle('hidden', !mirror);
-  if (chatHistory) chatHistory.classList.toggle('claudia-cli-mirror-hidden', mirror);
-  if (welcome) welcome.classList.toggle('claudia-cli-mirror-hidden', mirror);
-  if (chatInputBar) chatInputBar.classList.toggle('claudia-cli-mirror-hidden', mirror);
-  if (chatContainer) chatContainer.classList.toggle('claudia-cli-mirror-active', mirror);
+  if (chatHistory) chatHistory.classList.toggle('nexus-cli-mirror-hidden', mirror);
+  if (welcome) welcome.classList.toggle('nexus-cli-mirror-hidden', mirror);
+  if (chatInputBar) chatInputBar.classList.toggle('nexus-cli-mirror-hidden', mirror);
+  if (chatContainer) chatContainer.classList.toggle('nexus-cli-mirror-active', mirror);
 
   if (simpleBtn) {
     simpleBtn.classList.toggle('active', !mirror);
@@ -1203,78 +1203,78 @@ function _applyInteractionMode(mode) {
 }
 
 function _buildDom() {
-  if (document.getElementById('claudia-cli-mirror-panel')) return;
+  if (document.getElementById('nexus-cli-mirror-panel')) return;
 
   const chatContainer = document.getElementById('chat-container');
   const chatHistory = document.getElementById('chat-history');
   if (!chatContainer || !chatHistory) return;
 
   const panel = document.createElement('div');
-  panel.id = 'claudia-cli-mirror-panel';
-  panel.className = 'claudia-cli-mirror-panel hidden';
+  panel.id = 'nexus-cli-mirror-panel';
+  panel.className = 'nexus-cli-mirror-panel hidden';
   panel.setAttribute('role', 'region');
-  panel.setAttribute('aria-label', 'Claudia CLI Mirror');
+  panel.setAttribute('aria-label', 'Nexus CLI Mirror');
   panel.innerHTML =
-    '<div class="claudia-cli-mirror-header admin-card">' +
-    '<div class="claudia-cli-mirror-header-row">' +
-    '<h2>Claudia CLI Mirror</h2>' +
-    '<span id="claudia-cli-mirror-status-chip" class="claudia-cli-mirror-status-chip tone-muted" data-status="not_connected">Not connected</span>' +
+    '<div class="nexus-cli-mirror-header admin-card">' +
+    '<div class="nexus-cli-mirror-header-row">' +
+    '<h2>Nexus CLI Mirror</h2>' +
+    '<span id="nexus-cli-mirror-status-chip" class="nexus-cli-mirror-status-chip tone-muted" data-status="not_connected">Not connected</span>' +
     '</div>' +
-    '<p class="claudia-cli-mirror-desc">Mirrors the Core-owned Hermes session.</p>' +
+    '<p class="nexus-cli-mirror-desc">Mirrors the Core-owned Hermes session.</p>' +
     '</div>' +
-    '<div id="claudia-cli-mirror-alerts" class="claudia-cli-mirror-alerts"></div>' +
-    '<div id="claudia-cli-mirror-attach-offer" class="claudia-cli-mirror-attach-offer admin-card hidden"></div>' +
-    '<div id="claudia-cli-mirror-setup-section" class="claudia-cli-mirror-section claudia-cli-mirror-section-setup admin-card" aria-expanded="true">' +
-    '<div id="claudia-cli-mirror-setup-header" class="claudia-cli-mirror-setup-header">' +
-    '<h3 class="claudia-cli-mirror-section-title">Session setup</h3>' +
+    '<div id="nexus-cli-mirror-alerts" class="nexus-cli-mirror-alerts"></div>' +
+    '<div id="nexus-cli-mirror-attach-offer" class="nexus-cli-mirror-attach-offer admin-card hidden"></div>' +
+    '<div id="nexus-cli-mirror-setup-section" class="nexus-cli-mirror-section nexus-cli-mirror-section-setup admin-card" aria-expanded="true">' +
+    '<div id="nexus-cli-mirror-setup-header" class="nexus-cli-mirror-setup-header">' +
+    '<h3 class="nexus-cli-mirror-section-title">Session setup</h3>' +
     '</div>' +
-    '<div id="claudia-cli-mirror-setup-inactive-labels" class="claudia-cli-mirror-setup-inactive-labels">' +
-    '<label class="claudia-cli-mirror-field-label" for="claudia-cli-mirror-title-input">Session title</label>' +
-    '<p class="claudia-cli-mirror-field-hint" id="claudia-cli-mirror-title-hint">Used only to name the CLI Mirror session before starting it.</p>' +
+    '<div id="nexus-cli-mirror-setup-inactive-labels" class="nexus-cli-mirror-setup-inactive-labels">' +
+    '<label class="nexus-cli-mirror-field-label" for="nexus-cli-mirror-title-input">Session title</label>' +
+    '<p class="nexus-cli-mirror-field-hint" id="nexus-cli-mirror-title-hint">Used only to name the CLI Mirror session before starting it.</p>' +
     '</div>' +
-    '<input type="text" id="claudia-cli-mirror-title-input" class="claudia-cli-mirror-title-input" placeholder="Claudia Console CLI Mirror" maxlength="120" autocomplete="off">' +
-    '<div class="claudia-cli-mirror-control-row">' +
-    '<button type="button" class="admin-btn-sm claudia-cli-mirror-btn-primary" id="claudia-cli-mirror-start">Start session</button>' +
-    '<button type="button" class="admin-btn-sm" id="claudia-cli-mirror-refresh">Refresh sessions</button>' +
-    '<button type="button" class="admin-btn-sm" id="claudia-cli-mirror-stop" title="Stop ends the Core-owned Hermes PTY session">Stop session</button>' +
-    '<button type="button" class="admin-btn-sm" id="claudia-cli-mirror-interrupt" title="Interrupt sends Ctrl+C to Hermes">Send Ctrl+C</button>' +
+    '<input type="text" id="nexus-cli-mirror-title-input" class="nexus-cli-mirror-title-input" placeholder="legacy local console CLI Mirror" maxlength="120" autocomplete="off">' +
+    '<div class="nexus-cli-mirror-control-row">' +
+    '<button type="button" class="admin-btn-sm nexus-cli-mirror-btn-primary" id="nexus-cli-mirror-start">Start session</button>' +
+    '<button type="button" class="admin-btn-sm" id="nexus-cli-mirror-refresh">Refresh sessions</button>' +
+    '<button type="button" class="admin-btn-sm" id="nexus-cli-mirror-stop" title="Stop ends the Core-owned Hermes PTY session">Stop session</button>' +
+    '<button type="button" class="admin-btn-sm" id="nexus-cli-mirror-interrupt" title="Interrupt sends Ctrl+C to Hermes">Send Ctrl+C</button>' +
     '</div>' +
-    '<div class="claudia-cli-mirror-session-row">' +
-    '<span class="claudia-cli-mirror-session-label">Session ID</span>' +
-    '<code id="claudia-cli-mirror-session-id" class="claudia-cli-mirror-session-id">—</code>' +
-    '<button type="button" class="admin-btn-sm" id="claudia-cli-mirror-copy-id">Copy</button>' +
+    '<div class="nexus-cli-mirror-session-row">' +
+    '<span class="nexus-cli-mirror-session-label">Session ID</span>' +
+    '<code id="nexus-cli-mirror-session-id" class="nexus-cli-mirror-session-id">—</code>' +
+    '<button type="button" class="admin-btn-sm" id="nexus-cli-mirror-copy-id">Copy</button>' +
     '</div>' +
-    '<p id="claudia-cli-mirror-session-note" class="claudia-cli-mirror-session-note"></p>' +
-    '<div id="claudia-cli-mirror-session-list" class="claudia-cli-mirror-session-list"></div>' +
+    '<p id="nexus-cli-mirror-session-note" class="nexus-cli-mirror-session-note"></p>' +
+    '<div id="nexus-cli-mirror-session-list" class="nexus-cli-mirror-session-list"></div>' +
     '</div>' +
-    '<div class="claudia-cli-mirror-section claudia-cli-mirror-section-transcript">' +
-    '<div class="claudia-cli-mirror-transcript-heading">' +
-    '<h3 class="claudia-cli-mirror-section-title">Live Hermes transcript</h3>' +
-    '<button type="button" id="claudia-cli-mirror-transcript-expand" class="claudia-cli-mirror-transcript-expand-btn" aria-expanded="false" title="Expand Live Hermes transcript">+</button>' +
+    '<div class="nexus-cli-mirror-section nexus-cli-mirror-section-transcript">' +
+    '<div class="nexus-cli-mirror-transcript-heading">' +
+    '<h3 class="nexus-cli-mirror-section-title">Live Hermes transcript</h3>' +
+    '<button type="button" id="nexus-cli-mirror-transcript-expand" class="nexus-cli-mirror-transcript-expand-btn" aria-expanded="false" title="Expand Live Hermes transcript">+</button>' +
     '</div>' +
-    '<div class="claudia-cli-mirror-transcript-shell">' +
-    '<div id="claudia-cli-mirror-transcript-meta" class="claudia-cli-mirror-transcript-meta hidden" aria-hidden="true">' +
-    '<span id="claudia-cli-mirror-transcript-meta-title" class="claudia-cli-mirror-transcript-meta-title"></span>' +
-    '<span id="claudia-cli-mirror-transcript-meta-status" class="claudia-cli-mirror-status-chip tone-muted"></span>' +
+    '<div class="nexus-cli-mirror-transcript-shell">' +
+    '<div id="nexus-cli-mirror-transcript-meta" class="nexus-cli-mirror-transcript-meta hidden" aria-hidden="true">' +
+    '<span id="nexus-cli-mirror-transcript-meta-title" class="nexus-cli-mirror-transcript-meta-title"></span>' +
+    '<span id="nexus-cli-mirror-transcript-meta-status" class="nexus-cli-mirror-status-chip tone-muted"></span>' +
     '</div>' +
-    '<div id="claudia-cli-mirror-transcript" class="claudia-cli-mirror-transcript" role="log" aria-live="polite"></div>' +
+    '<div id="nexus-cli-mirror-transcript" class="nexus-cli-mirror-transcript" role="log" aria-live="polite"></div>' +
     '</div>' +
-    '<div id="claudia-cli-mirror-raw-section" class="claudia-cli-mirror-raw-section hidden">' +
-    '<details class="claudia-cli-mirror-raw-drawer admin-card">' +
-    '<summary>Raw transcript <span class="claudia-cli-mirror-raw-hint">(debug only — collapsed by default)</span></summary>' +
-    '<div class="claudia-cli-mirror-raw-toolbar">' +
-    '<button type="button" class="admin-btn-sm" id="claudia-cli-mirror-copy-raw">Copy raw</button>' +
+    '<div id="nexus-cli-mirror-raw-section" class="nexus-cli-mirror-raw-section hidden">' +
+    '<details class="nexus-cli-mirror-raw-drawer admin-card">' +
+    '<summary>Raw transcript <span class="nexus-cli-mirror-raw-hint">(debug only — collapsed by default)</span></summary>' +
+    '<div class="nexus-cli-mirror-raw-toolbar">' +
+    '<button type="button" class="admin-btn-sm" id="nexus-cli-mirror-copy-raw">Copy raw</button>' +
     '</div>' +
-    '<pre id="claudia-cli-mirror-raw-pre" class="claudia-cli-mirror-raw-pre" aria-label="Raw CLI Mirror transcript"></pre>' +
+    '<pre id="nexus-cli-mirror-raw-pre" class="nexus-cli-mirror-raw-pre" aria-label="Raw CLI Mirror transcript"></pre>' +
     '</details>' +
     '</div>' +
     '</div>' +
-    '<div class="claudia-cli-mirror-section claudia-cli-mirror-section-input admin-card">' +
-    '<div class="claudia-cli-mirror-input-bar">' +
-    '<textarea id="claudia-cli-mirror-input" class="claudia-cli-mirror-input" rows="2" placeholder="Send input to Hermes (/help, commands, or instructions…)" aria-label="Send input to Hermes"></textarea>' +
-    '<div class="claudia-cli-mirror-input-actions">' +
-    '<button type="button" class="send-btn" id="claudia-cli-mirror-send-btn">Send</button>' +
-    '<button type="button" id="claudia-cli-mirror-raw-toggle" class="claudia-cli-mirror-raw-toggle" aria-pressed="false" title="Toggle raw transcript debug">db</button>' +
+    '<div class="nexus-cli-mirror-section nexus-cli-mirror-section-input admin-card">' +
+    '<div class="nexus-cli-mirror-input-bar">' +
+    '<textarea id="nexus-cli-mirror-input" class="nexus-cli-mirror-input" rows="2" placeholder="Send input to Hermes (/help, commands, or instructions…)" aria-label="Send input to Hermes"></textarea>' +
+    '<div class="nexus-cli-mirror-input-actions">' +
+    '<button type="button" class="send-btn" id="nexus-cli-mirror-send-btn">Send</button>' +
+    '<button type="button" id="nexus-cli-mirror-raw-toggle" class="nexus-cli-mirror-raw-toggle" aria-pressed="false" title="Toggle raw transcript debug">db</button>' +
     '</div>' +
     '</div>' +
     '</div>';
@@ -1282,32 +1282,32 @@ function _buildDom() {
   chatHistory.insertAdjacentElement('afterend', panel);
 
   const chatTopBar = document.querySelector('.chat-top-bar');
-  if (chatTopBar && !document.getElementById('claudia-interaction-mode-toggle')) {
+  if (chatTopBar && !document.getElementById('nexus-interaction-mode-toggle')) {
     const toggle = document.createElement('div');
-    toggle.id = 'claudia-interaction-mode-toggle';
-    toggle.className = 'claudia-interaction-mode-toggle mode-toggle';
+    toggle.id = 'nexus-interaction-mode-toggle';
+    toggle.className = 'nexus-interaction-mode-toggle mode-toggle';
     toggle.setAttribute('role', 'group');
-    toggle.setAttribute('aria-label', 'Claudia interaction mode');
+    toggle.setAttribute('aria-label', 'Nexus interaction mode');
     toggle.innerHTML =
-      '<button type="button" class="mode-toggle-btn active" id="claudia-mode-simple-chat" aria-pressed="true">Simple Chat</button>' +
-      '<button type="button" class="mode-toggle-btn" id="claudia-mode-cli-mirror" aria-pressed="false">CLI Mirror</button>';
+      '<button type="button" class="mode-toggle-btn active" id="nexus-mode-simple-chat" aria-pressed="true">Simple Chat</button>' +
+      '<button type="button" class="mode-toggle-btn" id="nexus-mode-cli-mirror" aria-pressed="false">CLI Mirror</button>';
     chatTopBar.appendChild(toggle);
   }
 
-  document.getElementById('claudia-cli-mirror-start')?.addEventListener('click', () => _startSession());
-  document.getElementById('claudia-cli-mirror-refresh')?.addEventListener('click', () => _refreshSessions());
-  document.getElementById('claudia-cli-mirror-stop')?.addEventListener('click', () => _stopSession());
-  document.getElementById('claudia-cli-mirror-interrupt')?.addEventListener('click', () => _interruptSession());
-  document.getElementById('claudia-cli-mirror-setup-section')?.addEventListener('click', _onSetupPanelClick);
-  document.getElementById('claudia-cli-mirror-copy-id')?.addEventListener('click', () => _copySessionId());
-  document.getElementById('claudia-cli-mirror-copy-raw')?.addEventListener('click', () => _copyRawTranscript());
-  document.getElementById('claudia-cli-mirror-raw-toggle')?.addEventListener('click', () => _toggleRawDebugVisible());
-  document.getElementById('claudia-cli-mirror-transcript-expand')?.addEventListener('click', () => _toggleTranscriptExpanded());
-  document.getElementById('claudia-cli-mirror-send-btn')?.addEventListener('click', () => _sendInput());
+  document.getElementById('nexus-cli-mirror-start')?.addEventListener('click', () => _startSession());
+  document.getElementById('nexus-cli-mirror-refresh')?.addEventListener('click', () => _refreshSessions());
+  document.getElementById('nexus-cli-mirror-stop')?.addEventListener('click', () => _stopSession());
+  document.getElementById('nexus-cli-mirror-interrupt')?.addEventListener('click', () => _interruptSession());
+  document.getElementById('nexus-cli-mirror-setup-section')?.addEventListener('click', _onSetupPanelClick);
+  document.getElementById('nexus-cli-mirror-copy-id')?.addEventListener('click', () => _copySessionId());
+  document.getElementById('nexus-cli-mirror-copy-raw')?.addEventListener('click', () => _copyRawTranscript());
+  document.getElementById('nexus-cli-mirror-raw-toggle')?.addEventListener('click', () => _toggleRawDebugVisible());
+  document.getElementById('nexus-cli-mirror-transcript-expand')?.addEventListener('click', () => _toggleTranscriptExpanded());
+  document.getElementById('nexus-cli-mirror-send-btn')?.addEventListener('click', () => _sendInput());
 
   _setRawDebugVisible(false);
 
-  const input = document.getElementById('claudia-cli-mirror-input');
+  const input = document.getElementById('nexus-cli-mirror-input');
   if (input) {
     input.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' && !e.shiftKey) {
@@ -1317,10 +1317,10 @@ function _buildDom() {
     });
   }
 
-  document.getElementById('claudia-mode-simple-chat')?.addEventListener('click', () => {
+  document.getElementById('nexus-mode-simple-chat')?.addEventListener('click', () => {
     _applyInteractionMode(CLI_MIRROR_MODES.SIMPLE_CHAT);
   });
-  document.getElementById('claudia-mode-cli-mirror')?.addEventListener('click', () => {
+  document.getElementById('nexus-mode-cli-mirror')?.addEventListener('click', () => {
     _applyInteractionMode(CLI_MIRROR_MODES.CLI_MIRROR);
   });
 
@@ -1337,15 +1337,15 @@ function _buildDom() {
 }
 
 /**
- * Initialize CLI Mirror shell when Claudia Console Mode is active.
+ * Initialize CLI Mirror shell when legacy local console Mode is active.
  */
-export async function initClaudiaCliMirror() {
+export async function initNexusCliMirror() {
   if (_initialized) return;
   _initialized = true;
 
   _buildDom();
 
-  const modeToggle = document.getElementById('claudia-interaction-mode-toggle');
+  const modeToggle = document.getElementById('nexus-interaction-mode-toggle');
   if (modeToggle) modeToggle.classList.remove('hidden');
 
   _applyInteractionMode(loadPersistedInteractionMode());
@@ -1363,4 +1363,4 @@ export async function initClaudiaCliMirror() {
   }
 }
 
-export default { initClaudiaCliMirror };
+export default { initNexusCliMirror };

@@ -1,7 +1,7 @@
 # CLI Mirror Send Echo and Empty Response Rendering Fix Pass
 
 **Date:** 2026-06-03  
-**Repo:** `/Users/bretthoffman/Documents/claudia_console`  
+**Repo:** `/Users/bretthoffman/Documents/console`  
 **Scope:** Console UI only — send echo dedupe and empty group fix
 
 ## Root cause found
@@ -12,10 +12,10 @@
 
 ## Files changed
 
-- `static/js/claudiaCliMirrorHelpers.js` — expanded extraction, `resolveTranscriptChunkRaw`, user echo dedupe helpers
-- `static/js/claudiaCliMirror.js` — send-in-flight guard, optimistic tracking, echo suppression, empty group prune
-- `tests/test_claudia_cli_mirror_ui.py` — echo, empty group, extraction tests
-- `docs/claudia_console_reform/cli_mirror_send_echo_empty_response_fix.md` — this note
+- `static/js/nexusCliMirrorHelpers.js` — expanded extraction, `resolveTranscriptChunkRaw`, user echo dedupe helpers
+- `static/js/nexusCliMirror.js` — send-in-flight guard, optimistic tracking, echo suppression, empty group prune
+- `tests/test_nexus_cli_mirror_ui.py` — echo, empty group, extraction tests
+- `docs/console_reform/cli_mirror_send_echo_empty_response_fix.md` — this note
 
 ## Behavior changed
 
@@ -49,9 +49,9 @@ Extract raw text from: `text`, `content`, `message`, `delta`, `output`, `line`, 
 ```bash
 bash -n start-macos.sh
 python3 -m compileall -q app.py core routes src
-node --check static/js/claudiaCliMirror.js
-node --check static/js/claudiaCliMirrorHelpers.js
-venv/bin/python -m pytest -q tests/test_claudia_cli_mirror_ui.py
+node --check static/js/nexusCliMirror.js
+node --check static/js/nexusCliMirrorHelpers.js
+venv/bin/python -m pytest -q tests/test_nexus_cli_mirror_ui.py
 ```
 
 ## Risks

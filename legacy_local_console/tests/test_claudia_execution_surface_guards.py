@@ -1,4 +1,4 @@
-"""Tests for Claudia Console Mode shell/MCP/research/file execution guards (Package 12)."""
+"""Tests for legacy local console Mode shell/MCP/research/file execution guards (Package 12)."""
 
 import asyncio
 import json
@@ -60,14 +60,14 @@ def test_local_execution_disabled_shape():
 
     out = local_execution_disabled("shell", "exec")
     assert out["status"] == "local_execution_disabled"
-    assert out["claudia_console_mode"] is True
+    assert out["console_mode"] is True
     assert out["surface"] == "shell"
     assert out["ok"] is False
 
 
 @pytest.mark.asyncio
 async def test_shell_exec_blocked_before_subprocess(monkeypatch):
-    monkeypatch.setenv("CLAUDIA_CONSOLE_MODE", "true")
+    monkeypatch.setenv("NEXUS_CONSOLE_MODE", "true")
     sys.modules.pop("src.console_mode", None)
 
     async def _boom(*_a, **_k):
@@ -87,7 +87,7 @@ async def test_shell_exec_blocked_before_subprocess(monkeypatch):
 
 @pytest.mark.asyncio
 async def test_shell_stream_blocked_before_subprocess(monkeypatch):
-    monkeypatch.setenv("CLAUDIA_CONSOLE_MODE", "true")
+    monkeypatch.setenv("NEXUS_CONSOLE_MODE", "true")
     sys.modules.pop("src.console_mode", None)
 
     shell_stream = _shell_route(monkeypatch, "shell_stream")
@@ -104,7 +104,7 @@ async def test_shell_stream_blocked_before_subprocess(monkeypatch):
 
 @pytest.mark.asyncio
 async def test_mcp_add_server_blocked_before_connect(monkeypatch):
-    monkeypatch.setenv("CLAUDIA_CONSOLE_MODE", "true")
+    monkeypatch.setenv("NEXUS_CONSOLE_MODE", "true")
     sys.modules.pop("src.console_mode", None)
 
     add_server, mgr = _mcp_route("add_server")
@@ -130,7 +130,7 @@ async def test_mcp_add_server_blocked_before_connect(monkeypatch):
 
 @pytest.mark.asyncio
 async def test_research_start_blocked_before_handler(monkeypatch):
-    monkeypatch.setenv("CLAUDIA_CONSOLE_MODE", "true")
+    monkeypatch.setenv("NEXUS_CONSOLE_MODE", "true")
     sys.modules.pop("src.console_mode", None)
 
     research_start, rh = _research_route("research_start")
@@ -155,7 +155,7 @@ async def test_research_start_blocked_before_handler(monkeypatch):
 
 
 def test_research_status_still_allowed_in_console_mode(monkeypatch):
-    monkeypatch.setenv("CLAUDIA_CONSOLE_MODE", "true")
+    monkeypatch.setenv("NEXUS_CONSOLE_MODE", "true")
     sys.modules.pop("src.console_mode", None)
 
     rh = MagicMock()
@@ -176,7 +176,7 @@ def test_research_status_still_allowed_in_console_mode(monkeypatch):
 
 
 def test_mcp_list_servers_still_allowed_in_console_mode(monkeypatch):
-    monkeypatch.setenv("CLAUDIA_CONSOLE_MODE", "true")
+    monkeypatch.setenv("NEXUS_CONSOLE_MODE", "true")
     sys.modules.pop("src.console_mode", None)
 
     mgr = MagicMock()
@@ -201,7 +201,7 @@ def test_mcp_list_servers_still_allowed_in_console_mode(monkeypatch):
 
 
 def test_block_local_execution_inactive_when_legacy_mode(monkeypatch):
-    monkeypatch.delenv("CLAUDIA_CONSOLE_MODE", raising=False)
+    monkeypatch.delenv("NEXUS_CONSOLE_MODE", raising=False)
     sys.modules.pop("src.console_mode", None)
     from src.execution_console_guard import block_local_execution
 

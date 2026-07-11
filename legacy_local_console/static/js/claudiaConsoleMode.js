@@ -1,11 +1,11 @@
 /**
- * Claudia Console Mode — frontend UI classification and legacy surface gating (Package 15).
- * Fetches /api/claudia/v1/health for claudia_console_mode; hides local-execution controls.
+ * legacy local console Mode — frontend UI classification and legacy surface gating (Package 15).
+ * Fetches /api/nexus/v1/health for console_mode; hides local-execution controls.
  */
 
-import { initClaudiaCliMirror } from './claudiaCliMirror.js';
+import { initNexusCliMirror } from './nexusCliMirror.js';
 
-const HEALTH_URL = '/api/claudia/v1/health';
+const HEALTH_URL = '/api/nexus/v1/health';
 
 /** Static elements hidden when Console Mode is on (backend guards already block these routes). */
 const HIDE_SELECTORS = [
@@ -46,11 +46,11 @@ export function isConsoleModeBannerDismissed() {
 
 function _dismissConsoleModeBanner() {
   _bannerDismissed = true;
-  const banner = document.getElementById('claudia-console-mode-banner');
+  const banner = document.getElementById('nexus-console-mode-banner');
   if (banner) banner.remove();
 }
 
-export function isClaudiaConsoleMode() {
+export function isNexusConsoleMode() {
   return _consoleMode;
 }
 
@@ -59,7 +59,7 @@ export async function fetchConsoleModeFlag() {
     const res = await fetch(HEALTH_URL, { credentials: 'same-origin' });
     if (!res.ok) return false;
     const body = await res.json();
-    return Boolean(body?.claudia_console_mode);
+    return Boolean(body?.console_mode);
   } catch (_) {
     return false;
   }
@@ -68,7 +68,7 @@ export async function fetchConsoleModeFlag() {
 function _hideElements(selectors) {
   for (const sel of selectors) {
     document.querySelectorAll(sel).forEach((el) => {
-      el.classList.add('claudia-console-hide');
+      el.classList.add('nexus-console-hide');
       el.setAttribute('aria-hidden', 'true');
       if (el instanceof HTMLButtonElement) {
         el.disabled = true;
@@ -79,18 +79,18 @@ function _hideElements(selectors) {
 
 function _injectBanner() {
   if (_bannerDismissed) return;
-  if (document.getElementById('claudia-console-mode-banner')) return;
+  if (document.getElementById('nexus-console-mode-banner')) return;
   const banner = document.createElement('div');
-  banner.id = 'claudia-console-mode-banner';
-  banner.className = 'claudia-console-mode-banner';
+  banner.id = 'nexus-console-mode-banner';
+  banner.className = 'nexus-console-mode-banner';
   banner.setAttribute('role', 'status');
   banner.innerHTML =
-    '<button type="button" class="claudia-console-mode-banner-dismiss" aria-label="Dismiss console mode banner">&times;</button>' +
-    '<div class="claudia-console-mode-banner-content">' +
-    '<span class="claudia-console-mode-banner-title">Claudia Console Mode</span>' +
-    '<span class="claudia-console-mode-banner-text">Local execution and canonical writes are routed through Claudia Core. Read-only and admin surfaces remain available.</span>' +
+    '<button type="button" class="nexus-console-mode-banner-dismiss" aria-label="Dismiss console mode banner">&times;</button>' +
+    '<div class="nexus-console-mode-banner-content">' +
+    '<span class="nexus-console-mode-banner-title">legacy local console Mode</span>' +
+    '<span class="nexus-console-mode-banner-text">Local execution and canonical writes are routed through Nexus Core. Read-only and admin surfaces remain available.</span>' +
     '</div>';
-  const dismissBtn = banner.querySelector('.claudia-console-mode-banner-dismiss');
+  const dismissBtn = banner.querySelector('.nexus-console-mode-banner-dismiss');
   if (dismissBtn) {
     dismissBtn.addEventListener('click', (e) => {
       e.preventDefault();
@@ -105,15 +105,15 @@ function _injectBanner() {
 function _relabelExecutionControls() {
   const agentBtn = document.getElementById('mode-agent-btn');
   if (agentBtn) {
-    agentBtn.title = 'Agent tools are limited in Claudia Console Mode — work is routed through Claudia Core';
+    agentBtn.title = 'Agent tools are limited in legacy local console Mode — work is routed through Nexus Core';
   }
   const bashBtn = document.getElementById('bash-toggle-btn');
   if (bashBtn) {
-    bashBtn.title = 'Disabled in Claudia Console Mode';
+    bashBtn.title = 'Disabled in legacy local console Mode';
   }
   const researchBtn = document.getElementById('tool-research-btn');
   if (researchBtn) {
-    researchBtn.title = 'Deep Research start is disabled in Claudia Console Mode';
+    researchBtn.title = 'Deep Research start is disabled in legacy local console Mode';
   }
 }
 
@@ -127,8 +127,8 @@ function _observeDynamicSurfaces() {
 
 export function applyConsoleModeUi() {
   if (!_consoleMode) return;
-  document.documentElement.classList.add('claudia-console-mode');
-  document.body.classList.add('claudia-console-mode');
+  document.documentElement.classList.add('nexus-console-mode');
+  document.body.classList.add('nexus-console-mode');
   _hideElements(HIDE_SELECTORS);
   _hideElements(DYNAMIC_HIDE_SELECTORS);
   _injectBanner();
@@ -139,22 +139,22 @@ export function applyConsoleModeUi() {
 /**
  * Load Console Mode flag and apply UI gating. Safe to call once at app startup.
  */
-export async function initClaudiaConsoleMode() {
+export async function initNexusConsoleMode() {
   if (_initialized) return _consoleMode;
   _initialized = true;
   _consoleMode = await fetchConsoleModeFlag();
   if (_consoleMode) {
     applyConsoleModeUi();
     try {
-      await initClaudiaCliMirror();
+      await initNexusCliMirror();
     } catch (_) {
       /* non-fatal — Simple Chat remains available */
     }
   }
   try {
-    const bridge = await import('./claudiaBrowserChatBridge.js');
+    const bridge = await import('./nexusBrowserChatBridge.js');
     await bridge.init();
-    window.claudiaBrowserChatBridge = bridge.default || bridge;
+    window.nexusBrowserChatBridge = bridge.default || bridge;
   } catch (_) {
     /* bridge optional until first chat send */
   }
@@ -162,8 +162,8 @@ export async function initClaudiaConsoleMode() {
 }
 
 export default {
-  initClaudiaConsoleMode,
-  isClaudiaConsoleMode,
+  initNexusConsoleMode,
+  isNexusConsoleMode,
   fetchConsoleModeFlag,
   applyConsoleModeUi,
   isConsoleModeBannerDismissed,

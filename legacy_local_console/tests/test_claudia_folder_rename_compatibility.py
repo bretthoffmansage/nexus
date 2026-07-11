@@ -1,4 +1,4 @@
-"""Package 20A — folder rename compatibility (odysseus → claudia_console)."""
+"""Package 20A — folder rename compatibility (odysseus → console)."""
 
 import re
 from pathlib import Path
@@ -8,9 +8,9 @@ import pytest
 REPO = Path(__file__).resolve().parents[1]
 START_MACOS = REPO / "start-macos.sh"
 README = REPO / "README.md"
-PRIVATE_GUIDE = REPO / "docs/claudia_console_reform/private_pwa_deployment_hardening.md"
+PRIVATE_GUIDE = REPO / "docs/console_reform/private_pwa_deployment_hardening.md"
 ENV_EXAMPLE = REPO / ".env.example"
-REFORM_DIR = REPO / "docs/claudia_console_reform"
+REFORM_DIR = REPO / "docs/console_reform"
 
 OLD_PATH_PATTERNS = (
     r"/Users/bretthoffman/Documents/odysseus",
@@ -18,7 +18,7 @@ OLD_PATH_PATTERNS = (
     r"Documents/odysseus",
     r"cd ~/Documents/odysseus",
 )
-NEW_PATH = "/Users/bretthoffman/Documents/claudia_console"
+NEW_PATH = "/Users/bretthoffman/Documents/console"
 PACKAGE_20A = REFORM_DIR / "package_20a_folder_rename_compatibility.md"
 
 ACTIVE_OPERATOR_FILES = (
@@ -29,7 +29,7 @@ ACTIVE_OPERATOR_FILES = (
     REPO / "SECURITY.md",
     REPO / "scripts/README.md",
     REPO / "docker/README.md",
-    REPO / "docs/claudia_console_reform/legacy_archive/README.md",
+    REPO / "docs/console_reform/legacy_archive/README.md",
 )
 
 
@@ -38,7 +38,7 @@ def _has_old_operator_path(text: str) -> bool:
 
 
 @pytest.mark.parametrize("path", ACTIVE_OPERATOR_FILES, ids=lambda p: p.name)
-def test_active_operator_docs_use_claudia_console_path(path):
+def test_active_operator_docs_use_console_path(path):
     assert path.is_file(), f"missing active doc: {path}"
     text = path.read_text(encoding="utf-8")
     assert NEW_PATH in text, f"{path} should document {NEW_PATH}"

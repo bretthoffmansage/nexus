@@ -3,7 +3,7 @@
 Status: implemented (2026-07-02)
 Amends: `nexus_library_dropzone_upload_queue_and_attachment_contract_v1.md`,
 `nexus_attachment_download_failure_diagnosis_and_repair_v1.md`
-Counterpart: Claudia `docs/specs/claudia_nexus_attachment_response_contract_alignment_v1.md`
+Counterpart: Nexus `docs/specs/nexus_nexus_attachment_response_contract_alignment_v1.md`
 
 ## Live failure this amendment repairs
 

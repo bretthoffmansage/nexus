@@ -1,4 +1,4 @@
-"""Tests for Claudia API token scopes (Package 3)."""
+"""Tests for Nexus API token scopes (Package 3)."""
 
 import sys
 from types import SimpleNamespace
@@ -33,37 +33,37 @@ def _session_middleware(username: str):
 
 
 def _build_gateway_app(middleware_cls=None):
-  sys.modules.pop("routes.claudia_routes", None)
-  from routes.claudia_routes import setup_claudia_routes
+  sys.modules.pop("routes.nexus_routes", None)
+  from routes.nexus_routes import setup_nexus_routes
 
   app = FastAPI()
   if middleware_cls:
     app.add_middleware(middleware_cls)
-  app.include_router(setup_claudia_routes())
+  app.include_router(setup_nexus_routes())
   return app
 
 
-def test_validate_scopes_csv_accepts_claudia_intake():
-  from src.claudia_scopes import validate_scopes_csv
+def test_validate_scopes_csv_accepts_nexus_intake():
+  from src.nexus_scopes import validate_scopes_csv
 
-  assert validate_scopes_csv("claudia_intake") == "claudia_intake"
-  assert validate_scopes_csv("chat,claudia_intake") == "chat,claudia_intake"
+  assert validate_scopes_csv("nexus_intake") == "nexus_intake"
+  assert validate_scopes_csv("chat,nexus_intake") == "chat,nexus_intake"
 
 
 def test_validate_scopes_csv_rejects_unknown():
-  from src.claudia_scopes import validate_scopes_csv
+  from src.nexus_scopes import validate_scopes_csv
 
   with pytest.raises(ValueError, match="Unknown"):
-    validate_scopes_csv("claudia_intake,superadmin")
+    validate_scopes_csv("nexus_intake,superadmin")
 
 
-def test_bearer_claudia_intake_can_post_intake(monkeypatch):
-  monkeypatch.delenv("CLAUDIA_CORE_URL", raising=False)
+def test_bearer_nexus_intake_can_post_intake(monkeypatch):
+  monkeypatch.delenv("NEXUS_CORE_URL", raising=False)
   monkeypatch.setenv("AUTH_ENABLED", "true")
-  app = _build_gateway_app(_token_middleware(["claudia_intake"]))
+  app = _build_gateway_app(_token_middleware(["nexus_intake"]))
   with TestClient(app) as client:
     resp = client.post(
-      "/api/claudia/v1/intake",
+      "/api/nexus/v1/intake",
       json={"packet_id": "p1"},
       headers={"Authorization": "Bearer ody_fake"},
     )
@@ -71,43 +71,43 @@ def test_bearer_claudia_intake_can_post_intake(monkeypatch):
   assert resp.json()["status"] == "core_not_configured"
 
 
-def test_bearer_without_claudia_intake_rejected(monkeypatch):
-  monkeypatch.delenv("CLAUDIA_CORE_URL", raising=False)
+def test_bearer_without_nexus_intake_rejected(monkeypatch):
+  monkeypatch.delenv("NEXUS_CORE_URL", raising=False)
   monkeypatch.setenv("AUTH_ENABLED", "true")
   app = _build_gateway_app(_token_middleware(["chat"]))
   with TestClient(app) as client:
     resp = client.post(
-      "/api/claudia/v1/intake",
+      "/api/nexus/v1/intake",
       json={"packet_id": "p1"},
       headers={"Authorization": "Bearer ody_fake"},
     )
   assert resp.status_code == 403
-  assert "Claudia intake" in resp.json()["detail"]
+  assert "Nexus intake" in resp.json()["detail"]
 
 
 def test_session_user_can_post_intake(monkeypatch):
-  monkeypatch.delenv("CLAUDIA_CORE_URL", raising=False)
+  monkeypatch.delenv("NEXUS_CORE_URL", raising=False)
   monkeypatch.setenv("AUTH_ENABLED", "true")
   app = _build_gateway_app(_session_middleware("brett@poweredbysage.com"))
   with TestClient(app) as client:
-    resp = client.post("/api/claudia/v1/intake", json={"trace_id": "t1"})
+    resp = client.post("/api/nexus/v1/intake", json={"trace_id": "t1"})
   assert resp.status_code == 200
 
 
-def test_claudia_intake_does_not_satisfy_legacy_chat_scope():
-  from src.claudia_scopes import SCOPE_CHAT, SCOPE_CLAUDIA_INTAKE
+def test_nexus_intake_does_not_satisfy_legacy_chat_scope():
+  from src.nexus_scopes import SCOPE_CHAT, SCOPE_NEXUS_INTAKE
 
-  scopes = {SCOPE_CLAUDIA_INTAKE}
+  scopes = {SCOPE_NEXUS_INTAKE}
   assert SCOPE_CHAT not in scopes
 
 
-def test_require_legacy_chat_rejects_claudia_intake_only():
-  from src.claudia_scopes import require_legacy_chat_api_token
+def test_require_legacy_chat_rejects_nexus_intake_only():
+  from src.nexus_scopes import require_legacy_chat_api_token
 
   req = SimpleNamespace(
     state=SimpleNamespace(
       api_token=True,
-      api_token_scopes=["claudia_intake"],
+      api_token_scopes=["nexus_intake"],
     )
   )
   with pytest.raises(HTTPException) as exc:
@@ -117,7 +117,7 @@ def test_require_legacy_chat_rejects_claudia_intake_only():
 
 
 def test_require_legacy_chat_accepts_chat_scope():
-  from src.claudia_scopes import require_legacy_chat_api_token
+  from src.nexus_scopes import require_legacy_chat_api_token
 
   req = SimpleNamespace(
     state=SimpleNamespace(
@@ -129,8 +129,8 @@ def test_require_legacy_chat_accepts_chat_scope():
 
 
 def test_health_remains_unauthenticated_without_middleware(monkeypatch):
-  monkeypatch.delenv("CLAUDIA_CORE_URL", raising=False)
+  monkeypatch.delenv("NEXUS_CORE_URL", raising=False)
   app = _build_gateway_app()
   with TestClient(app) as client:
-    resp = client.get("/api/claudia/v1/health")
+    resp = client.get("/api/nexus/v1/health")
   assert resp.status_code == 200

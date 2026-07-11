@@ -1,4 +1,4 @@
-"""Claudia Console/Gateway private deployment posture checks (Package 16).
+"""legacy local console/Gateway private deployment posture checks (Package 16).
 
 Read-only warnings for /health — never includes secret values.
 """
@@ -9,8 +9,8 @@ import os
 from typing import Any
 from urllib.parse import urlparse
 
-from src.claudia_client import get_core_base_url, get_gateway_secret
-from src.console_mode import is_claudia_console_mode
+from src.nexus_client import get_core_base_url, get_gateway_secret
+from src.console_mode import is_console_mode
 from src.hermes_runtime import validate_hermes_runtime
 
 _LOOPBACK_HOSTS = frozenset({"localhost", "127.0.0.1", "::1"})
@@ -71,7 +71,7 @@ def collect_deployment_warnings() -> list[dict[str, Any]]:
             "code": "auth_disabled",
             "severity": "critical",
             "message": (
-                "AUTH_ENABLED is false. Keep authentication enabled for Claudia Console "
+                "AUTH_ENABLED is false. Keep authentication enabled for legacy local console "
                 "on private/mobile access."
             ),
         })
@@ -96,13 +96,13 @@ def collect_deployment_warnings() -> list[dict[str, Any]]:
             ),
         })
 
-    if not is_claudia_console_mode():
+    if not is_console_mode():
         warnings.append({
             "code": "console_mode_off",
             "severity": "info",
             "message": (
-                "CLAUDIA_CONSOLE_MODE is off. Dedicated Claudia Mac deployments should "
-                "set CLAUDIA_CONSOLE_MODE=true."
+                "NEXUS_CONSOLE_MODE is off. Dedicated Nexus Mac deployments should "
+                "set NEXUS_CONSOLE_MODE=true."
             ),
         })
 
@@ -113,7 +113,7 @@ def collect_deployment_warnings() -> list[dict[str, Any]]:
                 "code": "gateway_secret_missing",
                 "severity": "high",
                 "message": (
-                    "CLAUDIA_CORE_URL is set but CLAUDIA_GATEWAY_SHARED_SECRET is missing. "
+                    "NEXUS_CORE_URL is set but NEXUS_GATEWAY_SHARED_SECRET is missing. "
                     "Configure a shared secret for Gateway→Core requests."
                 ),
             })
@@ -123,31 +123,31 @@ def collect_deployment_warnings() -> list[dict[str, Any]]:
                 "code": "core_url_public_or_unknown",
                 "severity": "high",
                 "message": (
-                    "CLAUDIA_CORE_URL does not appear to be loopback or private LAN/Tailscale. "
-                    "Do not expose Claudia Core on the public internet."
+                    "NEXUS_CORE_URL does not appear to be loopback or private LAN/Tailscale. "
+                    "Do not expose Nexus Core on the public internet."
                 ),
             })
 
-    if _env_truthy("ODYSSEUS_INPROCESS_TASKS", "1") and not is_claudia_console_mode():
+    if _env_truthy("ODYSSEUS_INPROCESS_TASKS", "1") and not is_console_mode():
         warnings.append({
             "code": "inprocess_tasks_enabled",
             "severity": "info",
             "message": (
-                "In-process scheduled tasks are enabled. Use CLAUDIA_CONSOLE_MODE=true "
-                "or ODYSSEUS_INPROCESS_TASKS=0 on the Claudia Console host."
+                "In-process scheduled tasks are enabled. Use NEXUS_CONSOLE_MODE=true "
+                "or ODYSSEUS_INPROCESS_TASKS=0 on the legacy local console host."
             ),
         })
 
-    if is_claudia_console_mode():
+    if is_console_mode():
         runtime = validate_hermes_runtime()
         if not runtime.get("validation_ok"):
             warnings.append({
                 "code": "embedded_hermes_runtime_invalid",
                 "severity": "high",
                 "message": (
-                    "Embedded Hermes runtime under Claudia System is missing or incomplete. "
+                    "Embedded Hermes runtime under Nexus System is missing or incomplete. "
                     f"Expected HERMES_HOME at {runtime.get('hermes_home')}. "
-                    "Console relays to Claudia Core; Core requires the embedded venv Hermes CLI."
+                    "Console relays to Nexus Core; Core requires the embedded venv Hermes CLI."
                 ),
             })
 

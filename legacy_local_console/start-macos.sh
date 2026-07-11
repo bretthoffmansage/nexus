@@ -1,15 +1,15 @@
 #!/bin/bash
-# Claudia Console / Gateway — primary one-command start for macOS (Apple Silicon).
-# Dedicated Claudia Mac deployments should use this script (not Docker or systemd archive).
+# legacy local console / Gateway — primary one-command start for macOS (Apple Silicon).
+# Dedicated Nexus Mac deployments should use this script (not Docker or systemd archive).
 #
 # Operator launch (from any checkout path; folder name is not hardcoded):
 #
-#   cd /Users/bretthoffman/Documents/claudia_console
+#   cd /Users/bretthoffman/Documents/console
 #   ./start-macos.sh
 #
-# Recommended Claudia Console Mode:
+# Recommended legacy local console Mode:
 #
-#   CLAUDIA_CONSOLE_MODE=true ./start-macos.sh
+#   NEXUS_CONSOLE_MODE=true ./start-macos.sh
 #
 # Installs everything the Console needs via Homebrew, sets up a local Python
 # environment, and launches the app — so a generic Mac user can run it without
@@ -50,7 +50,7 @@ fi
 # Friendly message on any failure — re-running is safe (every step is idempotent).
 trap 'echo; echo "✗ Setup failed above. It is safe to re-run ./start-macos.sh."; exit 1' ERR
 
-echo "▶ Claudia Console quick start for macOS"
+echo "▶ legacy local console quick start for macOS"
 
 # Fail fast if the port is already taken (e.g. a previous run still running).
 if (exec 3<>"/dev/tcp/$PROBE_HOST/$PORT") 2>/dev/null; then
@@ -150,7 +150,7 @@ echo "▶ Installing Python packages (first run downloads a few — can take a f
 # 4. First-run setup: creates data dirs and prints an initial admin password
 #    the first time (idempotent — does nothing if already set up). Suppress its
 #    manual run hint — we launch the server ourselves just below.
-echo "▶ Preparing Claudia Console…"
+echo "▶ Preparing legacy local console…"
 ODYSSEUS_SKIP_RUN_HINT=1 ./venv/bin/python setup.py
 
 # 5. Launch. Bind to loopback by default; opt into LAN/Tailscale with
@@ -179,7 +179,7 @@ if [ -z "$ODYSSEUS_NO_OPEN" ] && command -v open >/dev/null 2>&1; then
       if (exec 3<>"/dev/tcp/$PROBE_HOST/$PORT") 2>/dev/null; then
         printf '\n'
         printf '  ┌────────────────────────────────────────────┐\n'
-        printf '  │  ✓ Claudia Console is ready — opening browser │\n'
+        printf '  │  ✓ legacy local console is ready — opening browser │\n'
         printf '  │     %-40s │\n' "$URL"
         printf '  │     (Press Ctrl+C in this window to stop)    │\n'
         printf '  └────────────────────────────────────────────┘\n\n'
@@ -198,7 +198,7 @@ trap - ERR
 trap '[ -n "$POLLER_PID" ] && kill "$POLLER_PID" 2>/dev/null' EXIT INT TERM
 
 echo
-echo "▶ Starting Claudia Console — it will open in your browser at $URL"
+echo "▶ Starting legacy local console — it will open in your browser at $URL"
 if [ -n "$TAILSCALE_URL" ]; then
   echo "  Tailscale/LAN URL: $TAILSCALE_URL"
 fi

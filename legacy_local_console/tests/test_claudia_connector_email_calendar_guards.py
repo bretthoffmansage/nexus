@@ -1,4 +1,4 @@
-"""Tests for Claudia Console Mode email/calendar connector write guards (Package 11)."""
+"""Tests for legacy local console Mode email/calendar connector write guards (Package 11)."""
 
 import sys
 from types import SimpleNamespace
@@ -36,14 +36,14 @@ def test_connector_write_disabled_shape():
 
     out = connector_write_disabled("email", "send")
     assert out["status"] == "connector_write_disabled"
-    assert out["claudia_console_mode"] is True
+    assert out["console_mode"] is True
     assert out["connector"] == "email"
     assert out["ok"] is False
 
 
 @pytest.mark.asyncio
 async def test_send_email_blocked_before_smtp(monkeypatch):
-    monkeypatch.setenv("CLAUDIA_CONSOLE_MODE", "true")
+    monkeypatch.setenv("NEXUS_CONSOLE_MODE", "true")
     sys.modules.pop("src.console_mode", None)
     smtp_calls = []
 
@@ -71,7 +71,7 @@ async def test_send_email_blocked_before_smtp(monkeypatch):
 
 
 def test_block_connector_write_inactive_when_legacy_mode(monkeypatch):
-    monkeypatch.delenv("CLAUDIA_CONSOLE_MODE", raising=False)
+    monkeypatch.delenv("NEXUS_CONSOLE_MODE", raising=False)
     sys.modules.pop("src.console_mode", None)
     from src.connector_console_guard import block_connector_write
 
@@ -79,7 +79,7 @@ def test_block_connector_write_inactive_when_legacy_mode(monkeypatch):
 
 
 def test_calendar_create_blocked_before_writeback(monkeypatch):
-    monkeypatch.setenv("CLAUDIA_CONSOLE_MODE", "true")
+    monkeypatch.setenv("NEXUS_CONSOLE_MODE", "true")
     sys.modules.pop("src.console_mode", None)
     wb_calls = []
 
@@ -109,7 +109,7 @@ def test_calendar_create_blocked_before_writeback(monkeypatch):
 
 
 def test_calendar_list_events_still_allowed_in_console_mode(monkeypatch):
-    monkeypatch.setenv("CLAUDIA_CONSOLE_MODE", "true")
+    monkeypatch.setenv("NEXUS_CONSOLE_MODE", "true")
     sys.modules.pop("src.console_mode", None)
     monkeypatch.setattr("routes.calendar_routes._require_user", lambda _r: "test-owner")
 
@@ -127,7 +127,7 @@ def test_calendar_list_events_still_allowed_in_console_mode(monkeypatch):
 
 
 def test_email_poller_disabled_in_console_mode(monkeypatch):
-    monkeypatch.setenv("CLAUDIA_CONSOLE_MODE", "true")
+    monkeypatch.setenv("NEXUS_CONSOLE_MODE", "true")
     from routes.email_pollers import _inprocess_pollers_enabled
 
     assert _inprocess_pollers_enabled() is False
@@ -135,7 +135,7 @@ def test_email_poller_disabled_in_console_mode(monkeypatch):
 
 def test_quick_parse_not_globally_disabled(monkeypatch):
     """quick-parse uses LLM for internal date metadata; not a connector write guard target."""
-    monkeypatch.setenv("CLAUDIA_CONSOLE_MODE", "true")
+    monkeypatch.setenv("NEXUS_CONSOLE_MODE", "true")
     source = open(
         __import__("pathlib").Path(__file__).resolve().parents[1]
         / "routes/calendar_routes.py",

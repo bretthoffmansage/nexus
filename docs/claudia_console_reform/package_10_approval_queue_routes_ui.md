@@ -9,36 +9,36 @@
 
 ## Objective
 
-Add minimal Claudia Gateway approval list and human resolution forwarding. Core owns interpretation, audit, and execution; Gateway captures decision metadata and POSTs to Core only.
+Add minimal Nexus Gateway approval list and human resolution forwarding. Core owns interpretation, audit, and execution; Gateway captures decision metadata and POSTs to Core only.
 
 ## Files changed
 
 | File | Change |
 |------|--------|
-| `src/claudia_approvals.py` | **New** — `build_approval_resolution()`, decision validation |
-| `src/claudia_scopes.py` | `authorize_claudia_admin()` |
-| `src/claudia_client.py` | `_forward_get_to_core()`, `list_approvals()`, `resolve_approval()` |
-| `routes/claudia_routes.py` | Refined `GET /approvals`, new `POST /approvals/{id}/resolve` |
-| `static/js/claudiaDashboard.js` | Approvals list + forward-resolution form |
+| `src/nexus_approvals.py` | **New** — `build_approval_resolution()`, decision validation |
+| `src/nexus_scopes.py` | `authorize_nexus_admin()` |
+| `src/nexus_client.py` | `_forward_get_to_core()`, `list_approvals()`, `resolve_approval()` |
+| `routes/nexus_routes.py` | Refined `GET /approvals`, new `POST /approvals/{id}/resolve` |
+| `static/js/nexusDashboard.js` | Approvals list + forward-resolution form |
 | `static/style.css` | Approval form/list styles |
-| `tests/test_claudia_approval_routes.py` | **New** |
-| `tests/test_claudia_dashboard_skeleton.py` | Updated for allowed approval POST |
-| `docs/claudia_console_reform/package_10_approval_queue_routes_ui.md` | **New** |
+| `tests/test_nexus_approval_routes.py` | **New** |
+| `tests/test_nexus_dashboard_skeleton.py` | Updated for allowed approval POST |
+| `docs/console_reform/package_10_approval_queue_routes_ui.md` | **New** |
 
 ## Behavior changed
 
-### `GET /api/claudia/v1/approvals`
+### `GET /api/nexus/v1/approvals`
 
-- Auth: `claudia_read` (Bearer) or session.
-- Core configured: `GET {CLAUDIA_CORE_URL}/approvals` passthrough when successful.
+- Auth: `nexus_read` (Bearer) or session.
+- Core configured: `GET {NEXUS_CORE_URL}/approvals` passthrough when successful.
 - Core unconfigured/unavailable: honest placeholder (`pending_count: 0`, empty list).
 
-### `POST /api/claudia/v1/approvals/{approval_id}/resolve`
+### `POST /api/nexus/v1/approvals/{approval_id}/resolve`
 
-- Auth: `claudia_admin` (Bearer) or session.
+- Auth: `nexus_admin` (Bearer) or session.
 - Validates `decision` ∈ `approved`, `rejected`, `needs_changes`, `cancelled`.
 - `resolved_by` from `effective_user(request)` when available.
-- Forwards JSON to `POST {CLAUDIA_CORE_URL}/approvals/{id}/resolve`.
+- Forwards JSON to `POST {NEXUS_CORE_URL}/approvals/{id}/resolve`.
 - No local execution of approved action; no intake fallback.
 
 ### Dashboard
@@ -55,15 +55,15 @@ Approvals card shows queue status, item list (when Core returns data), and a min
 
 | Route | Change |
 |-------|--------|
-| `GET /api/claudia/v1/approvals` | **Changed** — Core passthrough or placeholder |
-| `POST /api/claudia/v1/approvals/{approval_id}/resolve` | **New** |
+| `GET /api/nexus/v1/approvals` | **Changed** — Core passthrough or placeholder |
+| `POST /api/nexus/v1/approvals/{approval_id}/resolve` | **New** |
 
 ## Approval route matrix
 
 | Route | Purpose | Bearer scope | Session allowed? | Core target | Local execution? |
 |-------|---------|--------------|------------------|-------------|------------------|
-| **GET /api/claudia/v1/approvals** | List/read queue | `claudia_read` | Yes | `GET /approvals` or placeholder | **No** |
-| **POST /api/claudia/v1/approvals/{id}/resolve** | Forward human decision | `claudia_admin` | Yes | `POST /approvals/{id}/resolve` | **No** |
+| **GET /api/nexus/v1/approvals** | List/read queue | `nexus_read` | Yes | `GET /approvals` or placeholder | **No** |
+| **POST /api/nexus/v1/approvals/{id}/resolve** | Forward human decision | `nexus_admin` | Yes | `POST /approvals/{id}/resolve` | **No** |
 
 ## Approval safety matrix
 
@@ -79,14 +79,14 @@ Approvals card shows queue status, item list (when Core returns data), and a min
 
 - Displays pending count, status message, and approval IDs when Core returns items.
 - Empty state when no items.
-- Manual resolve form: approval ID, decision select, optional reason → `POST /api/claudia/v1/approvals/{id}/resolve` only.
+- Manual resolve form: approval ID, decision select, optional reason → `POST /api/nexus/v1/approvals/{id}/resolve` only.
 - Shows JSON result in `<pre>`; refreshes dashboard on success.
 - Does not call legacy chat, tasks, shell, MCP, email, or calendar routes.
 
 ## Auth behavior
 
-- List: `authorize_claudia_read` — `claudia_intake` alone is insufficient for Bearer.
-- Resolve: `authorize_claudia_admin` — `claudia_read` alone cannot resolve for Bearer.
+- List: `authorize_nexus_read` — `nexus_intake` alone is insufficient for Bearer.
+- Resolve: `authorize_nexus_admin` — `nexus_read` alone cannot resolve for Bearer.
 - Session-authenticated users may use both when `AUTH_ENABLED=true`.
 
 ## Core-unconfigured behavior
@@ -101,15 +101,15 @@ Approvals card shows queue status, item list (when Core returns data), and a min
 
 ## Forwarding behavior
 
-1. Validate resolution body (`src/claudia_approvals.py`).
+1. Validate resolution body (`src/nexus_approvals.py`).
 2. Attach `resolved_by`, preserve `packet_id`, `trace_id`, `workspace`, `permissions`, `reason`.
-3. `POST` to Core with `X-Claudia-Gateway-Secret` when set.
+3. `POST` to Core with `X-Nexus-Gateway-Secret` when set.
 4. Return Gateway envelope + `approval_id`, `decision` in response.
 5. **No** fallback to Odysseus agent, tools, or connectors.
 
 ## Safety guarantees
 
-1. Routes only under `/api/claudia/v1`.
+1. Routes only under `/api/nexus/v1`.
 2. Resolution does not execute approved work locally.
 3. Gateway is non-authoritative.
 4. Honest placeholders when Core unavailable.
@@ -118,7 +118,7 @@ Approvals card shows queue status, item list (when Core returns data), and a min
 
 ## Frontend files changed
 
-- `static/js/claudiaDashboard.js`
+- `static/js/nexusDashboard.js`
 - `static/style.css` (minimal)
 
 ## Tests / checks run
@@ -126,21 +126,21 @@ Approvals card shows queue status, item list (when Core returns data), and a min
 ```bash
 python3 -m compileall -q app.py core routes src
 venv/bin/python -m pytest -q \
-  tests/test_claudia_approval_routes.py \
-  tests/test_claudia_dashboard_skeleton.py \
-  tests/test_claudia_upload_processing_guards.py \
-  tests/test_claudia_upload_bridge.py \
-  tests/test_claudia_source_worker_routes.py \
-  tests/test_claudia_messages.py \
-  tests/test_claudia_chat_demotion.py \
-  tests/test_claudia_gateway_routes.py \
-  tests/test_claudia_token_scopes.py \
-  tests/test_claudia_packets.py \
-  tests/test_claudia_console_mode.py
-grep -R "/api/shell\|/api/mcp\|/api/chat_stream\|/api/email/send\|/api/calendar\|/api/tasks" -n static/js/claudia* 2>/dev/null
+  tests/test_nexus_approval_routes.py \
+  tests/test_nexus_dashboard_skeleton.py \
+  tests/test_nexus_upload_processing_guards.py \
+  tests/test_nexus_upload_bridge.py \
+  tests/test_nexus_source_worker_routes.py \
+  tests/test_nexus_messages.py \
+  tests/test_nexus_chat_demotion.py \
+  tests/test_nexus_gateway_routes.py \
+  tests/test_nexus_token_scopes.py \
+  tests/test_nexus_packets.py \
+  tests/test_console_mode.py
+grep -R "/api/shell\|/api/mcp\|/api/chat_stream\|/api/email/send\|/api/calendar\|/api/tasks" -n static/js/nexus* 2>/dev/null
 ```
 
-**Results:** compileall pass; **100 passed**. Grep on `static/js/claudia*`: **no forbidden matches**.
+**Results:** compileall pass; **100 passed**. Grep on `static/js/nexus*`: **no forbidden matches**.
 
 ## Known pytest baseline issue (Package 0)
 

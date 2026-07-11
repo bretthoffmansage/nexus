@@ -1,7 +1,7 @@
 # Nexus Skills Catalog Loading Repair v1
 
 **Package:** `nexus_skills_catalog_loading_repair_v1`  
-**Repository:** `/Users/bretthoffman/Documents/claudia_console`  
+**Repository:** `/Users/bretthoffman/Documents/console`  
 **Branch at start:** `main`  
 **Starting HEAD:** `da96ec2`
 

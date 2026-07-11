@@ -1,7 +1,7 @@
 # CLI Mirror Transcript Layout Polish and Debug Toggle Pass
 
 **Date:** 2026-06-03  
-**Repo:** `/Users/bretthoffman/Documents/claudia_console`  
+**Repo:** `/Users/bretthoffman/Documents/console`  
 **Scope:** Console UI polish only
 
 ## Root cause / motivation
@@ -14,10 +14,10 @@ CLI Mirror transcript grouping and truncation fixes are functionally correct, bu
 
 ## Files changed
 
-- `static/js/claudiaCliMirror.js` — raw debug toggle, transcript expand/minimize, expanded metadata
+- `static/js/nexusCliMirror.js` — raw debug toggle, transcript expand/minimize, expanded metadata
 - `static/style.css` — role-specific terminal formatting, toggle/expand styles, expanded layout
-- `tests/test_claudia_cli_mirror_ui.py` — layout polish tests
-- `docs/claudia_console_reform/cli_mirror_transcript_layout_polish_debug_toggle.md` — this note
+- `tests/test_nexus_cli_mirror_ui.py` — layout polish tests
+- `docs/console_reform/cli_mirror_transcript_layout_polish_debug_toggle.md` — this note
 
 ## Behavior changed
 
@@ -73,9 +73,9 @@ Expanded mode is UI-only; streaming and transcript content unaffected.
 ```bash
 bash -n start-macos.sh
 python3 -m compileall -q app.py core routes src
-node --check static/js/claudiaCliMirror.js
-node --check static/js/claudiaCliMirrorHelpers.js
-venv/bin/python -m pytest -q tests/test_claudia_cli_mirror_ui.py
+node --check static/js/nexusCliMirror.js
+node --check static/js/nexusCliMirrorHelpers.js
+venv/bin/python -m pytest -q tests/test_nexus_cli_mirror_ui.py
 ```
 
 ## Risks

@@ -1,7 +1,7 @@
 # CLI Mirror Answer Box State Persistence and Startup Prose Fix Pass
 
 **Date:** 2026-06-03  
-**Repo:** `/Users/bretthoffman/Documents/claudia_console`  
+**Repo:** `/Users/bretthoffman/Documents/console`  
 **Scope:** Console UI only — answer-box state persistence and startup Tip prose
 
 ## Root cause found
@@ -12,10 +12,10 @@
 
 ## Files changed
 
-- `static/js/claudiaCliMirrorHelpers.js` — answer-box state lifecycle, classification order, Tip glyph normalization, RESPONSE newline merge, echo-safe `noteUserInput`
-- `static/js/claudiaCliMirror.js` — pass `sessionId` into `classifyStreamEvent` for echo-aware input handling
-- `tests/test_claudia_cli_mirror_ui.py` — answer-box persistence, delayed echo, Tip glyph tests
-- `docs/claudia_console_reform/cli_mirror_answer_box_state_persistence_startup_prose_fix.md` — this note
+- `static/js/nexusCliMirrorHelpers.js` — answer-box state lifecycle, classification order, Tip glyph normalization, RESPONSE newline merge, echo-safe `noteUserInput`
+- `static/js/nexusCliMirror.js` — pass `sessionId` into `classifyStreamEvent` for echo-aware input handling
+- `tests/test_nexus_cli_mirror_ui.py` — answer-box persistence, delayed echo, Tip glyph tests
+- `docs/console_reform/cli_mirror_answer_box_state_persistence_startup_prose_fix.md` — this note
 
 ## Behavior changed
 
@@ -67,9 +67,9 @@ All runtime classification uses normalized text content patterns (box drawing, p
 ```bash
 bash -n start-macos.sh
 python3 -m compileall -q app.py core routes src
-node --check static/js/claudiaCliMirror.js
-node --check static/js/claudiaCliMirrorHelpers.js
-venv/bin/python -m pytest -q tests/test_claudia_cli_mirror_ui.py
+node --check static/js/nexusCliMirror.js
+node --check static/js/nexusCliMirrorHelpers.js
+venv/bin/python -m pytest -q tests/test_nexus_cli_mirror_ui.py
 ```
 
 ## Risks

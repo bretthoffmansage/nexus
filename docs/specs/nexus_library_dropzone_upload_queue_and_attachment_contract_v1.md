@@ -1,7 +1,7 @@
 # Nexus Library Dropzone Upload, Queue, and Attachment Contract v1
 
 **Package:** `nexus_library_dropzone_upload_queue_and_attachment_contract_v1`  
-**Repository:** `claudia_console` (Nexus)  
+**Repository:** `console` (Nexus)  
 **Binding handoff:** [`nexus_p6_p7_task_attachment_handoff_contract_v1.md`](./nexus_p6_p7_task_attachment_handoff_contract_v1.md)
 
 ## Audit summary
@@ -30,7 +30,7 @@ User upload (Convex storage URL)
   → global queueSequence
   → Connector claim (+ attachments[])
   → lease-bound POST /api/connector/v1/attachment
-  → Claudia (future) processes locally
+  → Nexus (future) processes locally
   → complete/fail (+ dropzoneResult) projects Library status
 ```
 
@@ -103,7 +103,7 @@ Automated tests pass locally. Full live Convex deployment smoke not run in this 
 ## Known limitations
 
 - Attachment download HTTP route implemented; end-to-end binary download smoke requires deployed Convex HTTP + Connector
-- Claudia attachment ingress not implemented (see handoff contract)
+- Nexus attachment ingress not implemented (see handoff contract)
 - `convex-test` does not emulate `storage.getMetadata`; finalize path validated via size guard tests + direct seed fixtures
 - Range/resume not supported in v1
 

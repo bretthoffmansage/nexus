@@ -119,7 +119,7 @@ python3 -m py_compile legacy_local_console/app.py  # PASS
 Begin **P4 — Clerk approved users and roles** using repository root paths:
 
 ```bash
-cd /Users/bretthoffman/Documents/claudia_console
+cd /Users/bretthoffman/Documents/console
 # Convex should already be linked; re-run if needed:
 npx convex dev
 ```

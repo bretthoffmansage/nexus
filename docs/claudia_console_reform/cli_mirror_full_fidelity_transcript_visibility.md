@@ -1,7 +1,7 @@
 # CLI Mirror Full Fidelity Hermes Transcript Visibility Pass
 
 **Date:** 2026-06-03  
-**Repo:** `/Users/bretthoffman/Documents/claudia_console`  
+**Repo:** `/Users/bretthoffman/Documents/console`  
 **Scope:** Console UI only — show meaningful Hermes CLI activity as HERMES
 
 ## Root cause found
@@ -10,10 +10,10 @@ The answer-box persistence pass correctly kept state through hidden chrome, but 
 
 ## Files changed
 
-- `static/js/claudiaCliMirrorHelpers.js` — full-fidelity visibility policy, `isControlOnlyChunk`, `isHermesCliStatusLine`, answer-box merge helpers, HERMES split-word append fix
-- `static/js/claudiaCliMirror.js` — answer-box HERMES/RESPONSE append targets, meta.text for HERMES output
-- `tests/test_claudia_cli_mirror_ui.py` — full-fidelity visibility and answer-box merge tests
-- `docs/claudia_console_reform/cli_mirror_full_fidelity_transcript_visibility.md` — this note
+- `static/js/nexusCliMirrorHelpers.js` — full-fidelity visibility policy, `isControlOnlyChunk`, `isHermesCliStatusLine`, answer-box merge helpers, HERMES split-word append fix
+- `static/js/nexusCliMirror.js` — answer-box HERMES/RESPONSE append targets, meta.text for HERMES output
+- `tests/test_nexus_cli_mirror_ui.py` — full-fidelity visibility and answer-box merge tests
+- `docs/console_reform/cli_mirror_full_fidelity_transcript_visibility.md` — this note
 
 ## Behavior changed
 
@@ -81,9 +81,9 @@ Runtime logic uses normalized text patterns only (box drawing, status line shape
 ```bash
 bash -n start-macos.sh
 python3 -m compileall -q app.py core routes src
-node --check static/js/claudiaCliMirror.js
-node --check static/js/claudiaCliMirrorHelpers.js
-venv/bin/python -m pytest -q tests/test_claudia_cli_mirror_ui.py
+node --check static/js/nexusCliMirror.js
+node --check static/js/nexusCliMirrorHelpers.js
+venv/bin/python -m pytest -q tests/test_nexus_cli_mirror_ui.py
 ```
 
 ## Risks

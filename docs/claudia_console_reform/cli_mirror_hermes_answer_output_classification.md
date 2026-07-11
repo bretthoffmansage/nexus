@@ -1,7 +1,7 @@
 # CLI Mirror Hermes Answer Output Classification Pass
 
 **Date:** 2026-06-03  
-**Repo:** `/Users/bretthoffman/Documents/claudia_console`  
+**Repo:** `/Users/bretthoffman/Documents/console`  
 **Scope:** Console UI only — classify Hermes `type: "output"` answer text as RESPONSE
 
 ## Root cause found
@@ -10,11 +10,11 @@ Hermes final assistant answers are emitted in Core session logs as `type: "outpu
 
 ## Files changed
 
-- `static/js/claudiaCliMirrorHelpers.js` — `createHermesOutputClassifier`, `classifyHermesOutputText`, answer-box state, prompt/status chrome filters, output user-echo suppression, WARNING role
-- `static/js/claudiaCliMirror.js` — wire classifier into stream/transcript handlers; use cleaned meta text for RESPONSE/WARNING/ERROR
-- `static/style.css` — `.claudia-cli-mirror-stream-warning` styling
-- `tests/test_claudia_cli_mirror_ui.py` — real-ish log sequence and classification tests
-- `docs/claudia_console_reform/cli_mirror_hermes_answer_output_classification.md` — this note
+- `static/js/nexusCliMirrorHelpers.js` — `createHermesOutputClassifier`, `classifyHermesOutputText`, answer-box state, prompt/status chrome filters, output user-echo suppression, WARNING role
+- `static/js/nexusCliMirror.js` — wire classifier into stream/transcript handlers; use cleaned meta text for RESPONSE/WARNING/ERROR
+- `static/style.css` — `.nexus-cli-mirror-stream-warning` styling
+- `tests/test_nexus_cli_mirror_ui.py` — real-ish log sequence and classification tests
+- `docs/console_reform/cli_mirror_hermes_answer_output_classification.md` — this note
 
 ## Behavior changed
 
@@ -66,9 +66,9 @@ Suppress visible transcript (raw debug unchanged) for normalized output matching
 ```bash
 bash -n start-macos.sh
 python3 -m compileall -q app.py core routes src
-node --check static/js/claudiaCliMirror.js
-node --check static/js/claudiaCliMirrorHelpers.js
-venv/bin/python -m pytest -q tests/test_claudia_cli_mirror_ui.py
+node --check static/js/nexusCliMirror.js
+node --check static/js/nexusCliMirrorHelpers.js
+venv/bin/python -m pytest -q tests/test_nexus_cli_mirror_ui.py
 ```
 
 ## Risks

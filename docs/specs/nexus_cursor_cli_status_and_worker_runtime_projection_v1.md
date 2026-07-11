@@ -4,7 +4,7 @@ Package: `nexus_cursor_cli_status_and_worker_runtime_projection_v1`
 
 ## Summary
 
-Adds Cursor CLI as a first-class Claudia worker in the Nexus system-status
+Adds Cursor CLI as a first-class Nexus worker in the Nexus system-status
 surface, extending the existing heartbeat → Connector-status → Status-page path
 to accept, persist, derive freshness for, and render an eighth `cursor_cli`
 component. Also introduces a single shared, allowlisted worker-label formatter
@@ -12,19 +12,19 @@ for future worker/runtime display, and documents the cross-repo blocker that
 prevents wiring per-task worker display today.
 
 No new endpoint, heartbeat, Connector route, Convex mutation/query, table, or
-polling path is added. No Claudia System files are modified.
+polling path is added. No Nexus System files are modified.
 
-## Claudia handoff
+## Nexus handoff
 
-- Claudia commit `2b5d00c394f1646720c09a936ef007ca3c2a5bc8` ("Add Cursor CLI
+- Nexus commit `2b5d00c394f1646720c09a936ef007ca3c2a5bc8` ("Add Cursor CLI
   status to Control Center").
-- Handoff spec (Claudia repo): `docs/specs/claudia_nexus_system_status_handoff_v1.md`.
-- Cursor worker spec (Claudia repo): `docs/specs/claudia_cursor_read_only_retrieval_workers_v1.md`.
+- Handoff spec (Nexus repo): `docs/specs/nexus_nexus_system_status_handoff_v1.md`.
+- Cursor worker spec (Nexus repo): `docs/specs/nexus_cursor_read_only_retrieval_workers_v1.md`.
 
 Architecture unchanged:
 
 ```
-Claudia service-control status
+Nexus service-control status
   → system-status projection
   → build_heartbeat_system_status
   → existing Nexus Connector heartbeat (POST /api/connector/v1/heartbeat)
@@ -41,7 +41,7 @@ Claudia service-control status
 Allowed component keys are now exactly eight:
 
 ```
-core_api, nexus_connector, viktor_retrieval, sage_knowledge_base,
+core_api, nexus_connector, vault_retrieval, vault,
 cursor_cli, codex_cli, claude_cli, cleanup_storage
 ```
 
@@ -75,7 +75,7 @@ cursor_cli, codex_cli, claude_cli, cleanup_storage
 - Cursor is live/green only when: Connector heartbeat fresh **and** snapshot
   fresh **and** `cursor_cli` present **and** `active === true` **and**
   `observedAt` within the CLI TTL.
-- Stale Connector → Cursor (and all Claudia-hosted components) lose green. A
+- Stale Connector → Cursor (and all Nexus-hosted components) lose green. A
   Cursor failure never marks the Connector offline and never changes Claude or
   Codex status (independent per-component derivation).
 - Missing Cursor renders a bounded card (`Unavailable` / no colored light),
@@ -85,7 +85,7 @@ cursor_cli, codex_cli, claude_cli, cleanup_storage
 
 - Card copy added to `CARD_COPY` in `lib/nexus/systemStatusView.ts`:
   - Title: `Cursor CLI`
-  - Description: `Cursor command-line runtime used by governed Claudia workflows.`
+  - Description: `Cursor command-line runtime used by governed Nexus workflows.`
   - Live status: `Connected`; inactive: `Not recently verified` /
     `Disconnected` / `Unavailable` (same convention as Claude/Codex).
   - Secondary detail: `Last verified: <relative>` only.
@@ -118,7 +118,7 @@ field today:
   exist in the task-result path. (The `claude_cli`/`codex_cli` labels live only
   in the unrelated system-status heartbeat surface.)
 
-Claudia side (read-only inspection): the completion payload emitted by
+Nexus side (read-only inspection): the completion payload emitted by
 `core_api/nexus_connector/service.py` sends only `answer_text, model, tool_id,
 duration_ms`. Commit `2b5d00c` added Cursor to Control Center status only, **not**
 to the task-result contract.
@@ -135,7 +135,7 @@ Nexus-facing result contract. Per package rules, it is not invented.
   Unknown/empty/non-string values resolve to `null` (bounded `Unavailable`
   fallback) so raw untrusted text is never rendered.
 - Deep Research `model` display is preserved exactly as-is (actual model string
-  from Claudia); worker is **not** conflated with model.
+  from Nexus); worker is **not** conflated with model.
 
 ### Model vs. worker
 
@@ -146,10 +146,10 @@ replacing the model value.
 
 ### Required follow-up cross-repo handoff (blocker)
 
-To display the actual executing worker per task, Claudia must first add a bounded
+To display the actual executing worker per task, Nexus must first add a bounded
 worker identity to the completion payload, then Nexus wires it through:
 
-1. Claudia: include a canonical `worker` (allowlisted snake_case, e.g.
+1. Nexus: include a canonical `worker` (allowlisted snake_case, e.g.
    `cursor_cli`/`codex_cli`/`claude_cli`) in the `complete` terminal payload from
    `core_api/nexus_connector/service.py`. This is the reported *actual* executor
    (Cursor → Codex → Claude priority is routing only, never display truth).
@@ -205,27 +205,27 @@ npx vitest run \
 
 ## Activation dependency
 
-Claudia Control Center and the Nexus Connector must be restarted after Claudia
+Nexus Control Center and the Nexus Connector must be restarted after Nexus
 commit `2b5d00c394f1646720c09a936ef007ca3c2a5bc8`, and
-`status_publication.enabled: true` set in Claudia config, before Nexus receives
-`cursor_cli`. Do not restart Claudia from this repository.
+`status_publication.enabled: true` set in Nexus config, before Nexus receives
+`cursor_cli`. Do not restart Nexus from this repository.
 
 ## Live smoke plan (operator-controlled)
 
-1. Deploy Nexus support; restart Claudia Control Center + Connector.
+1. Deploy Nexus support; restart Nexus Control Center + Connector.
 2. Confirm heartbeat contains `cursor_cli`; Cursor CLI card green when connected.
 3. Stop/invalidate Cursor only → Cursor loses green; Connector, Claude, Codex
    unaffected.
 4. Restore Cursor → status recovers.
 5. Confirm old tasks and old (seven-component) heartbeats still render.
-6. Worker-per-task display is deferred until the Claudia result-contract handoff
+6. Worker-per-task display is deferred until the Nexus result-contract handoff
    above lands.
 
 ## Rollback
 
 Revert this commit. The heartbeat validator returns to seven components; older
 Cursor-bearing heartbeats then drop `cursor_cli` (unknown key → snapshot fails
-closed, so Claudia should disable Cursor publication if Nexus is rolled back).
+closed, so Nexus should disable Cursor publication if Nexus is rolled back).
 The `workerLabels` module and its test are inert (no callers) and safe to keep or
 remove.
 ```

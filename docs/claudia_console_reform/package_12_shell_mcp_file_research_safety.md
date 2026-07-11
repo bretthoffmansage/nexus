@@ -9,7 +9,7 @@
 
 ## Objective
 
-When `CLAUDIA_CONSOLE_MODE=true`, block direct local execution: shell commands, MCP host connections, obvious document/workspace writes, and autonomous deep-research starts. Preserve read-only admin/config/status surfaces.
+When `NEXUS_CONSOLE_MODE=true`, block direct local execution: shell commands, MCP host connections, obvious document/workspace writes, and autonomous deep-research starts. Preserve read-only admin/config/status surfaces.
 
 ## Files changed
 
@@ -20,31 +20,31 @@ When `CLAUDIA_CONSOLE_MODE=true`, block direct local execution: shell commands, 
 | `routes/mcp_routes.py` | Guards on `add_server`, `reconnect`, enable-toggle connect, OAuth connect |
 | `routes/research_routes.py` | Guard on `POST /api/research/start` |
 | `routes/document_routes.py` | Guards on create, update, delete document |
-| `tests/test_claudia_execution_surface_guards.py` | **New** |
-| `docs/claudia_console_reform/package_12_shell_mcp_file_research_safety.md` | **New** |
+| `tests/test_nexus_execution_surface_guards.py` | **New** |
+| `docs/console_reform/package_12_shell_mcp_file_research_safety.md` | **New** |
 
 ## Behavior changed
 
-### Shell (`CLAUDIA_CONSOLE_MODE=true`)
+### Shell (`NEXUS_CONSOLE_MODE=true`)
 
 Blocked before subprocess: `POST /api/shell/exec`, `POST /api/shell/stream`, `POST /api/cookbook/packages/install`.
 
 - JSON routes return `status: local_execution_disabled`, `surface: shell`.
 - Stream route returns SSE: `type: local_execution_disabled` + `[DONE]`.
 
-### MCP (`CLAUDIA_CONSOLE_MODE=true`)
+### MCP (`NEXUS_CONSOLE_MODE=true`)
 
 Blocked before `connect_server` / stdio spawn: `POST /api/mcp/servers`, `POST /api/mcp/servers/{id}/reconnect`, `PATCH /api/mcp/servers/{id}` when enabling, OAuth token exchange connect path.
 
 Returns `surface: mcp`. No dedicated HTTP MCP `call_tool` route exists in this repo; agent-loop tool execution is out of scope for this package.
 
-### Research (`CLAUDIA_CONSOLE_MODE=true`)
+### Research (`NEXUS_CONSOLE_MODE=true`)
 
 Blocked before `research_handler.start_research`: `POST /api/research/start`.
 
 Returns `surface: research`.
 
-### Documents (`CLAUDIA_CONSOLE_MODE=true`)
+### Documents (`NEXUS_CONSOLE_MODE=true`)
 
 Blocked before DB writes: `POST /api/document`, `PUT /api/document/{doc_id}`, `DELETE /api/document/{doc_id}`.
 
@@ -52,7 +52,7 @@ Returns `surface: file`.
 
 ### Legacy mode
 
-Unchanged when `CLAUDIA_CONSOLE_MODE` is off.
+Unchanged when `NEXUS_CONSOLE_MODE` is off.
 
 ## Behavior intentionally unchanged
 
@@ -125,7 +125,7 @@ Unchanged when `CLAUDIA_CONSOLE_MODE` is off.
 ### Documents
 
 - **Preserved:** library listing, GET document, versions, render/export read paths.
-- **Guarded:** create, update, delete — direct DB content mutation without Claudia Core.
+- **Guarded:** create, update, delete — direct DB content mutation without Nexus Core.
 
 Config/status/read surfaces do not invoke subprocesses, MCP sessions, or autonomous research; execution routes do.
 
@@ -138,10 +138,10 @@ JSON:
   "ok": false,
   "success": false,
   "status": "local_execution_disabled",
-  "claudia_console_mode": true,
+  "console_mode": true,
   "surface": "shell|mcp|file|research",
   "operation": "...",
-  "message": "Claudia Console Mode is active. Direct local execution is disabled. Route this request through Claudia Core worker/task governance.",
+  "message": "legacy local console Mode is active. Direct local execution is disabled. Route this request through Nexus Core worker/task governance.",
   "guidance": "..."
 }
 ```
@@ -173,7 +173,7 @@ Auto packet creation on block: **not implemented** (follow-up).
 
 ## Safety guarantees
 
-1. Guards activate only when `CLAUDIA_CONSOLE_MODE=true`.
+1. Guards activate only when `NEXUS_CONSOLE_MODE=true`.
 2. Guards run before subprocess, `connect_server`, `start_research`, or document DB commits on guarded routes.
 3. Responses are explicit and non-authoritative (do not claim Core executed work).
 4. Legacy mode unchanged when flag is off.
@@ -183,26 +183,26 @@ Auto packet creation on block: **not implemented** (follow-up).
 ```bash
 python3 -m compileall -q app.py core routes src
 venv/bin/python -m pytest -q \
-  tests/test_claudia_execution_surface_guards.py \
-  tests/test_claudia_connector_email_calendar_guards.py \
-  tests/test_claudia_approval_routes.py \
-  tests/test_claudia_dashboard_skeleton.py \
-  tests/test_claudia_upload_processing_guards.py \
-  tests/test_claudia_upload_bridge.py \
-  tests/test_claudia_source_worker_routes.py \
-  tests/test_claudia_messages.py \
-  tests/test_claudia_chat_demotion.py \
-  tests/test_claudia_gateway_routes.py \
-  tests/test_claudia_token_scopes.py \
-  tests/test_claudia_packets.py \
-  tests/test_claudia_console_mode.py
+  tests/test_nexus_execution_surface_guards.py \
+  tests/test_nexus_connector_email_calendar_guards.py \
+  tests/test_nexus_approval_routes.py \
+  tests/test_nexus_dashboard_skeleton.py \
+  tests/test_nexus_upload_processing_guards.py \
+  tests/test_nexus_upload_bridge.py \
+  tests/test_nexus_source_worker_routes.py \
+  tests/test_nexus_messages.py \
+  tests/test_nexus_chat_demotion.py \
+  tests/test_nexus_gateway_routes.py \
+  tests/test_nexus_token_scopes.py \
+  tests/test_nexus_packets.py \
+  tests/test_console_mode.py
 ```
 
 ## Results
 
 - `compileall`: pass
-- Focused Claudia package tests (P1–P12): **115 passed**
-- New P12 tests: **8 passed** in `tests/test_claudia_execution_surface_guards.py`
+- Focused Nexus package tests (P1–P12): **115 passed**
+- New P12 tests: **8 passed** in `tests/test_nexus_execution_surface_guards.py`
 
 ## Known pytest baseline issue from Package 0
 

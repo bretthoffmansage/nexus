@@ -3,9 +3,9 @@
 **Status:** implemented · **Scope:** UI/readback only · **Package:**
 `cross_repo_live_worker_activity_readback_v1`
 
-Renders a safe, live "activity readback" while a Claudia worker task runs, on the
-Deep Research page and the tool-backed Chat modes. Companion to Claudia's
-`claudia_worker_activity_readback_v1.md`.
+Renders a safe, live "activity readback" while a Nexus worker task runs, on the
+Deep Research page and the tool-backed Chat modes. Companion to Nexus's
+`nexus_worker_activity_readback_v1.md`.
 
 ## Data model & persistence
 
@@ -18,7 +18,7 @@ such events, and any consumer that does not recognize the type ignores it.
 
 - Allowlists + bounds are the single source of truth in `convex/lib/p5config.ts`
   (`WORKER_ACTIVITY_LIMITS`, `WORKER_ACTIVITY_SURFACES|WORKERS|PHASES|STATUSES|TOOL_IDS`),
-  mirrored from Claudia's `core_api/worker_activity`.
+  mirrored from Nexus's `core_api/worker_activity`.
 - `connectorTasks.appendConnectorActivity` (internal mutation) reuses the same
   table, the same `appendProgress` writer, the same signed `/task` endpoint, and
   the same lease/ownership checks as `appendConnectorProgress`. It is a distinct
@@ -75,7 +75,7 @@ task's rows, so activity never leaks across tasks/users.
 
 ## Guarantees
 
-- No new endpoint, queue, WebSocket, SSE, or browser-to-Claudia channel; events
+- No new endpoint, queue, WebSocket, SSE, or browser-to-Nexus channel; events
   ride the existing Connector → Convex task-progress path.
 - Ownership/role access is preserved (owner-checked query; owner-copied writes).
 - Backward-compatible: old tasks without activity fall back to the existing

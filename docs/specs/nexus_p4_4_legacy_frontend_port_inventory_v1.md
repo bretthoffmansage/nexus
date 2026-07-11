@@ -34,8 +34,8 @@
 | Cookbook | `cookbook.js`, `cookbookServe.js` | local serve + install | `/knowledge` | `KnowledgeWorkspace` | PA | local_only |
 | Skills | `skills.js` | `/api/skills/*`, filesystem | `/skills` | `SkillsWorkspace` | PA | local_only |
 | Settings | `settings.js`, `index.html` settings modal | mixed local + API | `/settings` | `SettingsWorkspace` | PR | partially_available |
-| Claudia Dashboard | `claudiaDashboard.js` | local status APIs | `/status` | `StatusWorkspace` | PR | partially_available |
-| CLI Mirror | `claudiaCliMirror.js` | PTY / Hermes relay | `/operations` | `OperationsWorkspace` | DF | deferred |
+| Nexus Dashboard | `nexusDashboard.js` | local status APIs | `/status` | `StatusWorkspace` | PR | partially_available |
+| CLI Mirror | `nexusCliMirror.js` | PTY / Hermes relay | `/operations` | `OperationsWorkspace` | DF | deferred |
 | Compare | `compare` modules | local jobs | — | — | DF | deferred |
 | Shell | `shell_routes` | RCE | — | — | LL | — |
 | MCP / Webhooks | routes | local secrets | — | — | LL | — |
@@ -45,7 +45,7 @@
 
 | Tool | Adapter path | Future authority |
 |------|--------------|------------------|
-| Calendar | `lib/adapters/calendar/adapter.ts` | Connector → Claudia calendar store |
+| Calendar | `lib/adapters/calendar/adapter.ts` | Connector → Nexus calendar store |
 | Notes | `lib/adapters/notes/adapter.ts` | Connector |
 | Documents | `lib/adapters/documents/adapter.ts` | Connector |
 | Email | `lib/adapters/email/adapter.ts` | Connector |

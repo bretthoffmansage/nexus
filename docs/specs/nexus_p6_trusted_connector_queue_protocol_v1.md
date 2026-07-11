@@ -1,7 +1,7 @@
 # Nexus P6 — Trusted Connector Queue Protocol (v1)
 
 **Package:** P6 — Nexus/Convex-side trusted remote-worker protocol for the shared task queue
-**Status:** Complete (Nexus/Convex side). The local poller is P7 inside `claudia_system` and is **not** implemented here.
+**Status:** Complete (Nexus/Convex side). The local poller is P7 inside `system` and is **not** implemented here.
 **Date:** 2026-07-01
 **Related:**
 `docs/specs/nexus_p6_p7_connector_handoff_contract_v1.md` (binding contract for the future poller),
@@ -12,9 +12,9 @@
 ## 1. Purpose
 
 P6 adds the secure control plane that lets **one future trusted local Connector**
-(the P7 poller in `claudia_system`) authenticate as a machine identity, claim
+(the P7 poller in `system`) authenticate as a machine identity, claim
 the oldest queued task, hold a time-limited lease, report progress, and
-complete/fail/cancel — all over outbound HTTPS, with no inbound Claudia
+complete/fail/cancel — all over outbound HTTPS, with no inbound Nexus
 endpoint and no second queue. P6 does **not** execute tasks and does **not**
 implement the poller.
 
@@ -45,10 +45,10 @@ Convex **HTTP actions** (`convex/http.ts`), reached at
 runtime with Web Crypto (`crypto.subtle`) and `process.env` access, so HMAC
 verification and the shared-secret lookup happen server-side in the same place
 that dispatches to the internal Convex functions — no separate Next.js route,
-no public Convex admin credentials, no inbound Claudia endpoint.
+no public Convex admin credentials, no inbound Nexus endpoint.
 
 ```
-P7 poller (claudia_system)  ──outbound HTTPS──▶  P6 signed route (convex/http.ts)
+P7 poller (system)  ──outbound HTTPS──▶  P6 signed route (convex/http.ts)
                                                    ├─ verify HMAC (no DB)
                                                    ├─ consume nonce (txn)
                                                    └─ internal Convex mutation ▶ nexusTasks
@@ -192,7 +192,7 @@ call from the same Connector/lease on an already-`running` task returns success.
 `claimed|running|cancel_requested`; extends `leaseExpiresAt`, updates
 `lastLeaseHeartbeatAt` and the Connector's `lastHeartbeatAt`/`lastSeenAt`.
 Returns `{ status, leaseExpiresAt, cancellationRequested }` so the poller learns
-about a user cancellation even though Claudia has no inbound channel. Heartbeats
+about a user cancellation even though Nexus has no inbound channel. Heartbeats
 never append user-visible progress. `cancellation` (`getTaskCancellationState`,
 a read-only query) reports the same without extending the lease.
 
@@ -282,7 +282,7 @@ private content (only the content-free aggregate + Connector projection).
   to the existing presence card. No redesign; welcome/answer/sources/composer/
   diagnostics/sidebar all preserved.
 - Chat copy updated to distinguish persistence from execution ("Nexus saves it
-  privately and queues it … Execution begins when the Claudia Connector is
+  privately and queues it … Execution begins when the Console Connector is
   online"); stale "(planned)" markers removed.
 - Admin diagnostics gains a content-free `connector` projection (presence,
   operating state, heartbeat timestamps, protocol/software version) — never task
@@ -291,7 +291,7 @@ private content (only the content-free aggregate + Connector projection).
 ## 21. User submission while offline
 
 Unchanged from P5/P5.1: requests are still persisted and queued while the
-Connector is offline; the UI states "saved · queued · waiting for the Claudia
+Connector is offline; the UI states "saved · queued · waiting for the Nexus
 Connector". No execution time is promised, nothing is discarded. An optional
 accumulation cap lives in `P6_QUEUE.maxAccumulatedQueuedTasks` (default
 unlimited).
@@ -313,7 +313,7 @@ Set in the **Convex deployment** environment (`npx convex env set …`), never i
 2. `npx convex env set NEXUS_CONNECTOR_ID <id>` and
    `npx convex env set NEXUS_CONNECTOR_SHARED_SECRET <secret>`.
 3. Create the identity row:
-   `npx convex run connectorRegistry:bootstrapConnector '{"connectorId":"<id>","displayName":"Claudia Mac"}'`.
+   `npx convex run connectorRegistry:bootstrapConnector '{"connectorId":"<id>","displayName":"Nexus Mac"}'`.
 4. Lifecycle changes later via
    `connectorRegistry:setConnectorStatus '{"connectorId":"<id>","status":"disabled"}'`.
 
@@ -345,7 +345,7 @@ Set in the **Convex deployment** environment (`npx convex env set …`), never i
 - `tests/nexus-p6-boundary.test.ts` (12) — config policy; worker functions
   internal-only; no self-registration; client boundary references only the
   public status query; no secret in schema/non-auth modules; no task deletion;
-  one canonical queue; owner copied from task; no Claudia/P7 code.
+  one canonical queue; owner copied from task; no Nexus/P7 code.
 
 All 178 prior P4/P5/P5.1 tests still pass (234 total).
 
@@ -365,11 +365,11 @@ Protocol smoke coverage (invalid signature / stale timestamp / replay / valid
 heartbeat / idle / claim / busy / start / lease heartbeat / progress /
 completion / user-visible result / wrong lease / duplicate idempotency /
 connector-status transition) is exercised by the automated route-level tests
-above. No `claudia_system` call and no real Claudia execution occurs.
+above. No `system` call and no real Nexus execution occurs.
 
 ## 26. P7 boundary / handoff
 
 P6 stops at the Nexus/Convex control plane. The next required work is the P7
-**outbound polling loop inside `claudia_system`** — see
+**outbound polling loop inside `system`** — see
 `docs/specs/nexus_p6_p7_connector_handoff_contract_v1.md` for the exact,
-binding contract it must implement. No Claudia-side code was written in P6.
+binding contract it must implement. No Nexus-side code was written in P6.

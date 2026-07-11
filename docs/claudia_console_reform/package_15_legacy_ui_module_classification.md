@@ -5,61 +5,61 @@
 | **Package** | Package 15 — Legacy Odysseus UI cleanup and module classification |
 | **Date/time** | 2026-06-02 |
 | **Repo path** | `/Users/bretthoffman/Documents/odysseus` |
-| **Prior notes** | `package_00` … `package_14_visible_claudia_branding.md` |
+| **Prior notes** | `package_00` … `package_14_visible_nexus_branding.md` |
 
 ## Objective
 
-Classify legacy UI modules and lightly hide/relabel local-execution surfaces in Claudia Console Mode without deleting modules or changing backend authority.
+Classify legacy UI modules and lightly hide/relabel local-execution surfaces in legacy local console Mode without deleting modules or changing backend authority.
 
 ## Files changed
 
 | File | Change |
 |------|--------|
-| `routes/claudia_routes.py` | `GET /health` includes `claudia_console_mode` |
-| `static/js/claudiaConsoleMode.js` | **New** — fetch flag, hide/relabel UI |
-| `static/app.js` | Import + `initClaudiaConsoleMode()` at startup |
+| `routes/nexus_routes.py` | `GET /health` includes `console_mode` |
+| `static/js/nexusConsoleMode.js` | **New** — fetch flag, hide/relabel UI |
+| `static/app.js` | Import + `initNexusConsoleMode()` at startup |
 | `static/style.css` | Console Mode banner + hide rules |
-| `static/landing.html` | Primary visible branding → Claudia |
-| `tests/test_claudia_legacy_ui_classification.py` | **New** |
-| `docs/claudia_console_reform/package_15_legacy_ui_module_classification.md` | **New** |
+| `static/landing.html` | Primary visible branding → Nexus |
+| `tests/test_nexus_legacy_ui_classification.py` | **New** |
+| `docs/console_reform/package_15_legacy_ui_module_classification.md` | **New** |
 
 ## Behavior changed
 
 ### Backend
 
-`GET /api/claudia/v1/health` returns `claudia_console_mode: true|false` from `CLAUDIA_CONSOLE_MODE`.
+`GET /api/nexus/v1/health` returns `console_mode: true|false` from `NEXUS_CONSOLE_MODE`.
 
-### Frontend (when `claudia_console_mode` is true)
+### Frontend (when `console_mode` is true)
 
-- `body.claudia-console-mode` class applied.
-- Banner: “Claudia Console Mode — Local execution… routed through Claudia Core.”
+- `body.nexus-console-mode` class applied.
+- Banner: “legacy local console Mode — Local execution… routed through Nexus Core.”
 - Hidden/disabled: shell button, deep research entry/start, email compose, memory tidy/import/add tab, skills add/audit, library new doc, document AI tidy, email AI reply/summarize (dynamic), task run-now badges.
 - Relabeled tooltips on agent/shell/research controls.
 
 ### Landing page
 
-Title, wordmark, hero, footer → Claudia (satirical body copy may still mention Odysseus historically).
+Title, wordmark, hero, footer → Nexus (satirical body copy may still mention Odysseus historically).
 
 ## Behavior intentionally unchanged
 
 - Packages 1–14 backend guards and gateway behavior.
 - Auth, cookies, tokens, routes.
-- Read/list/admin surfaces (email list, calendar view, memory browse, skills list, model admin, Claudia dashboard).
+- Read/list/admin surfaces (email list, calendar view, memory browse, skills list, model admin, Nexus dashboard).
 - Login page design.
 - Module files not deleted; legacy JS still loads.
 
 ## Routes/frontend surfaces reviewed
 
-`static/index.html`, `static/app.js`, tool rail, sidebar tools, memory/skills modals, chat composer, research panel, email reader, tasks UI, cookbook, gallery, compare, settings/admin, landing page, Claudia dashboard.
+`static/index.html`, `static/app.js`, tool rail, sidebar tools, memory/skills modals, chat composer, research panel, email reader, tasks UI, cookbook, gallery, compare, settings/admin, landing page, Nexus dashboard.
 
 ## Legacy module classification matrix
 
 | Module/surface | Current UI entry | Classification | Console Mode treatment | Follow-up |
 |----------------|------------------|----------------|------------------------|-----------|
-| Claudia dashboard | Sidebar “Claudia Console” | Claudia Console module | visible | Core status/approvals |
-| Chat / command center | Main chat + composer | Claudia Console module | visible; execution tools hidden | chat bridge only |
-| Approvals | Dashboard card | Claudia Console module | visible | forward to Core |
-| Packets / worker outputs | Gateway routes + dashboard | Claudia Console module | visible (placeholders) | persistence later |
+| Nexus dashboard | Sidebar “legacy local console” | legacy local console module | visible | Core status/approvals |
+| Chat / command center | Main chat + composer | legacy local console module | visible; execution tools hidden | chat bridge only |
+| Approvals | Dashboard card | legacy local console module | visible | forward to Core |
+| Packets / worker outputs | Gateway routes + dashboard | legacy local console module | visible (placeholders) | persistence later |
 | Email | Sidebar + rail | Read-only connector surface | list/read; compose + AI assist hidden | connector packets |
 | Calendar | Sidebar + rail | Read-only connector surface | read/sync; event writes blocked (P11) | — |
 | Documents / library | Library tool | Read-only + admin | browse; create/AI tidy hidden | more doc routes |
@@ -73,7 +73,7 @@ Title, wordmark, hero, footer → Claudia (satirical body copy may still mention
 | Gallery | Sidebar | Future worker surface | visible | image gen review |
 | Compare / eval | Compare tool | Future worker surface | visible | model calls review |
 | Settings / admin | Settings rail | Admin/status/config | visible | — |
-| Landing page | `/static/landing.html` | Legacy/internal retained | Claudia branding (hero) | satire copy optional |
+| Landing page | `/static/landing.html` | Legacy/internal retained | Nexus branding (hero) | satire copy optional |
 | Presets / persona | Chat presets | Legacy/internal retained | Odysseus literary preset kept | intentional |
 | Easter eggs | slashCommands | Legacy/internal retained | unchanged | — |
 
@@ -94,12 +94,12 @@ Title, wordmark, hero, footer → Claudia (satirical body copy may still mention
 
 ### Relabelled
 
-- Agent mode button tooltip → Claudia Core routing note
+- Agent mode button tooltip → Nexus Core routing note
 - Shell / research sidebar tooltips → disabled in Console Mode
 
 ### Remains visible
 
-- Chat (packet bridge), Claudia Console dashboard, session list, models list, email/calendar/doc **read** UIs, settings, theme, cookbook status, gallery, compare, memory/skills **browse**.
+- Chat (packet bridge), legacy local console dashboard, session list, models list, email/calendar/doc **read** UIs, settings, theme, cookbook status, gallery, compare, memory/skills **browse**.
 
 ## Read/admin/status surfaces preserved
 
@@ -119,9 +119,9 @@ Email list/read, calendar display, document library listing, memory/skills catal
 
 ## Console Mode frontend signal behavior
 
-1. On app startup, `initClaudiaConsoleMode()` fetches `GET /api/claudia/v1/health`.
-2. Reads `claudia_console_mode` boolean (no auth required for health).
-3. If true, applies `claudia-console-mode` class and UI gating.
+1. On app startup, `initNexusConsoleMode()` fetches `GET /api/nexus/v1/health`.
+2. Reads `console_mode` boolean (no auth required for health).
+3. If true, applies `nexus-console-mode` class and UI gating.
 4. `MutationObserver` re-applies hides for dynamically rendered email/task controls.
 
 ## Login/home design preservation status
@@ -133,15 +133,15 @@ Email list/read, calendar display, document library listing, memory/skills catal
 ```bash
 python3 -m compileall -q app.py core routes src
 venv/bin/python -m pytest -q \
-  tests/test_claudia_legacy_ui_classification.py \
-  tests/test_claudia_branding.py \
-  ... (P1–P14 Claudia tests)
+  tests/test_nexus_legacy_ui_classification.py \
+  tests/test_nexus_branding.py \
+  ... (P1–P14 Nexus tests)
 ```
 
 ## Results
 
 - `compileall`: pass
-- Focused Claudia tests (P1–P15): **136 passed**
+- Focused Nexus tests (P1–P15): **136 passed**
 - New P15 tests: **7 passed**
 
 ## Known pytest baseline issue from Package 0
@@ -159,7 +159,7 @@ Collect-only may still report 2 pre-existing errors in `tests/test_chat_image_ro
 
 - Extend hides to calendar event editor, MCP admin connect buttons, cookbook run/install.
 - In-process agent_loop / memory injection audit (Package 16+).
-- Optional dedicated `GET /api/claudia/v1/status` if health payload grows too large.
+- Optional dedicated `GET /api/nexus/v1/status` if health payload grows too large.
 
 ## Next recommended package
 

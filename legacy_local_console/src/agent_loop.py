@@ -1368,9 +1368,9 @@ async def stream_agent_loop(
       - data: {"type": "metrics", "data": {...}}            (final metrics)
       - data: [DONE]                                        (end)
     """
-    from src.console_mode import is_claudia_console_mode
+    from src.console_mode import is_console_mode
 
-    if is_claudia_console_mode():
+    if is_console_mode():
         from src.execution_console_guard import local_execution_disabled
 
         payload = {

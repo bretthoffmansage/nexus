@@ -1,15 +1,15 @@
 /**
- * Claudia Console browser chat bridge — routes Chat mode through Gateway/Core
+ * legacy local console browser chat bridge — routes Chat mode through Gateway/Core
  * when Core model config is available. Never calls Hermes or local model endpoints.
  */
 
-import { fetchConsoleModeFlag } from './claudiaConsoleMode.js';
+import { fetchConsoleModeFlag } from './nexusConsoleMode.js';
 
-const MODEL_CONFIG_URL = '/api/claudia/v1/model-config';
-const MESSAGES_URL = '/api/claudia/v1/messages';
+const MODEL_CONFIG_URL = '/api/nexus/v1/model-config';
+const MESSAGES_URL = '/api/nexus/v1/messages';
 
 export const EMPTY_CONTENT_FALLBACK =
-  'Claudia Core responded, but no assistant content was returned.';
+  'Nexus Core responded, but no assistant content was returned.';
 
 let _consoleMode = false;
 let _coreConfigured = false;
@@ -47,11 +47,11 @@ export function isConsoleMode() {
 export function getCoreUnavailableMessage() {
   if (!_coreConfigured && _consoleMode) {
     return (
-      'Claudia Core is not configured. Set CLAUDIA_CORE_URL on the Console Gateway ' +
+      'Nexus Core is not configured. Set NEXUS_CORE_URL on the Console Gateway ' +
       'and ensure Core is running.'
     );
   }
-  return 'Claudia Core is unavailable. Check that Core is running and reachable.';
+  return 'Nexus Core is unavailable. Check that Core is running and reachable.';
 }
 
 /** Extract assistant-visible text from Gateway JSON or legacy SSE payloads. */
