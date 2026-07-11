@@ -601,9 +601,6 @@ export default defineSchema({
     metadata: v.optional(boundedMetadataValidator),
     /** Optional additive system status snapshot from heartbeat `systemStatus`. */
     systemStatus: v.optional(systemStatusRecordValidator),
-    /** DEPRECATED pre-rebrand field; cleared by migrations.clearLegacySystemStatusField,
-     * then this line is removed. */
-    claudiaSystemStatus: v.optional(v.any()),
   })
     .index("by_connector_id", ["connectorId"])
     .index("by_status", ["status"])
