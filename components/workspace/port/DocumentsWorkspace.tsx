@@ -175,7 +175,7 @@ export function DocumentsWorkspace() {
       <header className="legacy-port-head">
         <h1 id="doclib-heading">Library</h1>
         <p className="legacy-port-subhead">
-          Upload or Create documents to train the Knowledge Vault
+          Upload or Create documents to train the Vault
         </p>
       </header>
 

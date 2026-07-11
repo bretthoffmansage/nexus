@@ -54,7 +54,7 @@ const CARD_COPY: Record<
   },
   vault: {
     title: "Vault",
-    description: "Approved read-only knowledge vault connection.",
+    description: "Approved read-only Vault connection.",
     liveStatus: "Connected",
     inactiveStatus: "Unavailable",
   },

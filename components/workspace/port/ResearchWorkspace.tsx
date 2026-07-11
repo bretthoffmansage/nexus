@@ -231,7 +231,7 @@ export function ResearchWorkspace() {
         <div>
           <h1 id="research-heading">Deep Research</h1>
           <p className="legacy-port-subhead">
-            Hermes agent + Web, Transcript, Knowledge Vault runtime
+            Hermes agent + Web, Transcript, Vault runtime
           </p>
         </div>
         <button

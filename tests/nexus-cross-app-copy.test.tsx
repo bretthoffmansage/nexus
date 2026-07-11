@@ -27,13 +27,13 @@ function read(rel: string): string {
 describe("Nexus cross-app copy alignment", () => {
   it("updates Deep Research subtitle exactly", () => {
     const src = read("components/workspace/port/ResearchWorkspace.tsx");
-    expect(src).toContain("Hermes agent + Web, Transcript, Knowledge Vault runtime");
+    expect(src).toContain("Hermes agent + Web, Transcript, Vault runtime");
     expect(src).not.toContain("Web, Transcript, + Knowledge vault runtime");
   });
 
   it("updates Vault Library subtitle exactly", () => {
     const src = read("components/workspace/port/DocumentsWorkspace.tsx");
-    expect(src).toContain("Upload or Create documents to train the Knowledge Vault");
+    expect(src).toContain("Upload or Create documents to train the Vault");
     expect(src).not.toContain("Upload documents, keep immutable originals");
   });
 

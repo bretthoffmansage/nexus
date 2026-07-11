@@ -6,7 +6,7 @@ type CollapsibleSourcesProps = {
 };
 
 /**
- * Chat source disclosure: collapsed by default so large Knowledge Vault and
+ * Chat source disclosure: collapsed by default so large Vault and
  * transcript source lists no longer fill the visible Chat area. Uses a native
  * `<details>`/`<summary>` so the toggle is keyboard- and screen-reader-friendly
  * with no extra client state.
