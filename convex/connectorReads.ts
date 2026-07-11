@@ -7,7 +7,7 @@ import { requireActiveConnector } from "./connectorRegistry";
  * P6 — read-only cancellation check for the Connector holding a lease.
  *
  * Lets the P7 poller cheaply learn that the user requested cancellation while
- * Claudia was working, WITHOUT extending the lease (unlike
+ * the system was working, WITHOUT extending the lease (unlike
  * `heartbeatTaskLease`). Returns only this one task's own status/cancellation
  * flag — never any other task or user content. Lease ownership is verified so
  * a Connector can only read a task it currently holds.

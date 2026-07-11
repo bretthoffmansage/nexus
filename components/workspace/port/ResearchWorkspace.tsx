@@ -77,7 +77,7 @@ export function ResearchWorkspace() {
     saveSelectedModelId(next);
   }, []);
 
-  // Model selection is a UI preference only — the governed Claudia contract
+  // Model selection is a UI preference only — the governed system contract
   // carries execution content exclusively in requestText (no model field).
 
   const tasksPage = useQuery(
@@ -208,7 +208,7 @@ export function ResearchWorkspace() {
 
   const connectorNote =
     connectorStatus?.state === "not_configured"
-      ? "Connector not configured — requests queue in Nexus until a Claudia Connector is linked."
+      ? "Connector not configured — requests queue in Nexus until the Console Connector is linked."
       : connectorStatus?.state === "offline"
         ? "Connector offline — submitted research waits in the normal queue."
         : null;

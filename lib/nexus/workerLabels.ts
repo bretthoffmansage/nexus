@@ -2,7 +2,7 @@
  * Shared, allowlisted worker/runtime label formatter.
  *
  * Nexus must display the *actual* command-line worker that executed a governed
- * Claudia task (Cursor CLI / Codex CLI / Claude CLI), never a value inferred
+ * system task (Cursor CLI / Codex CLI / Claude CLI), never a value inferred
  * from route priority. Worker identifiers arriving from a Connector terminal
  * result are untrusted, so this module maps only a fixed allowlist of canonical
  * identifiers to bounded, hardcoded labels. Anything else — including empty,

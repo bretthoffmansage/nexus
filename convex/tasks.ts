@@ -230,7 +230,7 @@ export const submitKnowledgeRequest = mutation({
       taskId,
       ownerClerkUserId: clerkUserId,
       eventType: "task_queued",
-      message: "Queued — waiting for the Claudia Connector.",
+      message: "Queued — waiting for the Console Connector.",
       now,
     });
     await recordAudit(ctx, {
@@ -405,7 +405,7 @@ export const cancelMyTask = mutation({
         taskId: task._id,
         ownerClerkUserId: clerkUserId,
         eventType: "cancel_requested",
-        message: "Cancellation requested — waiting for the Claudia Connector to stop.",
+        message: "Cancellation requested — waiting for the Console Connector to stop.",
         now,
       });
       await recordAudit(ctx, {
@@ -519,7 +519,7 @@ export const retryMyTask = mutation({
       taskId,
       ownerClerkUserId: clerkUserId,
       eventType: "task_queued",
-      message: "Re-queued — waiting for the Claudia Connector.",
+      message: "Re-queued — waiting for the Console Connector.",
       now,
     });
     await recordAudit(ctx, {

@@ -40,7 +40,7 @@ function validSystemStatus(overrides?: {
 beforeEach(() => installConnectorEnv());
 afterEach(() => clearConnectorEnv());
 
-describe("Claudia systemStatus heartbeat contract", () => {
+describe("System status heartbeat contract", () => {
   it("accepts heartbeats without systemStatus", async () => {
     const t = p5Test();
     await seedConnector(t);
@@ -286,7 +286,7 @@ describe("Cursor CLI freshness derivation", () => {
   });
 });
 
-describe("Claudia system status freshness derivation", () => {
+describe("System status freshness derivation", () => {
   const now = Date.parse("2026-07-02T16:00:00Z");
 
   it("shows green only for active fresh components with a fresh heartbeat", () => {

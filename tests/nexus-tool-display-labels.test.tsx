@@ -12,9 +12,9 @@ import {
 } from "@/convex/lib/p5config";
 
 describe("Nexus request tool display labels", () => {
-  it("1. renders SAGE Knowledge Vault in the chat composer", () => {
+  it("1. renders Vault in the chat composer", () => {
     render(<ChatComposer disabled={false} onSubmit={() => undefined} />);
-    expect(screen.getByRole("button", { name: "SAGE Knowledge Vault" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Vault" })).toBeInTheDocument();
   });
 
   it("2. renders Transcripts in the chat composer", () => {
@@ -22,12 +22,12 @@ describe("Nexus request tool display labels", () => {
     expect(screen.getByRole("button", { name: "Transcripts" })).toBeInTheDocument();
   });
 
-  it("3. submits vault.agentic_retrieval when SAGE Knowledge Vault is selected", async () => {
+  it("3. submits vault.agentic_retrieval when Vault is selected", async () => {
     const user = userEvent.setup();
     const onSubmit = vi.fn().mockResolvedValue(undefined);
     render(<ChatComposer disabled={false} onSubmit={onSubmit} />);
 
-    await user.click(screen.getByRole("button", { name: "SAGE Knowledge Vault" }));
+    await user.click(screen.getByRole("button", { name: "Vault" }));
     await user.type(screen.getByLabelText(/Message Nexus/i), "vault question");
     await user.click(screen.getByRole("button", { name: /Send/i }));
 
@@ -61,7 +61,7 @@ describe("Nexus request tool display labels", () => {
     expect(NEXUS_REQUEST_TOOL_DISPLAY["membership_io.transcript_retrieve"].id).toBe(
       "membership_io.transcript_retrieve",
     );
-    expect(getRequestToolDisplayLabel("vault.agentic_retrieval")).toBe("SAGE Knowledge Vault");
+    expect(getRequestToolDisplayLabel("vault.agentic_retrieval")).toBe("Vault");
   });
 
   it("6. does not show internal tool IDs in the normal chat composer UI", () => {

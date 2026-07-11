@@ -214,7 +214,7 @@ export const claimNextTask = internalMutation({
       taskId: target._id,
       ownerClerkUserId: target.ownerClerkUserId,
       eventType: "task_claimed",
-      message: "Claimed by the Claudia Connector.",
+      message: "Claimed by the Console Connector.",
       now,
     });
     await recordAudit(ctx, {
@@ -309,7 +309,7 @@ export const startTask = internalMutation({
  * heartbeat before `leaseExpiresAt`; once expired, recovery policy governs
  * and the Connector must stop work and re-claim. Returns whether the user
  * has requested cancellation, so the P7 poller learns to stop even though
- * Claudia itself has no inbound channel. */
+ * The system itself has no inbound channel. */
 export const heartbeatTaskLease = internalMutation({
   args: { connectorId: v.string(), taskId: v.id("nexusTasks"), leaseId: v.string() },
   handler: async (ctx, args) => {
@@ -403,7 +403,7 @@ export const appendConnectorProgress = internalMutation({
  * new route, queue, table, or channel.
  *
  * Forward-compatible by design: an event whose tuple is not (yet) allowlisted is
- * accepted-and-dropped rather than errored, so a newer Claudia phase can never
+ * accepted-and-dropped rather than errored, so a newer system phase can never
  * fail a task or corrupt the feed. Ownership is always copied from the task.
  */
 export const appendConnectorActivity = internalMutation({
@@ -444,7 +444,7 @@ export const appendConnectorActivity = internalMutation({
       return { taskId: task._id, accepted: true as const, dropped: "unrecognized" as const };
     }
 
-    // Defense-in-depth: single-line + trimmed + clamped. Claudia already
+    // Defense-in-depth: single-line + trimmed + clamped. The system already
     // sanitizes, and the UI clamps again on render; this guarantees the stored
     // value is safe on its own and that a whitespace-only message is dropped.
     const message = clampLength(
@@ -455,7 +455,7 @@ export const appendConnectorActivity = internalMutation({
       return { taskId: task._id, accepted: true as const, dropped: "empty" as const };
     }
 
-    // Per-task bound (defense-in-depth on top of Claudia's emission cap). One
+    // Per-task bound (defense-in-depth on top of the system's emission cap). One
     // cheap read of the newest event; sequences are gap-free from 1, so the
     // latest sequence is the total progress-event count for the task.
     const last = await ctx.db
@@ -614,7 +614,7 @@ export const completeTask = internalMutation({
       taskId: task._id,
       toStatus: "completed",
       resultSummary: args.answerText.slice(0, P5_LIMITS.maxResultSummaryLength),
-      progressMessage: "Completed by the Claudia Connector.",
+      progressMessage: "Completed by the Console Connector.",
     });
     const completedTask = await ctx.db.get(task._id);
     if (completedTask?.scheduledEventId) {
@@ -767,7 +767,7 @@ export const acknowledgeCancellation = internalMutation({
     const transition = await performTaskTransition(ctx, {
       taskId: task._id,
       toStatus: "cancelled",
-      progressMessage: "Cancelled by the Claudia Connector.",
+      progressMessage: "Cancelled by the Console Connector.",
     });
     await recordAudit(ctx, {
       ownerClerkUserId: task.ownerClerkUserId,

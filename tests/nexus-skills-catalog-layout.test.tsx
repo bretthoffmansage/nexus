@@ -56,7 +56,7 @@ describe("Nexus Skills catalog row layout", () => {
       Array.from(row.querySelectorAll(".skills-catalog-card-title")).map((el) => el.textContent),
     );
 
-    expect(rowCards[0]).toEqual(["SAGE Knowledge Vault", "Transcript retrieval"]);
+    expect(rowCards[0]).toEqual(["Vault", "Transcript retrieval"]);
     expect(rowCards[1]).toEqual(["Membership.io Full Sync", "Vault Expansion Pass"]);
     expect(rowCards[2]).toEqual(["Library Dropzone Processing", "Deep Research"]);
   });

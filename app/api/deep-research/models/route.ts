@@ -10,7 +10,7 @@ import {
  * Fetches the Vercel AI Gateway model catalog, filters to research-compatible
  * models, and returns the normalized non-secret UI list. This route ONLY reads
  * the catalog — it never invokes a model, never proxies arbitrary Gateway URLs,
- * never submits research, never calls Claudia, and never returns credentials.
+ * never submits research, never calls the system, and never returns credentials.
  *
  * The Gateway `/v1/models` endpoint is public (no auth needed for the catalog),
  * but if AI_GATEWAY_API_KEY is present in the server environment it is sent as a

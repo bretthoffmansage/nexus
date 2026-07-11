@@ -17,7 +17,7 @@ export type NexusRequestToolDisplay = {
 export const NEXUS_REQUEST_TOOL_DISPLAY: Record<P5ToolId, NexusRequestToolDisplay> = {
   "vault.agentic_retrieval": {
     id: "vault.agentic_retrieval",
-    label: "SAGE Knowledge Vault",
+    label: "Vault",
     description: "Search the Sage knowledge base with governed retrieval.",
   },
   "membership_io.transcript_retrieve": {

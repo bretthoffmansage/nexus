@@ -90,7 +90,7 @@ export const submitDeepResearch = mutation({
     requestText: v.string(),
     researchRequestId: v.string(),
     idempotencyKey: v.string(),
-    /** Optional governed model selection; omit for the Claudia default. */
+    /** Optional governed model selection; omit for the system default. */
     requestedModelId: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
@@ -153,7 +153,7 @@ export const submitDeepResearch = mutation({
       taskId,
       ownerClerkUserId: clerkUserId,
       eventType: "task_queued",
-      message: "Queued — waiting for the Claudia Connector.",
+      message: "Queued — waiting for the Console Connector.",
       now,
     });
     await recordAudit(ctx, {

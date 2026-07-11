@@ -56,7 +56,7 @@ describe("Nexus Skills catalog auth readiness guard", () => {
     render(<SkillsWorkspace />);
     expect(catalogQueryCalls()).toHaveLength(0);
     expect(screen.getByText("Loading catalog…")).toBeInTheDocument();
-    expect(screen.queryByText("SAGE Knowledge Vault")).not.toBeInTheDocument();
+    expect(screen.queryByText("Vault")).not.toBeInTheDocument();
   });
 
   it("does not invoke the private query while signed out", () => {
@@ -91,7 +91,7 @@ describe("Nexus Skills catalog auth readiness guard", () => {
     authState.isAuthenticated = true;
     authState.isRefreshing = false;
     render(<SkillsWorkspace />);
-    expect(screen.getByText("SAGE Knowledge Vault")).toBeInTheDocument();
+    expect(screen.getByText("Vault")).toBeInTheDocument();
     expect(screen.getAllByText(SKILLS_CATALOG_PENDING_AVAILABILITY_LABEL)).toHaveLength(
       NEXUS_SKILLS_CATALOG_TOOL_IDS.length,
     );
@@ -110,7 +110,7 @@ describe("Nexus Skills catalog auth readiness guard", () => {
           tools: [
             {
               toolId: "vault.agentic_retrieval",
-              displayName: "SAGE Knowledge Vault",
+              displayName: "Vault",
               shortDescription: "Vault search",
               category: "knowledge_research",
               accessModes: ["chat"],
@@ -142,7 +142,7 @@ describe("Nexus Skills catalog auth readiness guard", () => {
     queryShouldThrow.value = true;
     render(<SkillsWorkspace />);
     expect(screen.getByRole("alert")).toHaveTextContent(SKILLS_CATALOG_QUERY_ERROR_MESSAGE);
-    expect(screen.getByText("SAGE Knowledge Vault")).toBeInTheDocument();
+    expect(screen.getByText("Vault")).toBeInTheDocument();
     expect(screen.queryByText("Loading catalog…")).not.toBeInTheDocument();
   });
 

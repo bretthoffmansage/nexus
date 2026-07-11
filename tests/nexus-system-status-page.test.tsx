@@ -93,7 +93,7 @@ describe("Nexus system status page", () => {
   });
 });
 
-describe("Claudia system status view-model guards", () => {
+describe("System status view-model guards", () => {
   const now = Date.parse("2026-07-02T16:00:00Z");
 
   it("uses the CLI freshness threshold for Claude and Codex", () => {

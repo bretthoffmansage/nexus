@@ -51,7 +51,7 @@ export type P5ToolId = (typeof P5_SUPPORTED_TOOL_IDS)[number];
 
 /** User-facing tool titles shared by Skills, Calendar, and other Nexus surfaces. */
 export const P5_TOOL_DISPLAY_TITLES: Record<P5ToolId, string> = {
-  "vault.agentic_retrieval": "SAGE Knowledge Vault",
+  "vault.agentic_retrieval": "Vault",
   "membership_io.transcript_retrieve": "Transcript retrieval",
 };
 
@@ -124,7 +124,7 @@ export function normalizedRequestHash(requestText: string): string {
 /**
  * Sanitized worker-activity readback (UI/readback only).
  *
- * Finite allowlists + bounds mirrored from Claudia's `core_api/worker_activity`
+ * Finite allowlists + bounds mirrored from the system's `core_api/worker_activity`
  * so both ends agree on the safe vocabulary. These govern the additive
  * `worker_activity` progress event: the Connector may only ever transport an
  * allowlisted (surface, toolId, worker, phase, status) tuple plus a bounded,

@@ -3,16 +3,16 @@
  *
  * Input is the raw Vercel AI Gateway `GET /v1/models` response shape
  * ({ object: "list", data: [...] }). We filter to models compatible with the
- * Claudia Deep Research Hermes runtime (text generation + tool calling over the
+ * system Deep Research Hermes runtime (text generation + tool calling over the
  * OpenAI-compatible gateway transport) and normalize to a small, non-secret UI
- * shape. Claudia independently re-validates any selection, so this filter exists
+ * shape. The system independently re-validates any selection, so this filter exists
  * purely for UI usability — it is never the authority.
  *
  * This module is pure so both the server route and unit tests share the exact
  * same logic. It never reads env, never fetches, and never touches credentials.
  */
 
-/** Sentinel option: send no requestedModelId → Claudia uses its default. */
+/** Sentinel option: send no requestedModelId → the system uses its default. */
 export const NEXUS_DEFAULT_MODEL_VALUE = "__nexus_default__";
 
 /** Model types from the Gateway catalog that are never eligible for research. */
@@ -29,7 +29,7 @@ const DENIED_TYPES = new Set([
 /** Tag that indicates tool/function calling on a Gateway language model. */
 const TOOL_CALLING_TAGS = new Set(["tool-use", "tools", "tool", "function_calling"]);
 
-/** Bounded model-id syntax mirror of the Claudia + Connector gate. */
+/** Bounded model-id syntax mirror of the system + Connector gate. */
 const MODEL_ID_PATTERN = /^[a-z0-9][a-z0-9._-]{0,40}\/[A-Za-z0-9][A-Za-z0-9._:-]{0,80}$/;
 
 export type NexusResearchModel = {

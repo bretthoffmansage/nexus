@@ -24,7 +24,7 @@ function contextLabel(model: NexusResearchModel): string {
 /**
  * Searchable Deep Research model selector.
  *
- * Replaces the legacy disabled "Managed by Claudia" field. The first option is
+ * Replaces the legacy disabled "Managed by the system" field. The first option is
  * always "Nexus default" (submits no model id). Concrete options come from
  * the live Vercel AI Gateway catalog, filtered server-side to research-
  * compatible models. If the operator's saved model has disappeared from the

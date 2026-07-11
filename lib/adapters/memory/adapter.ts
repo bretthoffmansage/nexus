@@ -4,7 +4,7 @@ export const memoryAdapterMeta: ToolAdapterMeta = {
   toolId: "memory",
   availability: "connector_required",
   authority: "claudia_connector",
-  futureClaudiaTaskKind: "memory.sync",
+  futureSystemTaskKind: "memory.sync",
 };
 
 export type MemoryRecord = {

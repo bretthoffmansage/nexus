@@ -20,12 +20,12 @@ export { DEEP_RESEARCH_TASK_KIND, DEEP_RESEARCH_TOOL_ID } from "./deepResearchCo
 export const VAULT_EXPANSION_PASS_TASK_KIND = "vault_expansion_pass";
 export const VAULT_EXPANSION_PASS_REQUEST_TEXT = "Run Vault Expansion Pass";
 export const VAULT_EXPANSION_PASS_DESCRIPTION =
-  "Runs the current vault-owned Expansion Pass instructions through Claudia using a governed " +
-  "write-capable worker. The pass may create and update Markdown notes across the active Sage Knowledge Vault.";
+  "Runs the current vault-owned Expansion Pass instructions through the system using a governed " +
+  "write-capable worker. The pass may create and update Markdown notes across the active Vault.";
 export const VAULT_EXPANSION_PASS_UNAVAILABLE_REASON =
   "Unavailable — Vault Expansion Pass requires Connector capability";
 export const VAULT_EXPANSION_PASS_WAIT_MESSAGE = "Waiting for existing Vault Expansion Pass";
-/** Claudia registry guidance — enforced on Claudia side; documented for operators. */
+/** System registry guidance — enforced on the system side; documented for operators. */
 export const VAULT_EXPANSION_PASS_EXECUTION_TIMEOUT_SECONDS = 1800;
 
 export const MEMBERSHIP_FULL_SYNC_TASK_KIND = "membership_full_sync";
@@ -33,12 +33,12 @@ export const MEMBERSHIP_FULL_SYNC_REQUEST_TEXT = "Run Membership.io full synchro
 export const MEMBERSHIP_FULL_SYNC_DESCRIPTION =
   "Runs the full Membership.io catalog scrape, transcript refresh, index rebuild, and vault update.";
 export const MEMBERSHIP_FULL_SYNC_UNAVAILABLE_REASON =
-  "Unavailable — Claudia support required";
+  "Unavailable — system support required";
 export const DEEP_RESEARCH_UNAVAILABLE_REASON =
   "Unavailable — Deep Research requires Connector capability";
 export const MEMBERSHIP_FULL_SYNC_WAIT_MESSAGE = "Waiting for existing Membership.io sync";
 
-/** Claudia registry guidance — enforced on Claudia side; documented for operators. */
+/** System registry guidance — enforced on the system side; documented for operators. */
 export const MEMBERSHIP_FULL_SYNC_EXECUTION_TIMEOUT_SECONDS = 3600;
 
 export type CalendarScheduledInputMode =
@@ -213,7 +213,7 @@ export function buildCalendarDeepResearchIdempotencyKey(
   return `schedule:${scheduledEventId}`;
 }
 
-/** Claudia contract metadata for a Calendar-dispatched Deep Research task. */
+/** System contract metadata for a Calendar-dispatched Deep Research task. */
 export function buildCalendarDeepResearchTaskMetadata(
   scheduledEventId: Id<"nexusScheduledEvents">,
 ) {
@@ -243,7 +243,7 @@ export type MembershipFullSyncTaskMetadata = {
   idempotencyKey: string;
 };
 
-/** Claudia contract payload — exactly five metadata keys, ISO UTC schedule instant. */
+/** System contract payload — exactly five metadata keys, ISO UTC schedule instant. */
 export function buildMembershipFullSyncTaskMetadata(
   scheduledEventId: Id<"nexusScheduledEvents">,
   scheduledForUtcMs: number,
@@ -267,7 +267,7 @@ export type VaultExpansionPassTaskMetadata = {
   idempotencyKey: string;
 };
 
-/** Claudia contract payload — no-input Vault Expansion Pass, ISO UTC schedule instant. */
+/** System contract payload — no-input Vault Expansion Pass, ISO UTC schedule instant. */
 export function buildVaultExpansionPassTaskMetadata(
   scheduledEventId: Id<"nexusScheduledEvents">,
   scheduledForUtcMs: number,

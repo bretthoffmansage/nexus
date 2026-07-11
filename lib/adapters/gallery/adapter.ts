@@ -4,7 +4,7 @@ export const galleryAdapterMeta: ToolAdapterMeta = {
   toolId: "gallery",
   availability: "connector_required",
   authority: "claudia_connector",
-  futureClaudiaTaskKind: "gallery.sync",
+  futureSystemTaskKind: "gallery.sync",
 };
 
 export type GalleryItem = {

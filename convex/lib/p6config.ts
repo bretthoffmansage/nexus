@@ -2,10 +2,10 @@ import { LIBRARY_DROPZONE_TOOL_ID } from "./libraryDropzoneConfig";
 import { DEEP_RESEARCH_TOOL_ID } from "./deepResearchConfig";
 import { P5_LIMITS, P5_SUPPORTED_TOOL_IDS, type P5ToolId } from "./p5config";
 
-/** Canonical Claudia tool — full Membership.io parent workflow (Calendar-only in Nexus). */
+/** Canonical system tool — full Membership.io parent workflow (Calendar-only in Nexus). */
 export const MEMBERSHIP_FULL_SYNC_TOOL_ID = "membership_io.catalog_refresh_and_vault_update";
 
-/** Canonical Claudia tool — no-input governed Vault Expansion Pass (Calendar-only in Nexus). */
+/** Canonical system tool — no-input governed Vault Expansion Pass (Calendar-only in Nexus). */
 export const VAULT_EXPANSION_PASS_TOOL_ID = "vault.expansion_pass";
 
 /**

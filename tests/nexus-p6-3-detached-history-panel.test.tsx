@@ -75,7 +75,7 @@ describe("P6.3 — detached chat history panel", () => {
   });
 
   it("19-20. friendly tool labels unchanged; canonical IDs preserved", () => {
-    expect(NEXUS_REQUEST_TOOL_DISPLAY["vault.agentic_retrieval"].label).toBe("SAGE Knowledge Vault");
+    expect(NEXUS_REQUEST_TOOL_DISPLAY["vault.agentic_retrieval"].label).toBe("Vault");
     expect(NEXUS_REQUEST_TOOL_DISPLAY["membership_io.transcript_retrieve"].label).toBe("Transcripts");
     expect(P5_SUPPORTED_TOOL_IDS).toEqual([
       "vault.agentic_retrieval",

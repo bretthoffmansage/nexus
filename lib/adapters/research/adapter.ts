@@ -4,7 +4,7 @@ export const researchAdapterMeta: ToolAdapterMeta = {
   toolId: "research",
   availability: "available",
   authority: "claudia_connector",
-  futureClaudiaTaskKind: "deep_research",
+  futureSystemTaskKind: "deep_research",
 };
 
 export type ResearchJob = {

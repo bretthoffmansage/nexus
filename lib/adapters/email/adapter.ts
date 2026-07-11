@@ -4,7 +4,7 @@ export const emailAdapterMeta: ToolAdapterMeta = {
   toolId: "email",
   availability: "connector_required",
   authority: "claudia_connector",
-  futureClaudiaTaskKind: "email.sync",
+  futureSystemTaskKind: "email.sync",
 };
 
 export type EmailFolder = {

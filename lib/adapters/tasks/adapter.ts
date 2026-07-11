@@ -10,7 +10,7 @@ export const tasksAdapterMeta: ToolAdapterMeta = {
   availability: "persistence_available",
   authority: "convex",
   futureConvexCollection: "nexusTasks",
-  futureClaudiaTaskKind: "tasks.scheduled",
+  futureSystemTaskKind: "tasks.scheduled",
 };
 
 /** Legacy recurring "scheduled tasks" are a separate, not-yet-built feature. */

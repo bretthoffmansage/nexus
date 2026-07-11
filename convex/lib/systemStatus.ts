@@ -1,7 +1,7 @@
 import { P6_LEASE } from "./p6config";
 import { v } from "convex/values";
 
-/** Claudia heartbeat optional field contract version. */
+/** System heartbeat optional field contract version. */
 export const SYSTEM_STATUS_CONTRACT_VERSION = "system_status_v1";
 
 export const systemComponentRecordValidator = v.object({

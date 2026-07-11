@@ -231,7 +231,7 @@ describe("Nexus Deep Research handoff", () => {
       expect(fieldsSrc).toContain("textarea");
       expect(fieldsSrc).toContain("DEEP_RESEARCH_MAX_REQUEST_LENGTH");
       expect(fieldsSrc).toContain("ResearchModelSelector");
-      expect(src).not.toContain("Managed by Claudia");
+      expect(src).not.toContain("Managed by the system");
       expect(src).not.toContain("Max rounds");
       expect(src).not.toContain("ToolAvailabilityBanner");
       expect(src).not.toContain("Hide settings");

@@ -176,7 +176,7 @@ describe("Deep Research model persistence (localStorage preference)", () => {
   beforeEach(() => localStorage.clear());
   afterEach(() => localStorage.clear());
 
-  it("defaults to the Claudia-default sentinel when nothing is stored", () => {
+  it("defaults to the system-default sentinel when nothing is stored", () => {
     expect(loadSelectedModelId()).toBe(NEXUS_DEFAULT_MODEL_VALUE);
   });
 

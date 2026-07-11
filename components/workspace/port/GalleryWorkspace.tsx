@@ -54,7 +54,7 @@ export function GalleryWorkspace() {
       </div>
 
       <div id="gallery-grid" className="gallery-grid legacy-port-empty">
-        <p>No photos loaded. Gallery media remains on Claudia local storage.</p>
+        <p>No photos loaded. Gallery media remains on system local storage.</p>
       </div>
     </section>
   );

@@ -59,7 +59,7 @@ export function EmailWorkspace() {
         </aside>
 
         <div className="email-list-pane legacy-port-empty" role="list">
-          <p>No messages loaded for {folder}. Email accounts connect through Claudia.</p>
+          <p>No messages loaded for {folder}. Email accounts connect through the system.</p>
         </div>
 
         <div className="email-read-pane">

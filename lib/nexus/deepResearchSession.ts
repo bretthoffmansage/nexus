@@ -122,7 +122,7 @@ export function resetReportRulesDraft(): string {
 
 /**
  * Load the persisted Deep Research model selection. Returns the sentinel
- * "Claudia default" value when nothing valid is stored, so the selector always
+ * "system default" value when nothing valid is stored, so the selector always
  * has a safe starting option. A stored concrete model is only returned when it
  * still passes syntax (a corrupted value degrades to the default).
  */
@@ -151,7 +151,7 @@ export function saveSelectedModelId(value: string): void {
 
 /**
  * Resolve the selector value into the envelope field: the sentinel default
- * yields undefined (omit → Claudia default); a concrete valid id passes
+ * yields undefined (omit → system default); a concrete valid id passes
  * through. Anything else is treated as the default (fail safe).
  */
 export function selectedModelToEnvelopeField(value: string): string | undefined {

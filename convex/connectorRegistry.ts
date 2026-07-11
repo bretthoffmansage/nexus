@@ -323,16 +323,6 @@ export const getSystemStatusForPage = query({
 });
 
 /**
- * DEPRECATED transitional alias: the currently-deployed frontend bundle still
- * calls the pre-rebrand query name. Remove after the next Vercel deploy of the
- * console picks up getSystemStatusForPage.
- */
-export const getClaudiaSystemStatusForPage = query({
-  args: {},
-  handler: async (ctx) => systemStatusPageProjection(ctx),
-});
-
-/**
  * Admin-only, still content-free, Connector diagnostics: operating detail
  * but never private task content. Consumed by `diagnostics.ts`'s
  * admin-gated aggregate query rather than exposed as its own admin route,

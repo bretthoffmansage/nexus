@@ -57,7 +57,7 @@ export function MemoryWorkspace() {
       <div className="memory-grid legacy-port-empty">
         <p>
           No memories in hosted Nexus. Brain data is not copied into Convex; memories load from
-          Claudia when connected.
+          the system when connected.
         </p>
       </div>
     </section>

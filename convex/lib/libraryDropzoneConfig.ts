@@ -1,14 +1,14 @@
 /**
  * Nexus Library Dropzone — single configuration surface.
  *
- * Remote format policy mirrors the Claudia contract
+ * Remote format policy mirrors the system contract
  * (`config/workflows/dropzone_input_formats.yaml`) minus local-only `.key`
  * and unsupported archives/executables. Max upload size, attachment protocol
  * version, and tool identity are defined here only — not scattered across UI,
  * mutations, or tests.
  */
 
-/** Requested Claudia tool for explicit Library Process actions only. */
+/** Requested system tool for explicit Library Process actions only. */
 export const LIBRARY_DROPZONE_TOOL_ID = "vault.dropzone.process_document" as const;
 
 /** Additive P6/P7 attachment protocol version (text-only tasks unchanged). */

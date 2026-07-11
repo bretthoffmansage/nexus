@@ -349,7 +349,7 @@ export function CalendarEventDialog({ mode, onClose, onEdit, ready }: CalendarEv
                   rows={4}
                   value={form.taskRequest}
                   onChange={(e) => setForm((f) => ({ ...f, taskRequest: e.target.value }))}
-                  placeholder="What should Claudia do when this event is due?"
+                  placeholder="What should Nexus do when this event is due?"
                 />
               </label>
             ) : null}

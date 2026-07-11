@@ -25,5 +25,5 @@ export type ToolAdapterMeta = {
   availability: ToolAvailability;
   authority: AdapterAuthority;
   futureConvexCollection?: string;
-  futureClaudiaTaskKind?: string;
+  futureSystemTaskKind?: string;
 };

@@ -149,7 +149,7 @@ export function attachmentSuccessHeaders(
 }
 
 /**
- * Canonical attachment success-response header contract (v1.1). The Claudia
+ * Canonical attachment success-response header contract (v1.1). The Console
  * Connector validates against exactly these spellings (case-insensitively).
  * `X-Nexus-Content-Length` is authoritative for the protocol byte length;
  * standard `Content-Length` is an optional cross-check that intermediaries

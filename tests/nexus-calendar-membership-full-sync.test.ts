@@ -126,7 +126,7 @@ describe("Membership.io full sync Calendar option", () => {
         timezone: "UTC",
         requestedToolId: MEMBERSHIP_FULL_SYNC_TOOL_ID,
       }),
-    ).rejects.toThrow(/Claudia support required/);
+    ).rejects.toThrow(/system support required/);
   });
 
   it("does not place hidden stale task text in requestText for no-input save", async () => {
@@ -173,7 +173,7 @@ describe("Membership.io full sync Calendar option", () => {
     expect(P5_SUPPORTED_TOOL_IDS).not.toContain(MEMBERSHIP_FULL_SYNC_TOOL_ID);
   });
 
-  it("dispatches membership full sync with Claudia contract metadata when Connector allows it", async () => {
+  it("dispatches membership full sync with system contract metadata when Connector allows it", async () => {
     const t = p5Test();
     await seedApprovedAdmin(t, IDENTITY_A);
     await seedConnector(t, {

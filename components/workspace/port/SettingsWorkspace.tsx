@@ -40,10 +40,10 @@ export function SettingsWorkspace() {
         </nav>
         <div className="settings-content">
           {tab === "appearance" ? (
-            <p>Theme controls remain in the Nexus sidebar footer. Advanced Claudia theme tokens are local-only.</p>
+            <p>Theme controls remain in the Nexus sidebar footer. Advanced Nexus theme tokens are local-only.</p>
           ) : (
             <p>
-              {tab.charAt(0).toUpperCase() + tab.slice(1)} settings that require Claudia execution or local
+              {tab.charAt(0).toUpperCase() + tab.slice(1)} settings that require system execution or local
               secrets are disabled in hosted Nexus.
             </p>
           )}

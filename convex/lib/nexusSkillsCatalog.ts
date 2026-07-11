@@ -63,7 +63,7 @@ export const SKILLS_CATALOG_TOOL_DEFS: readonly SkillsCatalogToolDef[] = [
     toolId: "vault.agentic_retrieval",
     displayName: P5_TOOL_DISPLAY_TITLES["vault.agentic_retrieval"],
     shortDescription:
-      "Searches and synthesizes information from the approved SAGE Knowledge Base vault.",
+      "Searches and synthesizes information from the approved Vault.",
     category: "knowledge_research",
     accessModes: ["chat", "calendar", "connector"],
     inputType: "text_request",
@@ -119,7 +119,7 @@ export const SKILLS_CATALOG_TOOL_DEFS: readonly SkillsCatalogToolDef[] = [
     displayName: "Vault Expansion Pass",
     shortDescription:
       "Write-capable governed maintenance pass that runs the current vault-owned Expansion Pass " +
-      "instructions to create and update Markdown notes across the Sage Knowledge Vault. Scheduled via Calendar.",
+      "instructions to create and update Markdown notes across the Vault. Scheduled via Calendar.",
     category: "scheduled_maintenance",
     accessModes: ["calendar", "connector"],
     inputType: "no_input_action",
@@ -133,7 +133,7 @@ export const SKILLS_CATALOG_TOOL_DEFS: readonly SkillsCatalogToolDef[] = [
     toolId: DEEP_RESEARCH_TOOL_ID,
     displayName: "Deep Research",
     shortDescription:
-      "Runs governed, multi-source research across approved web, vault, and transcript sources through Claudia.",
+      "Runs governed, multi-source research across approved web, vault, and transcript sources through the system.",
     category: "deep_research",
     accessModes: ["deep_research", "calendar", "connector"],
     inputType: "text_request",

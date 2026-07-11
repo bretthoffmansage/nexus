@@ -42,7 +42,7 @@ describe("AppShell startup banner", () => {
 
     expect(screen.queryByText(/Nexus setup in progress/i)).not.toBeInTheDocument();
     expect(
-      screen.queryByText(/Read-only task connectivity through the Claudia Connector/i),
+      screen.queryByText(/Read-only task connectivity through the Console Connector/i),
     ).not.toBeInTheDocument();
     expect(screen.queryByText(/Claudia is not connected yet/i)).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /Dismiss setup notice/i })).not.toBeInTheDocument();

@@ -42,7 +42,7 @@ export function TasksWorkspace({ canQuery = false }: TasksWorkspaceProps) {
         <div className="tasks-layout">
           <div className="tasks-list legacy-port-empty">
             <p>
-              Recurring schedules execute on Claudia and require the Console Connector. P5 persists
+              Recurring schedules execute on the system and require the Console Connector. P5 persists
               one-off requests; recurring scheduling arrives in a later phase.
             </p>
           </div>

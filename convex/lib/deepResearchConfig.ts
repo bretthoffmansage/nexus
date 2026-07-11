@@ -1,10 +1,10 @@
 /**
- * Nexus Deep Research — canonical Claudia handoff contract.
+ * Nexus Deep Research — canonical system handoff contract.
  *
  * Contract: `nexus_hermes_deep_research_connector_handoff_v1`.
  *
  * Nexus owns only request collection, task creation, lifecycle display, and
- * safe terminal-result rendering. Claudia owns the research runtime, tools,
+ * safe terminal-result rendering. The system owns the research runtime, tools,
  * model selection, prompts, source access, sandboxing, budgets, and final
  * result assembly. The ONLY user-controlled execution content is `requestText`.
  *
@@ -17,9 +17,9 @@ export const DEEP_RESEARCH_CONTRACT_VERSION =
   "nexus_hermes_deep_research_connector_handoff_v1_1";
 
 /**
- * Bounded model-id syntax. Mirrors the Claudia Connector + research-tool gate
+ * Bounded model-id syntax. Mirrors the Console Connector + research-tool gate
  * exactly ("provider/model", no whitespace/url/path/shell/credential syntax).
- * Nexus is not the authority — Claudia re-validates — but the envelope must not
+ * Nexus is not the authority — the system re-validates — but the envelope must not
  * carry an obviously malformed value.
  */
 export const DEEP_RESEARCH_MODEL_ID_PATTERN =
@@ -35,7 +35,7 @@ export function isValidDeepResearchModelId(value: string): boolean {
   );
 }
 
-/** Canonical Claudia tool ID for governed deep research. */
+/** Canonical system tool ID for governed deep research. */
 export const DEEP_RESEARCH_TOOL_ID = "research.hermes_deep_research";
 
 /** Canonical task kind persisted on the shared `nexusTasks` queue. */
@@ -86,7 +86,7 @@ export type DeepResearchEnvelope = {
   requestText: string;
   /**
    * Optional governed model selection (v1.1). Omitted entirely when the
-   * operator chose the Claudia default. When present it is a validated Gateway
+   * operator chose the system default. When present it is a validated Gateway
    * model identifier; it is the ONLY execution-selection field allowed to cross
    * — no provider, transport, prompt, or runtime controls ever appear here.
    */
@@ -115,7 +115,7 @@ export function buildDeepResearchEnvelope(input: {
   requestText: string;
   researchRequestId: string;
   idempotencyKey: string;
-  /** Optional. Omit or pass undefined/empty for the Claudia default. */
+  /** Optional. Omit or pass undefined/empty for the system default. */
   requestedModelId?: string;
 }): DeepResearchEnvelopeResult {
   const requestText = input.requestText.trim();
@@ -145,7 +145,7 @@ export function buildDeepResearchEnvelope(input: {
     ),
   };
   // Only include the field when a concrete model was chosen. Omission is the
-  // canonical "use Claudia default" signal.
+  // canonical "use system default" signal.
   if (trimmedModel) {
     envelope.requestedModelId = trimmedModel;
   }
@@ -153,7 +153,7 @@ export function buildDeepResearchEnvelope(input: {
 }
 
 /**
- * Non-retryable Claudia blocked-result codes for governed research. These are
+ * Non-retryable system blocked-result codes for governed research. These are
  * terminal for automatic behavior — Nexus never auto-resubmits on any of them.
  */
 export const DEEP_RESEARCH_BLOCKED_CODES = [
@@ -174,6 +174,6 @@ export function isDeepResearchBlockedCode(
   );
 }
 
-/** Bounded fallback shown when no safe Claudia message is available. */
+/** Bounded fallback shown when no safe system message is available. */
 export const DEEP_RESEARCH_FALLBACK_BLOCKED_MESSAGE =
   "Deep Research is currently unavailable.";

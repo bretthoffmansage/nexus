@@ -11,7 +11,7 @@ export function OperationsWorkspace() {
     <section className="legacy-port-workspace legacy-port-operations" aria-labelledby="ops-heading">
       <ToolAvailabilityBanner
         availability="deferred"
-        detail="PTY, Hermes, and legacy CLI transport are not available on hosted Nexus. A governed Operations Terminal will ship through Claudia Control Center."
+        detail="PTY, Hermes, and legacy CLI transport are not available on hosted Nexus. A governed Operations Terminal will ship through Nexus Control Center."
       />
       <header className="legacy-port-head">
         <h1 id="ops-heading">Operations</h1>
