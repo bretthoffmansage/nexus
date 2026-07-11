@@ -23,7 +23,7 @@
 - P6 protocol remains `v1`.
 - Text-only tasks: `attachments` field **omitted** from claim payload.
 - File-backed tasks: optional `attachments` array (length 1 for Dropzone v1).
-- Connectors without attachment support must **not** claim `obsidian.dropzone.process_document` tasks (tool allowlist).
+- Connectors without attachment support must **not** claim `vault.dropzone.process_document` tasks (tool allowlist).
 
 ## 2. Claim payload extension
 
@@ -195,7 +195,7 @@ Optional `dropzoneResult`:
     "task": {
       "taskId": "...",
       "leaseId": "...",
-      "requestedToolId": "obsidian.dropzone.process_document",
+      "requestedToolId": "vault.dropzone.process_document",
       "requestText": "Process uploaded document: notes.md",
       "taskKind": "library_document_processing",
       "taskMetadata": { "kind": "library_document_processing", "explicitUserAction": "process", "idempotencyKey": "..." },
@@ -230,7 +230,7 @@ Claudia **may not** safely execute end-to-end until implementing:
 1. Parse `attachments[]` from claim
 2. Signed download with lease-bound POST
 3. Stream exact bytes; verify length + SHA-256
-4. Local staging + authorize `obsidian.dropzone.process_document`
+4. Local staging + authorize `vault.dropzone.process_document`
 5. Return `dropzoneResult` on complete
 
 ## 15. Known limitations

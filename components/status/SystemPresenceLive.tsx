@@ -1,10 +1,10 @@
 "use client";
 
 import { useQuery } from "convex/react";
-import { ClaudiaPresence } from "@/components/status/ClaudiaPresence";
+import { SystemPresence } from "@/components/status/SystemPresence";
 import { nexusChat } from "@/lib/nexus/p5Client";
 import {
-  connectorPresenceToClaudiaState,
+  connectorPresenceToSystemState,
   type ConnectorPresenceState,
 } from "@/lib/nexus/connectorPresence";
 import { useNexusAuthReadiness } from "@/lib/nexus/useNexusAuthReadiness";
@@ -14,7 +14,7 @@ import { useNexusAuthReadiness } from "@/lib/nexus/useNexusAuthReadiness";
  *
  * Reads the truthful, content-free `getConnectorStatusPublic` projection
  * (presence only — no heartbeat timestamps, task ids, or software details for
- * ordinary users) and renders the existing `ClaudiaPresence` card.
+ * ordinary users) and renders the existing `SystemPresence` card.
  *
  * The `useQuery` call lives in a child that is only mounted once Convex
  * confirms auth (`readyForPrivateQueries`). That guarantees a
@@ -26,13 +26,13 @@ import { useNexusAuthReadiness } from "@/lib/nexus/useNexusAuthReadiness";
 function ConnectorPresenceQuery() {
   const status = useQuery(nexusChat.connectorStatus, {});
   const presence = (status?.state ?? "not_configured") as ConnectorPresenceState;
-  return <ClaudiaPresence state={connectorPresenceToClaudiaState(presence)} />;
+  return <SystemPresence state={connectorPresenceToSystemState(presence)} />;
 }
 
-export function ClaudiaPresenceLive() {
+export function SystemPresenceLive() {
   const { readyForPrivateQueries } = useNexusAuthReadiness();
   if (!readyForPrivateQueries) {
-    return <ClaudiaPresence state="not_configured" />;
+    return <SystemPresence state="not_configured" />;
   }
   return <ConnectorPresenceQuery />;
 }

@@ -9,7 +9,7 @@
  */
 
 /** Requested Claudia tool for explicit Library Process actions only. */
-export const LIBRARY_DROPZONE_TOOL_ID = "obsidian.dropzone.process_document" as const;
+export const LIBRARY_DROPZONE_TOOL_ID = "vault.dropzone.process_document" as const;
 
 /** Additive P6/P7 attachment protocol version (text-only tasks unchanged). */
 export const LIBRARY_ATTACHMENT_PROTOCOL_VERSION = "v1" as const;

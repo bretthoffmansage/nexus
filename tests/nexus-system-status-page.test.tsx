@@ -4,9 +4,9 @@ import path from "node:path";
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { StatusWorkspace } from "@/components/workspace/port/StatusWorkspace";
-import { CLAUDIA_SYSTEM_COMPONENT_KEYS, P6_SYSTEM_STATUS } from "@/convex/lib/claudiaSystemStatus";
+import { SYSTEM_COMPONENT_KEYS, P6_SYSTEM_STATUS } from "@/convex/lib/systemStatus";
 import { P6_LEASE } from "@/convex/lib/p6config";
-import { deriveClaudiaSystemStatusCards } from "@/lib/nexus/claudiaSystemStatusView";
+import { deriveSystemStatusCards } from "@/lib/nexus/systemStatusView";
 
 const ROOT = path.resolve(import.meta.dirname, "..");
 
@@ -21,7 +21,7 @@ vi.mock("convex/react", async (importOriginal) => ({
     hasSystemStatus: true,
     snapshotObservedAt: Date.now() - 5_000,
     components: Object.fromEntries(
-      CLAUDIA_SYSTEM_COMPONENT_KEYS.map((key) => [
+      SYSTEM_COMPONENT_KEYS.map((key) => [
         key,
         { active: true, observedAt: Date.now() - 5_000 },
       ]),
@@ -54,16 +54,16 @@ describe("Nexus system status page", () => {
     for (const title of CARD_TITLES) {
       expect(screen.getByRole("heading", { name: title })).toBeInTheDocument();
     }
-    expect(document.querySelectorAll(".claudia-system-status-card").length).toBe(8);
+    expect(document.querySelectorAll(".system-status-card").length).toBe(8);
   });
 
   it("renders the Cursor CLI card with the same style as Claude and Codex", () => {
     render(<StatusWorkspace />);
     const cursorHeading = screen.getByRole("heading", { name: "Cursor CLI" });
-    const cursorCard = cursorHeading.closest(".claudia-system-status-card");
+    const cursorCard = cursorHeading.closest(".system-status-card");
     const claudeCard = screen
       .getByRole("heading", { name: "Claude CLI" })
-      .closest(".claudia-system-status-card");
+      .closest(".system-status-card");
     expect(cursorCard).not.toBeNull();
     expect(cursorCard?.className).toBe(claudeCard?.className);
     expect(
@@ -74,15 +74,15 @@ describe("Nexus system status page", () => {
   it("shows green indicators only for live cards and omits yellow connector copy", () => {
     render(<StatusWorkspace />);
     expect(screen.queryByText(/System online/i)).not.toBeInTheDocument();
-    expect(document.querySelectorAll(".claudia-system-status-dot--live").length).toBe(8);
+    expect(document.querySelectorAll(".system-status-dot--live").length).toBe(8);
     expect(document.querySelector(".nexus-presence-dot")).toBeNull();
   });
 
   it("does not render paths, URLs, or raw payload fields", () => {
     for (const file of [
       "components/workspace/port/StatusWorkspace.tsx",
-      "components/status/ClaudiaSystemStatusPanel.tsx",
-      "lib/nexus/claudiaSystemStatusView.ts",
+      "components/status/SystemStatusPanel.tsx",
+      "lib/nexus/systemStatusView.ts",
     ]) {
       const content = readFileSync(path.join(ROOT, file), "utf8");
       expect(content).not.toMatch(/localhost/i);
@@ -108,20 +108,20 @@ describe("Claudia system status view-model guards", () => {
       hasSystemStatus: true,
       snapshotObservedAt: now - 5_000,
       components: Object.fromEntries(
-        CLAUDIA_SYSTEM_COMPONENT_KEYS.map((key) => [
+        SYSTEM_COMPONENT_KEYS.map((key) => [
           key,
           { active: true, observedAt: key === "claude_cli" ? staleCli : freshCli },
         ]),
       ) as never,
     };
-    const cards = deriveClaudiaSystemStatusCards(base, now);
+    const cards = deriveSystemStatusCards(base, now);
     expect(cards.find((card) => card.key === "claude_cli")?.live).toBe(false);
     expect(cards.find((card) => card.key === "codex_cli")?.live).toBe(true);
   });
 
   it("simulates power loss after the Connector TTL", () => {
     const stale = now - P6_LEASE.connectorOfflineThresholdMs - 1;
-    const cards = deriveClaudiaSystemStatusCards(
+    const cards = deriveSystemStatusCards(
       {
         configured: true,
         presence: "offline",
@@ -131,7 +131,7 @@ describe("Claudia system status view-model guards", () => {
         hasSystemStatus: true,
         snapshotObservedAt: now - 5_000,
         components: Object.fromEntries(
-          CLAUDIA_SYSTEM_COMPONENT_KEYS.map((key) => [
+          SYSTEM_COMPONENT_KEYS.map((key) => [
             key,
             { active: true, observedAt: now - 5_000 },
           ]),

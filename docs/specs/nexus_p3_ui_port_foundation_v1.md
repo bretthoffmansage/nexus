@@ -52,7 +52,7 @@ Port the visual identity, layout, and safe read-only presentation patterns from 
 
 ### Status (`components/status/`)
 
-- `ClaudiaPresence.tsx` — connector presentation (`not_configured` default)
+- `SystemPresence.tsx` — connector presentation (`not_configured` default)
 - `SetupBanner.tsx` — “Nexus setup in progress” (not Claudia Console Mode)
 
 ### Sources (`components/sources/`)
@@ -133,7 +133,7 @@ Persistence: `nexus-theme-mode` in localStorage via `ThemeProvider`.
 Frontend-only contracts (not Convex schema):
 
 - `TaskDisplayStatus`
-- `ClaudiaPresenceState`
+- `SystemPresenceState`
 - `NexusAnswer`
 - `NexusSource`
 - `NexusDiagnostics`

@@ -188,7 +188,7 @@ Allowlist in `CALENDAR_SCHEDULE.allowedScheduledToolIds`:
 - `vault.agentic_retrieval`
 - `membership_io.transcript_retrieve`
 
-**Excluded v1:** `obsidian.dropzone.process_document` (requires immutable attachment).
+**Excluded v1:** `vault.dropzone.process_document` (requires immutable attachment).
 
 ## Configuration
 

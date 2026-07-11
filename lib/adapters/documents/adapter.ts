@@ -5,7 +5,7 @@ export const documentsAdapterMeta: ToolAdapterMeta = {
   availability: "available",
   authority: "convex",
   futureConvexCollection: "nexusLibraryDocuments",
-  futureClaudiaTaskKind: "obsidian.dropzone.process_document",
+  futureClaudiaTaskKind: "vault.dropzone.process_document",
 };
 
 export type DocumentRecord = {

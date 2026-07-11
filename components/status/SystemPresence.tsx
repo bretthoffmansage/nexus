@@ -1,7 +1,7 @@
-import type { ClaudiaPresenceState } from "@/lib/types/presentation";
+import type { SystemPresenceState } from "@/lib/types/presentation";
 
 const STATE_COPY: Record<
-  ClaudiaPresenceState,
+  SystemPresenceState,
   { label: string; detail: string }
 > = {
   not_configured: {
@@ -31,22 +31,22 @@ const STATE_COPY: Record<
   },
 };
 
-type ClaudiaPresenceProps = {
+type SystemPresenceProps = {
   /** P3 default — truthful placeholder only. */
-  state?: ClaudiaPresenceState;
+  state?: SystemPresenceState;
 };
 
-export function ClaudiaPresence({ state = "not_configured" }: ClaudiaPresenceProps) {
+export function SystemPresence({ state = "not_configured" }: SystemPresenceProps) {
   const copy = STATE_COPY[state];
 
   return (
     <section
       className="nexus-presence-card"
-      aria-labelledby="claudia-presence-title"
+      aria-labelledby="system-presence-title"
       data-presence={state}
     >
       <div className="nexus-presence-head">
-        <h2 className="nexus-presence-title" id="claudia-presence-title">
+        <h2 className="nexus-presence-title" id="system-presence-title">
           System
         </h2>
         <span className="nexus-presence-pill">

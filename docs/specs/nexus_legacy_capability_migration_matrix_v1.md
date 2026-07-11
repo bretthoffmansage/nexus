@@ -499,7 +499,7 @@ See **§9** (summary: **D4** on Nexus, **D7** successor).
 | **Execution authority** | Gateway/Core probe |
 | **Local dependency** | Core reachable (legacy) |
 | **User intent** | Is Claudia alive? |
-| **Future Nexus presentation** | `ClaudiaPresence`, `ConvexConnectivityBadge` |
+| **Future Nexus presentation** | `SystemPresence`, `ConvexConnectivityBadge` |
 | **Future Convex model** | `connectorPresence` |
 | **Future Claudia tool ID** | N/A |
 | **Role expectation** | Any approved user |
@@ -558,7 +558,7 @@ See **§9** (summary: **D4** on Nexus, **D7** successor).
 | **Execution authority** | Connector |
 | **Local dependency** | Outbound HTTPS |
 | **User intent** | Know Claudia online |
-| **Future Nexus presentation** | `ClaudiaPresence` online/offline/busy |
+| **Future Nexus presentation** | `SystemPresence` online/offline/busy |
 | **Future Convex model** | `connectorPresence` |
 | **Future Claudia tool ID** | N/A |
 | **Role expectation** | N/A |

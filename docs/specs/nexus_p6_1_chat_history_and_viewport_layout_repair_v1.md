@@ -7,7 +7,7 @@ P6.1 is a focused frontend layout and navigation repair. It moves chat-specific 
 ## Original UX problems
 
 1. **Chat history in the global sidebar** — When Nexus Chat was selected, the left sidebar showed New request, a Requests heading, and conversation history. Switching tools hid that section, making history feel global rather than chat-specific.
-2. **Duplicate Claudia status** — `ClaudiaPresenceLive` appeared in the sidebar while the same Connector projection already existed on `/status`.
+2. **Duplicate Claudia status** — `SystemPresenceLive` appeared in the sidebar while the same Connector projection already existed on `/status`.
 3. **Document-level scrolling** — The shell could grow taller than the viewport, forcing browser scroll to reach the chat composer.
 
 ## Prior sidebar behavior
@@ -16,7 +16,7 @@ On `/` only, `Sidebar.tsx` rendered:
 
 - New request button
 - `TaskHistorySection` (Requests heading + `listMyConversations`)
-- `ClaudiaPresenceLive` at the footer
+- `SystemPresenceLive` at the footer
 
 ## New chat history placement
 
@@ -52,13 +52,13 @@ Selecting a conversation from the history panel:
 
 ## Duplicate Claudia status removal
 
-Removed `ClaudiaPresenceLive` from `Sidebar.tsx`.
+Removed `SystemPresenceLive` from `Sidebar.tsx`.
 
 Retained on:
 
 - `/status` (`StatusWorkspace`)
 - Nexus Chat execution copy (composer help + welcome text)
-- `ClaudiaPresenceLive` component itself (used by status surfaces)
+- `SystemPresenceLive` component itself (used by status surfaces)
 
 ## Application height hierarchy
 

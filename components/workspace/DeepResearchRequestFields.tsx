@@ -9,7 +9,7 @@ import {
   validateComposedDeepResearchRequest,
 } from "@/lib/nexus/deepResearchRequestCompose";
 import {
-  CLAUDIA_DEFAULT_MODEL_VALUE,
+  NEXUS_DEFAULT_MODEL_VALUE,
   type NexusResearchModel,
 } from "@/lib/nexus/deepResearchModelCatalog";
 
@@ -115,4 +115,4 @@ export function DeepResearchRequestFields({
   );
 }
 
-export { DEFAULT_DEEP_RESEARCH_REPORT_RULES, CLAUDIA_DEFAULT_MODEL_VALUE };
+export { DEFAULT_DEEP_RESEARCH_REPORT_RULES, NEXUS_DEFAULT_MODEL_VALUE };

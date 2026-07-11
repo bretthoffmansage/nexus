@@ -15,18 +15,18 @@ vi.mock("convex/react", async (importOriginal) => ({
 
 import { ChatSessionProvider } from "@/components/chat/ChatSessionContext";
 import { ChatEmptyState, NexusChatWorkspace } from "@/components/chat/NexusChatWorkspace";
-import { ClaudiaPresenceLive } from "@/components/status/ClaudiaPresenceLive";
+import { SystemPresenceLive } from "@/components/status/SystemPresenceLive";
 import { StatusWorkspace } from "@/components/workspace/port/StatusWorkspace";
-import { connectorPresenceToClaudiaState } from "@/lib/nexus/connectorPresence";
+import { connectorPresenceToSystemState } from "@/lib/nexus/connectorPresence";
 
 describe("P6 Connector presence mapping", () => {
   it("maps every P6 presence state to a truthful visual state", () => {
-    expect(connectorPresenceToClaudiaState("online_idle")).toBe("online");
-    expect(connectorPresenceToClaudiaState("online_busy")).toBe("busy");
-    expect(connectorPresenceToClaudiaState("offline")).toBe("offline");
-    expect(connectorPresenceToClaudiaState("degraded")).toBe("error");
-    expect(connectorPresenceToClaudiaState("disabled")).toBe("not_configured");
-    expect(connectorPresenceToClaudiaState("not_configured")).toBe("not_configured");
+    expect(connectorPresenceToSystemState("online_idle")).toBe("online");
+    expect(connectorPresenceToSystemState("online_busy")).toBe("busy");
+    expect(connectorPresenceToSystemState("offline")).toBe("offline");
+    expect(connectorPresenceToSystemState("degraded")).toBe("error");
+    expect(connectorPresenceToSystemState("disabled")).toBe("not_configured");
+    expect(connectorPresenceToSystemState("not_configured")).toBe("not_configured");
   });
 });
 
@@ -58,7 +58,7 @@ describe("P6 Nexus Chat copy (Part AA)", () => {
 describe("P6 Connector status card (Part AA)", () => {
   it("5. renders the truthful not-configured presence while status is unknown", () => {
     // useQuery mocked → undefined → falls back to not_configured.
-    render(<ClaudiaPresenceLive />);
+    render(<SystemPresenceLive />);
     expect(screen.getByText(/Connector not configured/i)).toBeInTheDocument();
     expect(screen.queryByText(/System online/i)).not.toBeInTheDocument();
   });

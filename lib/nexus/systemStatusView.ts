@@ -1,16 +1,16 @@
 import { api } from "@/convex/_generated/api";
 import {
-  CLAUDIA_SYSTEM_COMPONENT_KEYS,
-  type ClaudiaSystemComponentKey,
+  SYSTEM_COMPONENT_KEYS,
+  type SystemComponentKey,
   componentObservationTtlMs,
   isCliWorkerComponent,
   systemStatusSnapshotTtlMs,
-} from "@/convex/lib/claudiaSystemStatus";
+} from "@/convex/lib/systemStatus";
 import { P6_LEASE } from "@/convex/lib/p6config";
 
-export const claudiaSystemStatus = api.connectorRegistry.getClaudiaSystemStatusForPage;
+export const systemStatus = api.connectorRegistry.getSystemStatusForPage;
 
-export type ClaudiaSystemStatusQueryResult = {
+export type SystemStatusQueryResult = {
   configured: boolean;
   presence: string;
   lastHeartbeatAt: number | null;
@@ -18,11 +18,11 @@ export type ClaudiaSystemStatusQueryResult = {
   softwareVersion: string | null;
   hasSystemStatus: boolean;
   snapshotObservedAt: number | null;
-  components: Record<ClaudiaSystemComponentKey, { active: boolean; observedAt: number } | null> | null;
+  components: Record<SystemComponentKey, { active: boolean; observedAt: number } | null> | null;
 };
 
-export type ClaudiaSystemStatusCard = {
-  key: ClaudiaSystemComponentKey;
+export type SystemStatusCard = {
+  key: SystemComponentKey;
   title: string;
   description: string;
   live: boolean;
@@ -31,7 +31,7 @@ export type ClaudiaSystemStatusCard = {
 };
 
 const CARD_COPY: Record<
-  ClaudiaSystemComponentKey,
+  SystemComponentKey,
   { title: string; description: string; liveStatus: string; inactiveStatus: string }
 > = {
   core_api: {
@@ -46,13 +46,13 @@ const CARD_COPY: Record<
     liveStatus: "Online",
     inactiveStatus: "Offline",
   },
-  viktor_retrieval: {
+  vault_retrieval: {
     title: "Vault Retrieval",
     description: "Read-only vault retrieval service.",
     liveStatus: "Ready",
     inactiveStatus: "Not ready",
   },
-  sage_knowledge_base: {
+  vault: {
     title: "Vault",
     description: "Approved read-only knowledge vault connection.",
     liveStatus: "Connected",
@@ -109,7 +109,7 @@ function isSnapshotFresh(snapshotObservedAt: number | null, now: number): boolea
 }
 
 function isComponentObservationFresh(
-  key: ClaudiaSystemComponentKey,
+  key: SystemComponentKey,
   observedAt: number | null,
   now: number,
 ): boolean {
@@ -133,8 +133,8 @@ function connectorOperatingLabel(operatingState: string | null): string {
 }
 
 function isComponentLive(
-  key: ClaudiaSystemComponentKey,
-  input: ClaudiaSystemStatusQueryResult,
+  key: SystemComponentKey,
+  input: SystemStatusQueryResult,
   now: number,
 ): boolean {
   if (!input.configured) return false;
@@ -153,8 +153,8 @@ function isComponentLive(
 }
 
 function statusTextForCard(
-  key: ClaudiaSystemComponentKey,
-  input: ClaudiaSystemStatusQueryResult,
+  key: SystemComponentKey,
+  input: SystemStatusQueryResult,
   now: number,
   live: boolean,
 ): string {
@@ -192,8 +192,8 @@ function statusTextForCard(
 }
 
 function secondaryDetailForCard(
-  key: ClaudiaSystemComponentKey,
-  input: ClaudiaSystemStatusQueryResult,
+  key: SystemComponentKey,
+  input: SystemStatusQueryResult,
   now: number,
 ): string | undefined {
   if (key === "nexus_connector") {
@@ -217,11 +217,11 @@ function secondaryDetailForCard(
   return undefined;
 }
 
-export function deriveClaudiaSystemStatusCards(
-  input: ClaudiaSystemStatusQueryResult,
+export function deriveSystemStatusCards(
+  input: SystemStatusQueryResult,
   now: number,
-): ClaudiaSystemStatusCard[] {
-  return CLAUDIA_SYSTEM_COMPONENT_KEYS.map((key) => {
+): SystemStatusCard[] {
+  return SYSTEM_COMPONENT_KEYS.map((key) => {
     const copy = CARD_COPY[key];
     const live = isComponentLive(key, input, now);
     return {

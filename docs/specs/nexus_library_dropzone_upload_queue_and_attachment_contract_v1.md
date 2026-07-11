@@ -26,7 +26,7 @@ User upload (Convex storage URL)
   → finalize action (server SHA-256 + length)
   → immutable nexusLibraryDocumentVersions row
   → explicit Process click
-  → one nexusTasks row (obsidian.dropzone.process_document)
+  → one nexusTasks row (vault.dropzone.process_document)
   → global queueSequence
   → Connector claim (+ attachments[])
   → lease-bound POST /api/connector/v1/attachment
@@ -59,7 +59,7 @@ Optional `conversationId` / `requestMessageId` for library tasks; `taskKind`, `l
 - Max upload: **25 MiB** (`26214400` bytes)
 - Remote extensions: `.md`, `.markdown`, `.txt`, `.csv`, `.json`, `.html`, `.htm`, `.pdf`, `.docx`, `.xlsx`, `.pptx`, `.png`, `.jpg`, `.jpeg`, `.webp`
 - Denied: `.key`, archives, executables, scripts, unknown
-- Tool ID: `obsidian.dropzone.process_document`
+- Tool ID: `vault.dropzone.process_document`
 - Attachment protocol: `v1`
 
 ## Upload flow

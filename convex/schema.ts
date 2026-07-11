@@ -1,7 +1,7 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 import { boundedMetadataValidator } from "./lib/p5config";
-import { claudiaSystemStatusRecordValidator } from "./lib/claudiaSystemStatus";
+import { systemStatusRecordValidator } from "./lib/systemStatus";
 import { taskStatusValidator } from "./lib/taskStatus";
 
 const libraryProcessingStatusValidator = v.union(
@@ -599,8 +599,11 @@ export default defineSchema({
     disabledAt: v.optional(v.number()),
     revokedAt: v.optional(v.number()),
     metadata: v.optional(boundedMetadataValidator),
-    /** Optional additive Claudia system status snapshot from heartbeat `systemStatus`. */
-    claudiaSystemStatus: v.optional(claudiaSystemStatusRecordValidator),
+    /** Optional additive system status snapshot from heartbeat `systemStatus`. */
+    systemStatus: v.optional(systemStatusRecordValidator),
+    /** DEPRECATED pre-rebrand field; cleared by migrations.clearLegacySystemStatusField,
+     * then this line is removed. */
+    claudiaSystemStatus: v.optional(v.any()),
   })
     .index("by_connector_id", ["connectorId"])
     .index("by_status", ["status"])

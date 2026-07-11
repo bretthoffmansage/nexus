@@ -13,7 +13,7 @@
  */
 
 /** Sentinel option: send no requestedModelId → Claudia uses its default. */
-export const CLAUDIA_DEFAULT_MODEL_VALUE = "__claudia_default__";
+export const NEXUS_DEFAULT_MODEL_VALUE = "__nexus_default__";
 
 /** Model types from the Gateway catalog that are never eligible for research. */
 const DENIED_TYPES = new Set([

@@ -8,7 +8,7 @@ import {
 } from "@/convex/lib/calendarScheduledTools";
 import {
   DeepResearchRequestFields,
-  CLAUDIA_DEFAULT_MODEL_VALUE,
+  NEXUS_DEFAULT_MODEL_VALUE,
   DEFAULT_DEEP_RESEARCH_REPORT_RULES,
 } from "@/components/workspace/DeepResearchRequestFields";
 import {
@@ -66,7 +66,7 @@ export function CalendarEventDialog({ mode, onClose, onEdit, ready }: CalendarEv
   const [form, setForm] = useState<EventFormState>(emptyForm(formatLocalDateInput(new Date())));
   const [draftTextRequest, setDraftTextRequest] = useState("");
   const [draftReportRules, setDraftReportRules] = useState(DEFAULT_DEEP_RESEARCH_REPORT_RULES);
-  const [selectedModelId, setSelectedModelId] = useState(CLAUDIA_DEFAULT_MODEL_VALUE);
+  const [selectedModelId, setSelectedModelId] = useState(NEXUS_DEFAULT_MODEL_VALUE);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 

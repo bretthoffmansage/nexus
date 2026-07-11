@@ -249,7 +249,7 @@ describe("P6.1 — chat history placement", () => {
 describe("P6.1 — duplicate status removal", () => {
   it("16-19. sidebar has no legacy presence card; status route keeps status copy", () => {
     const sidebarSrc = readFileSync(path.join(ROOT, "components/layout/Sidebar.tsx"), "utf8");
-    expect(sidebarSrc).not.toContain("ClaudiaPresenceLive");
+    expect(sidebarSrc).not.toContain("SystemPresenceLive");
 
     render(
       <ThemeProvider>

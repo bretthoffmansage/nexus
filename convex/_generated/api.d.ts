@@ -27,7 +27,7 @@ import type * as lib_calendarProjection from "../lib/calendarProjection.js";
 import type * as lib_calendarScheduleConfig from "../lib/calendarScheduleConfig.js";
 import type * as lib_calendarScheduledTools from "../lib/calendarScheduledTools.js";
 import type * as lib_calendarTimezone from "../lib/calendarTimezone.js";
-import type * as lib_claudiaSystemStatus from "../lib/claudiaSystemStatus.js";
+import type * as lib_systemStatus from "../lib/systemStatus.js";
 import type * as lib_connectorAuth from "../lib/connectorAuth.js";
 import type * as lib_conversationContext from "../lib/conversationContext.js";
 import type * as lib_conversationContextConfig from "../lib/conversationContextConfig.js";
@@ -91,7 +91,7 @@ declare const fullApi: ApiFromModules<{
   "lib/calendarScheduleConfig": typeof lib_calendarScheduleConfig;
   "lib/calendarScheduledTools": typeof lib_calendarScheduledTools;
   "lib/calendarTimezone": typeof lib_calendarTimezone;
-  "lib/claudiaSystemStatus": typeof lib_claudiaSystemStatus;
+  "lib/systemStatus": typeof lib_systemStatus;
   "lib/connectorAuth": typeof lib_connectorAuth;
   "lib/conversationContext": typeof lib_conversationContext;
   "lib/conversationContextConfig": typeof lib_conversationContextConfig;

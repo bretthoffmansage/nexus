@@ -7,7 +7,7 @@ import {
   isValidDeepResearchModelId,
 } from "@/convex/lib/deepResearchConfig";
 import {
-  CLAUDIA_DEFAULT_MODEL_VALUE,
+  NEXUS_DEFAULT_MODEL_VALUE,
   normalizeResearchModelCatalog,
   summarizeCatalog,
   type NexusResearchModel,
@@ -177,7 +177,7 @@ describe("Deep Research model persistence (localStorage preference)", () => {
   afterEach(() => localStorage.clear());
 
   it("defaults to the Claudia-default sentinel when nothing is stored", () => {
-    expect(loadSelectedModelId()).toBe(CLAUDIA_DEFAULT_MODEL_VALUE);
+    expect(loadSelectedModelId()).toBe(NEXUS_DEFAULT_MODEL_VALUE);
   });
 
   it("round-trips a concrete valid model and remains until changed", () => {
@@ -189,11 +189,11 @@ describe("Deep Research model persistence (localStorage preference)", () => {
 
   it("degrades a corrupted stored value to the default", () => {
     localStorage.setItem("nexus.deepResearch.selectedModelId", "corrupted value!!");
-    expect(loadSelectedModelId()).toBe(CLAUDIA_DEFAULT_MODEL_VALUE);
+    expect(loadSelectedModelId()).toBe(NEXUS_DEFAULT_MODEL_VALUE);
   });
 
   it("maps sentinel to undefined and concrete to the id for the envelope", () => {
-    expect(selectedModelToEnvelopeField(CLAUDIA_DEFAULT_MODEL_VALUE)).toBeUndefined();
+    expect(selectedModelToEnvelopeField(NEXUS_DEFAULT_MODEL_VALUE)).toBeUndefined();
     expect(selectedModelToEnvelopeField("openai/gpt-5")).toBe("openai/gpt-5");
     expect(selectedModelToEnvelopeField("bad value")).toBeUndefined();
   });
@@ -205,7 +205,7 @@ describe("ResearchModelSelector component", () => {
   it("always offers the Nexus default first and lists compatible models", () => {
     render(
       <ResearchModelSelector
-        value={CLAUDIA_DEFAULT_MODEL_VALUE}
+        value={NEXUS_DEFAULT_MODEL_VALUE}
         onChange={() => {}}
         models={models}
         loading={false}
@@ -221,11 +221,11 @@ describe("ResearchModelSelector component", () => {
 
   it("shows a loading state and a catalog-error fallback", () => {
     const { rerender } = render(
-      <ResearchModelSelector value={CLAUDIA_DEFAULT_MODEL_VALUE} onChange={() => {}} models={[]} loading error={false} />,
+      <ResearchModelSelector value={NEXUS_DEFAULT_MODEL_VALUE} onChange={() => {}} models={[]} loading error={false} />,
     );
     expect(screen.getByText(/Loading the current model catalog/)).toBeTruthy();
     rerender(
-      <ResearchModelSelector value={CLAUDIA_DEFAULT_MODEL_VALUE} onChange={() => {}} models={[]} loading={false} error />,
+      <ResearchModelSelector value={NEXUS_DEFAULT_MODEL_VALUE} onChange={() => {}} models={[]} loading={false} error />,
     );
     expect(screen.getByText(/Live model catalog is unavailable/)).toBeTruthy();
   });
@@ -247,7 +247,7 @@ describe("ResearchModelSelector component", () => {
     let chosen = "";
     render(
       <ResearchModelSelector
-        value={CLAUDIA_DEFAULT_MODEL_VALUE}
+        value={NEXUS_DEFAULT_MODEL_VALUE}
         onChange={(v) => {
           chosen = v;
         }}

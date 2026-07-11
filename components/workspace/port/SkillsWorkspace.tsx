@@ -28,7 +28,7 @@ const SKILLS_CATALOG_ROW_LAYOUT = [
   {
     id: "row-library-documents",
     heading: "Library & Documents",
-    toolIds: ["obsidian.dropzone.process_document", "research.hermes_deep_research"],
+    toolIds: ["vault.dropzone.process_document", "research.hermes_deep_research"],
   },
 ] as const;
 

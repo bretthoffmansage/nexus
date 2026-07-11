@@ -1,6 +1,6 @@
 "use client";
 
-import { ClaudiaSystemStatusPanel } from "@/components/status/ClaudiaSystemStatusPanel";
+import { SystemStatusPanel } from "@/components/status/SystemStatusPanel";
 
 export function StatusWorkspace() {
   return (
@@ -12,7 +12,7 @@ export function StatusWorkspace() {
         <h1 id="status-heading">Status</h1>
         <p className="legacy-port-subhead">Nexus system connectivity and service health</p>
       </header>
-      <ClaudiaSystemStatusPanel />
+      <SystemStatusPanel />
     </section>
   );
 }

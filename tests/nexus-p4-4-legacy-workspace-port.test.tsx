@@ -169,7 +169,7 @@ describe("Nexus P4.4 legacy workspace port", () => {
   it("sidebar keeps global navigation only (chat history moved to Nexus Chat)", () => {
     const src = readFileSync(path.join(ROOT, "components/layout/Sidebar.tsx"), "utf8");
     expect(src).not.toContain("TaskHistorySection");
-    expect(src).not.toContain("ClaudiaPresenceLive");
+    expect(src).not.toContain("SystemPresenceLive");
     expect(src).not.toContain("New request");
     expect(src).toContain("ToolNavigation");
     const chatSrc = readFileSync(path.join(ROOT, "components/chat/NexusChatWorkspace.tsx"), "utf8");

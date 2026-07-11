@@ -26,7 +26,7 @@ No second tool registry — static defs reference canonical IDs only.
 
 1. `vault.agentic_retrieval` — SAGE Knowledge Vault  
 2. `membership_io.transcript_retrieve` — Membership.io Transcript Search  
-3. `obsidian.dropzone.process_document` — Library Dropzone Processing  
+3. `vault.dropzone.process_document` — Library Dropzone Processing  
 4. `membership_io.catalog_refresh_and_vault_update` — Membership.io Full Sync  
 
 Claudia-internal-only tools are excluded.

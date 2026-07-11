@@ -1,4 +1,4 @@
-import type { ClaudiaPresenceState } from "@/lib/types/presentation";
+import type { SystemPresenceState } from "@/lib/types/presentation";
 
 /**
  * P6 — truthful Connector presence states surfaced to the UI. Mirrors
@@ -14,13 +14,13 @@ export type ConnectorPresenceState =
   | "disabled";
 
 /**
- * Map the P6 Connector presence to the existing 6-state `ClaudiaPresence`
+ * Map the P6 Connector presence to the existing 6-state `SystemPresence`
  * visual vocabulary so the presence card renders truthfully without a
  * redesign.
  */
-export function connectorPresenceToClaudiaState(
+export function connectorPresenceToSystemState(
   presence: ConnectorPresenceState,
-): ClaudiaPresenceState {
+): SystemPresenceState {
   switch (presence) {
     case "online_idle":
       return "online";

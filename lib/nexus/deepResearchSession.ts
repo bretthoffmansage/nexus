@@ -3,7 +3,7 @@ import {
   isValidDeepResearchIdentifier,
   isValidDeepResearchModelId,
 } from "@/convex/lib/deepResearchConfig";
-import { CLAUDIA_DEFAULT_MODEL_VALUE } from "@/lib/nexus/deepResearchModelCatalog";
+import { NEXUS_DEFAULT_MODEL_VALUE } from "@/lib/nexus/deepResearchModelCatalog";
 import { DEFAULT_DEEP_RESEARCH_REPORT_RULES } from "@/lib/nexus/deepResearchRequestCompose";
 
 const STORAGE_REQUEST_ID = "nexus.deepResearch.researchRequestId";
@@ -128,10 +128,10 @@ export function resetReportRulesDraft(): string {
  */
 export function loadSelectedModelId(): string {
   const stored = readStored(STORAGE_SELECTED_MODEL);
-  if (!stored || stored === CLAUDIA_DEFAULT_MODEL_VALUE) {
-    return CLAUDIA_DEFAULT_MODEL_VALUE;
+  if (!stored || stored === NEXUS_DEFAULT_MODEL_VALUE) {
+    return NEXUS_DEFAULT_MODEL_VALUE;
   }
-  return isValidDeepResearchModelId(stored) ? stored : CLAUDIA_DEFAULT_MODEL_VALUE;
+  return isValidDeepResearchModelId(stored) ? stored : NEXUS_DEFAULT_MODEL_VALUE;
 }
 
 /**
@@ -140,8 +140,8 @@ export function loadSelectedModelId(): string {
  * not submit anything.
  */
 export function saveSelectedModelId(value: string): void {
-  if (value === CLAUDIA_DEFAULT_MODEL_VALUE) {
-    writeStored(STORAGE_SELECTED_MODEL, CLAUDIA_DEFAULT_MODEL_VALUE);
+  if (value === NEXUS_DEFAULT_MODEL_VALUE) {
+    writeStored(STORAGE_SELECTED_MODEL, NEXUS_DEFAULT_MODEL_VALUE);
     return;
   }
   if (isValidDeepResearchModelId(value)) {
@@ -155,7 +155,7 @@ export function saveSelectedModelId(value: string): void {
  * through. Anything else is treated as the default (fail safe).
  */
 export function selectedModelToEnvelopeField(value: string): string | undefined {
-  if (!value || value === CLAUDIA_DEFAULT_MODEL_VALUE) return undefined;
+  if (!value || value === NEXUS_DEFAULT_MODEL_VALUE) return undefined;
   return isValidDeepResearchModelId(value) ? value : undefined;
 }
 

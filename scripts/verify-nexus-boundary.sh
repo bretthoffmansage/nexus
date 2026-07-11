@@ -16,12 +16,12 @@ SCAN_GLOBS=(
 )
 
 PATTERNS=(
-  'CLAUDIA_CORE_URL'
-  '/api/claudia/v1'
+  'NEXUS_CORE_URL'
+  '/api/nexus/v1'
   '/api/chat_stream'
   'direct Hermes invocation'
   'CLI Mirror'
-  'claudiaCliMirror'
+  'CliMirror'
   'Hermes PTY'
   'shell_routes'
   'subprocess'

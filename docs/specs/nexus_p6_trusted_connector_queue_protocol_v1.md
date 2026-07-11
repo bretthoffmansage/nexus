@@ -276,7 +276,7 @@ private content (only the content-free aggregate + Connector projection).
 
 ## 20. Status UI
 
-- `ClaudiaPresenceLive` (sidebar + Status page) reads the truthful, content-free
+- `SystemPresenceLive` (sidebar + Status page) reads the truthful, content-free
   `getConnectorStatusPublic` presence (`not_configured | offline | online_idle |
   online_busy | degraded | disabled`), gated on P5.1 auth readiness, and maps it
   to the existing presence card. No redesign; welcome/answer/sources/composer/

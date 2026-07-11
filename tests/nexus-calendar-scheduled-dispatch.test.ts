@@ -322,7 +322,7 @@ describe("Nexus Calendar scheduled task dispatch", () => {
         localScheduledDate: "2030-01-01",
         localScheduledTime: "12:00",
         timezone: "UTC",
-        requestedToolId: "obsidian.dropzone.process_document",
+        requestedToolId: "vault.dropzone.process_document",
       }),
     ).rejects.toThrow();
   });

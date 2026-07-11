@@ -25,7 +25,7 @@ import {
   validateComposedDeepResearchRequest,
 } from "@/lib/nexus/deepResearchRequestCompose";
 import {
-  CLAUDIA_DEFAULT_MODEL_VALUE,
+  NEXUS_DEFAULT_MODEL_VALUE,
 } from "@/lib/nexus/deepResearchModelCatalog";
 import { useDeepResearchModelCatalog } from "@/lib/nexus/useDeepResearchModelCatalog";
 import {
@@ -52,7 +52,7 @@ export function ResearchWorkspace() {
   const [historyOpen, setHistoryOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const [selectedModelId, setSelectedModelId] = useState<string>(CLAUDIA_DEFAULT_MODEL_VALUE);
+  const [selectedModelId, setSelectedModelId] = useState<string>(NEXUS_DEFAULT_MODEL_VALUE);
   // The Request modal is collapsed by default and never auto-opens; it opens
   // only when the user clicks the Request panel.
   const [requestModalOpen, setRequestModalOpen] = useState(false);

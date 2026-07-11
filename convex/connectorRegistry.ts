@@ -15,9 +15,9 @@ import {
   type ConnectorPresenceState,
 } from "./lib/p6config";
 import {
-  claudiaSystemStatusRecordValidator,
-  type StoredClaudiaSystemStatus,
-} from "./lib/claudiaSystemStatus";
+  systemStatusRecordValidator,
+  type StoredSystemStatus,
+} from "./lib/systemStatus";
 
 /**
  * P6 — trusted Connector identity.
@@ -203,9 +203,9 @@ export const heartbeatConnector = internalMutation({
     environment: v.optional(v.string()),
     operatingState: v.optional(operatingStateValidator),
     lastErrorCode: v.optional(v.string()),
-    /** When true, replace `claudiaSystemStatus` with `claudiaSystemStatus` arg (undefined clears). */
-    replaceClaudiaSystemStatus: v.optional(v.boolean()),
-    claudiaSystemStatus: v.optional(claudiaSystemStatusRecordValidator),
+    /** When true, replace `systemStatus` with `systemStatus` arg (undefined clears). */
+    replaceSystemStatus: v.optional(v.boolean()),
+    systemStatus: v.optional(systemStatusRecordValidator),
   },
   handler: async (ctx, args) => {
     const connector = await requireActiveConnector(ctx, args.connectorId);
@@ -231,8 +231,8 @@ export const heartbeatConnector = internalMutation({
       patch.lastErrorCode = args.lastErrorCode;
       patch.lastErrorAt = now;
     }
-    if (args.replaceClaudiaSystemStatus) {
-      patch.claudiaSystemStatus = args.claudiaSystemStatus as StoredClaudiaSystemStatus | undefined;
+    if (args.replaceSystemStatus) {
+      patch.systemStatus = args.systemStatus as StoredSystemStatus | undefined;
     }
     await ctx.db.patch(connector._id, patch);
     return {
@@ -273,51 +273,63 @@ export const getConnectorStatusPublic = query({
   },
 });
 
-/** Bounded Claudia system status for the Status page (approved users only). */
+/** Bounded system status projection for the Status page (approved users only). */
+async function systemStatusPageProjection(ctx: QueryCtx) {
+  await requireKnowledgeReader(ctx);
+  const now = Date.now();
+  const connector = await ctx.db.query("nexusConnectors").withIndex("by_status").first();
+  if (!connector) {
+    return {
+      configured: false as const,
+      presence: "not_configured" as const,
+      lastHeartbeatAt: null,
+      operatingState: null,
+      softwareVersion: null,
+      hasSystemStatus: false,
+      snapshotObservedAt: null,
+      components: null,
+    };
+  }
+
+  const presence = deriveConnectorPresence(connector, now);
+  const components = connector.systemStatus?.components ?? null;
+
+  return {
+    configured: true as const,
+    presence,
+    lastHeartbeatAt: connector.lastHeartbeatAt ?? connector.lastSeenAt ?? null,
+    operatingState: connector.operatingState ?? null,
+    softwareVersion: connector.softwareVersion ?? null,
+    hasSystemStatus: Boolean(connector.systemStatus),
+    snapshotObservedAt: connector.systemStatus?.snapshotObservedAt ?? null,
+    components: components
+      ? {
+          core_api: components.core_api ?? null,
+          nexus_connector: components.nexus_connector ?? null,
+          vault_retrieval: components.vault_retrieval ?? null,
+          vault: components.vault ?? null,
+          cursor_cli: components.cursor_cli ?? null,
+          codex_cli: components.codex_cli ?? null,
+          claude_cli: components.claude_cli ?? null,
+          cleanup_storage: components.cleanup_storage ?? null,
+        }
+      : null,
+  };
+}
+
+export const getSystemStatusForPage = query({
+  args: {},
+  handler: async (ctx) => systemStatusPageProjection(ctx),
+});
+
+/**
+ * DEPRECATED transitional alias: the currently-deployed frontend bundle still
+ * calls the pre-rebrand query name. Remove after the next Vercel deploy of the
+ * console picks up getSystemStatusForPage.
+ */
 export const getClaudiaSystemStatusForPage = query({
   args: {},
-  handler: async (ctx) => {
-    await requireKnowledgeReader(ctx);
-    const now = Date.now();
-    const connector = await ctx.db.query("nexusConnectors").withIndex("by_status").first();
-    if (!connector) {
-      return {
-        configured: false as const,
-        presence: "not_configured" as const,
-        lastHeartbeatAt: null,
-        operatingState: null,
-        softwareVersion: null,
-        hasSystemStatus: false,
-        snapshotObservedAt: null,
-        components: null,
-      };
-    }
-
-    const presence = deriveConnectorPresence(connector, now);
-    const components = connector.claudiaSystemStatus?.components ?? null;
-
-    return {
-      configured: true as const,
-      presence,
-      lastHeartbeatAt: connector.lastHeartbeatAt ?? connector.lastSeenAt ?? null,
-      operatingState: connector.operatingState ?? null,
-      softwareVersion: connector.softwareVersion ?? null,
-      hasSystemStatus: Boolean(connector.claudiaSystemStatus),
-      snapshotObservedAt: connector.claudiaSystemStatus?.snapshotObservedAt ?? null,
-      components: components
-        ? {
-            core_api: components.core_api ?? null,
-            nexus_connector: components.nexus_connector ?? null,
-            viktor_retrieval: components.viktor_retrieval ?? null,
-            sage_knowledge_base: components.sage_knowledge_base ?? null,
-            cursor_cli: components.cursor_cli ?? null,
-            codex_cli: components.codex_cli ?? null,
-            claude_cli: components.claude_cli ?? null,
-            cleanup_storage: components.cleanup_storage ?? null,
-          }
-        : null,
-    };
-  },
+  handler: async (ctx) => systemStatusPageProjection(ctx),
 });
 
 /**

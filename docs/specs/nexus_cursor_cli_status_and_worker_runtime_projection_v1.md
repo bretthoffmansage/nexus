@@ -28,7 +28,7 @@ Claudia service-control status
   → system-status projection
   → build_heartbeat_system_status
   → existing Nexus Connector heartbeat (POST /api/connector/v1/heartbeat)
-  → existing Convex Connector status handling (nexusConnectors.claudiaSystemStatus)
+  → existing Convex Connector status handling (nexusConnectors.systemStatus)
   → Nexus Status page
 ```
 
@@ -45,13 +45,13 @@ core_api, nexus_connector, viktor_retrieval, sage_knowledge_base,
 cursor_cli, codex_cli, claude_cli, cleanup_storage
 ```
 
-### Validation (`convex/lib/claudiaSystemStatus.ts`)
+### Validation (`convex/lib/systemStatus.ts`)
 
-- `claudiaSystemStatusRecordValidator.components` gains an optional `cursor_cli`
-  (`claudiaSystemComponentRecordValidator`). Because `convex/schema.ts` reuses
-  this validator for the stored `nexusConnectors.claudiaSystemStatus` field, the
+- `systemStatusRecordValidator.components` gains an optional `cursor_cli`
+  (`systemComponentRecordValidator`). Because `convex/schema.ts` reuses
+  this validator for the stored `nexusConnectors.systemStatus` field, the
   same change extends both the heartbeat arg and persistence.
-- `CLAUDIA_SYSTEM_COMPONENT_KEYS` includes `cursor_cli`. `parseClaudiaSystemStatus`
+- `SYSTEM_COMPONENT_KEYS` includes `cursor_cli`. `parseSystemStatus`
   therefore accepts it; unknown keys still fail closed (whole snapshot rejected).
 - `active` must be boolean and `observedAt` must be a valid UTC `...Z` instant;
   a malformed Cursor observation is dropped (that component omitted) while other
@@ -62,13 +62,13 @@ cursor_cli, codex_cli, claude_cli, cleanup_storage
 ### Persistence (`convex/connectorRegistry.ts`, `convex/schema.ts`)
 
 - Only `{ active, observedAt }` per component is stored, via the existing
-  `nexusConnectors.claudiaSystemStatus` record. No Cursor table/query/mutation.
-- `getClaudiaSystemStatusForPage` projection adds `cursor_cli` to the bounded
+  `nexusConnectors.systemStatus` record. No Cursor table/query/mutation.
+- `getSystemStatusForPage` projection adds `cursor_cli` to the bounded
   components object (no snapshotId/sessionId/raw payload exposure).
 
-### Freshness (`convex/lib/claudiaSystemStatus.ts`, `lib/nexus/claudiaSystemStatusView.ts`)
+### Freshness (`convex/lib/systemStatus.ts`, `lib/nexus/systemStatusView.ts`)
 
-- New `CLAUDIA_CLI_WORKER_KEYS = [cursor_cli, codex_cli, claude_cli]` and
+- New `CLI_WORKER_KEYS = [cursor_cli, codex_cli, claude_cli]` and
   `isCliWorkerComponent(key)` centralize CLI membership.
 - Cursor reuses the existing centralized CLI TTL (`P6_SYSTEM_STATUS.cliObservationTtlMs`,
   24h). No second Cursor-specific TTL.
@@ -83,17 +83,17 @@ cursor_cli, codex_cli, claude_cli, cleanup_storage
 
 ## Part 2 — Status card (implemented)
 
-- Card copy added to `CARD_COPY` in `lib/nexus/claudiaSystemStatusView.ts`:
+- Card copy added to `CARD_COPY` in `lib/nexus/systemStatusView.ts`:
   - Title: `Cursor CLI`
   - Description: `Cursor command-line runtime used by governed Claudia workflows.`
   - Live status: `Connected`; inactive: `Not recently verified` /
     `Disconnected` / `Unavailable` (same convention as Claude/Codex).
   - Secondary detail: `Last verified: <relative>` only.
 - The card renders via the same `StatusCard` component and CSS class, driven by
-  `deriveClaudiaSystemStatusCards` iterating `CLAUDIA_SYSTEM_COMPONENT_KEYS`.
+  `deriveSystemStatusCards` iterating `SYSTEM_COMPONENT_KEYS`.
 - Layout: worker cards ordered **Cursor → Codex → Claude** (Cursor leads as the
   first-priority read-only worker). The existing 2-column responsive grid
-  (`.claudia-system-status-grid`) now holds eight cards as four balanced rows;
+  (`.system-status-grid`) now holds eight cards as four balanced rows;
   it collapses to one column at narrow widths. No Status-page redesign, no CSS
   change required.
 
@@ -170,7 +170,7 @@ expanded to carry the worker; the worker belongs on the result row (following th
 ## Backward compatibility
 
 - Heartbeats without `cursor_cli` are accepted; the Cursor card renders bounded
-  `Unavailable` with no green light. Older records without `claudiaSystemStatus`
+  `Unavailable` with no green light. Older records without `systemStatus`
   keep the existing "Detailed system status unavailable" behavior.
 - Old task results without a worker continue to render; `model` still shows when
   present; no worker is displayed until the contract above lands.
@@ -184,12 +184,12 @@ expanded to carry the worker; the worker belongs on the result row (following th
 
 ## Focused tests
 
-- `tests/nexus-claudia-system-status-heartbeat.test.ts`: eight-component accept +
+- `tests/nexus-system-status-heartbeat.test.ts`: eight-component accept +
   persist; seven-component (no Cursor) accept; `cursor_cli` allowlisted; Cursor
   active non-boolean fails closed (only Cursor dropped); Cursor bad `observedAt`
   fails closed; page query exposes `cursor_cli`; Cursor freshness (green/inactive/
   missing/stale) and independence from Claude/Codex/Connector.
-- `tests/nexus-claudia-system-status-page.test.tsx`: eight cards render; Cursor
+- `tests/nexus-system-status-page.test.tsx`: eight cards render; Cursor
   card present with matching style and copy; eight live dots.
 - `tests/nexus-worker-labels.test.ts`: allowlist mapping, whitespace/case
   normalization, unknown → null, missing/non-string → null, bounded fallback.
@@ -198,8 +198,8 @@ Run:
 
 ```
 npx vitest run \
-  tests/nexus-claudia-system-status-heartbeat.test.ts \
-  tests/nexus-claudia-system-status-page.test.tsx \
+  tests/nexus-system-status-heartbeat.test.ts \
+  tests/nexus-system-status-page.test.tsx \
   tests/nexus-worker-labels.test.ts
 ```
 

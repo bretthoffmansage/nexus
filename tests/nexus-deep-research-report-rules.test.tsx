@@ -25,7 +25,7 @@ import {
 import { ResearchWorkspace } from "@/components/workspace/port/ResearchWorkspace";
 import { ResearchModelSelector } from "@/components/workspace/port/ResearchModelSelector";
 import { nexusDeepResearch } from "@/lib/nexus/deepResearchClient";
-import { CLAUDIA_DEFAULT_MODEL_VALUE } from "@/lib/nexus/deepResearchModelCatalog";
+import { NEXUS_DEFAULT_MODEL_VALUE } from "@/lib/nexus/deepResearchModelCatalog";
 
 const ROOT = path.resolve(import.meta.dirname, "..");
 
@@ -298,7 +298,7 @@ describe("Deep Research report rules and model UI cleanup", () => {
     it("renders the model control without expanding the workspace root", () => {
       const { container } = render(
         <ResearchModelSelector
-          value={CLAUDIA_DEFAULT_MODEL_VALUE}
+          value={NEXUS_DEFAULT_MODEL_VALUE}
           onChange={() => undefined}
           models={LONG_MODEL as never}
           loading={false}

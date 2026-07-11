@@ -15,7 +15,7 @@ export type TaskDisplayStatus =
   | "expired"
   | "cancelled";
 
-export type ClaudiaPresenceState =
+export type SystemPresenceState =
   | "not_configured"
   | "online"
   | "offline"

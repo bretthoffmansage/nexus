@@ -2,7 +2,7 @@
 
 import { useId, useMemo, useState } from "react";
 import {
-  CLAUDIA_DEFAULT_MODEL_VALUE,
+  NEXUS_DEFAULT_MODEL_VALUE,
   type NexusResearchModel,
 } from "@/lib/nexus/deepResearchModelCatalog";
 
@@ -54,7 +54,7 @@ export function ResearchModelSelector({
     );
   }, [models, search]);
 
-  const isConcrete = value !== CLAUDIA_DEFAULT_MODEL_VALUE;
+  const isConcrete = value !== NEXUS_DEFAULT_MODEL_VALUE;
   const selectedModel = isConcrete ? models.find((m) => m.id === value) ?? null : null;
   const savedUnavailable = isConcrete && !loading && !error && !selectedModel;
 
@@ -94,7 +94,7 @@ export function ResearchModelSelector({
         onChange={(event) => onChange(event.target.value)}
         aria-describedby={showHint ? `${listId}-hint` : undefined}
       >
-        <option value={CLAUDIA_DEFAULT_MODEL_VALUE}>Nexus default</option>
+        <option value={NEXUS_DEFAULT_MODEL_VALUE}>Nexus default</option>
         {savedUnavailable ? (
           <option value="__unavailable__" disabled>
             {value} (unavailable — choose another)

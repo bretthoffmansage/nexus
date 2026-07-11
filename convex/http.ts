@@ -9,7 +9,7 @@ import {
   CONNECTOR_HEADERS,
   verifyConnectorRequestSignature,
 } from "./lib/connectorAuth";
-import { parseClaudiaSystemStatus } from "./lib/claudiaSystemStatus";
+import { parseSystemStatus } from "./lib/systemStatus";
 
 /**
  * P6 — trusted Connector HTTP protocol (the ONLY externally reachable P6
@@ -184,7 +184,7 @@ const heartbeatHandler = httpAction(async (ctx, request) => {
     const systemStatusField = Object.prototype.hasOwnProperty.call(payload, "systemStatus")
       ? payload.systemStatus
       : undefined;
-    const parsedSystemStatus = parseClaudiaSystemStatus(systemStatusField);
+    const parsedSystemStatus = parseSystemStatus(systemStatusField);
 
     const data = await ctx.runMutation(internal.connectorRegistry.heartbeatConnector, {
       connectorId: auth.connectorId,
@@ -198,8 +198,8 @@ const heartbeatHandler = httpAction(async (ctx, request) => {
         | "degraded"
         | undefined,
       lastErrorCode: str(payload.lastErrorCode),
-      replaceClaudiaSystemStatus: systemStatusField !== undefined,
-      claudiaSystemStatus: parsedSystemStatus === null ? undefined : parsedSystemStatus,
+      replaceSystemStatus: systemStatusField !== undefined,
+      systemStatus: parsedSystemStatus === null ? undefined : parsedSystemStatus,
     });
     return okResponse(data, requestId);
   } catch (error) {

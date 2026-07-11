@@ -9,7 +9,7 @@ Claudia Control Center / service-control
   → existing Connector heartbeat
   → POST /api/connector/v1/heartbeat
   → Nexus heartbeat parser + `nexusConnectors` persistence
-  → private `getClaudiaSystemStatusForPage` query
+  → private `getSystemStatusForPage` query
   → Status page seven-card UI
 ```
 
@@ -19,7 +19,7 @@ No new HTTP endpoint, poller, WebSocket, worker, or direct Mac connection.
 
 Field: `systemStatus` (optional, additive)
 
-Contract version: `claudia_system_status_v1`
+Contract version: `system_status_v1`
 
 Allowed component keys (exactly seven):
 
@@ -39,7 +39,7 @@ Not persisted to UI: raw heartbeat JSON, session/snapshot IDs in query response,
 
 ## Validation
 
-`convex/lib/claudiaSystemStatus.ts` — `parseClaudiaSystemStatus()`
+`convex/lib/systemStatus.ts` — `parseSystemStatus()`
 
 - Missing `systemStatus` → heartbeat accepted; presence updated; component snapshot unchanged.
 - Malformed `systemStatus` → heartbeat accepted; snapshot cleared (fail closed); no user-facing validation errors.
@@ -81,12 +81,12 @@ Fresh heartbeat without `systemStatus`:
 - Removed `ToolAvailabilityBanner` (“Partially available”).
 - Removed legacy Claudia yellow presence card, empty diagnostics shell, protocol note.
 - Subtitle: `Claudia system connectivity and service health`
-- Seven hardcoded cards in responsive two-column grid (`ClaudiaSystemStatusPanel`).
+- Seven hardcoded cards in responsive two-column grid (`SystemStatusPanel`).
 
 ## Focused tests
 
-- `tests/nexus-claudia-system-status-heartbeat.test.ts`
-- `tests/nexus-claudia-system-status-page.test.tsx`
+- `tests/nexus-system-status-heartbeat.test.ts`
+- `tests/nexus-system-status-page.test.tsx`
 - `tests/nexus-p6-auth.test.ts` (heartbeat regression)
 
 ## Activation (operator)
@@ -114,4 +114,4 @@ Restart the Claudia Nexus Connector.
 
 ## Rollback
 
-Revert Nexus deploy; Status page falls back to prior build. Older Connectors unaffected. Clearing `claudiaSystemStatus` is safe.
+Revert Nexus deploy; Status page falls back to prior build. Older Connectors unaffected. Clearing `systemStatus` is safe.

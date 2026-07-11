@@ -9,7 +9,7 @@
 
 ## Purpose
 
-Diagnose and repair live Library attachment-download failures for `obsidian.dropzone.process_document` where queue/claim/start/lease succeed but Claudia reports `attachment_download_failed` before any staging files are created.
+Diagnose and repair live Library attachment-download failures for `vault.dropzone.process_document` where queue/claim/start/lease succeed but Claudia reports `attachment_download_failed` before any staging files are created.
 
 ## Repository baseline
 
