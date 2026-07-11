@@ -174,15 +174,20 @@ export function NexusChatWorkspace() {
   }, []);
 
   // Snap to the latest content when the thread first loads and whenever new
-  // messages/sources/status arrive — but only if the user is still pinned to the bottom.
+  // messages/sources/status arrive — but only if the user is still pinned to the
+  // bottom. latestProgress is the live worker-activity readback: each new
+  // activity line grows the page just like answer text, so it must follow too.
   useEffect(() => {
     followGrowth();
-  }, [transcript?.messages, sourceRows, latestTask?.status, followGrowth]);
+  }, [transcript?.messages, sourceRows, latestTask?.status, latestProgress, followGrowth]);
 
   async function handleSubmit(text: string, requestedToolId: P5ToolId) {
     if (!canSubmit || !ready) return;
-    // Sending a message re-pins to the bottom so the new turn scrolls into view.
+    // Sending a message re-pins to the bottom so the new turn scrolls into
+    // view — and snaps immediately, so a submit from a scrolled-up position
+    // lands at the composer's turn without waiting for the server echo.
     pinnedRef.current = true;
+    followGrowth();
     setPending(true);
     setSubmitError(null);
     try {
