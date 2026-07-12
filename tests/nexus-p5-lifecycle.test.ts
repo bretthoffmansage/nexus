@@ -176,11 +176,11 @@ describe("P5 task submission & validation", () => {
     const { asA } = await readerCtx();
     const submit = await asA.mutation(api.tasks.submitKnowledgeRequest, {
       requestText: "transcript please",
-      requestedToolId: "membership_io.transcript_retrieve",
+      requestedToolId: "knowledge.asset_query",
       idempotencyKey: key("tool2"),
     });
     const task = await asA.query(api.tasks.getMyTask, { taskId: submit.taskId });
-    expect(task.requestedToolId).toBe("membership_io.transcript_retrieve");
+    expect(task.requestedToolId).toBe("knowledge.asset_query");
   });
 });
 

@@ -100,7 +100,7 @@ export type ExecutionSafetyClass = (typeof EXECUTION_SAFETY_CLASSES)[number];
  * treated as `non_idempotent` (fail safe: never blindly requeue unknown work). */
 const TOOL_EXECUTION_SAFETY: Record<string, ExecutionSafetyClass> = {
   "vault.agentic_retrieval": "read_only_idempotent",
-  "membership_io.transcript_retrieve": "read_only_idempotent",
+  "knowledge.asset_query": "read_only_idempotent",
   [LIBRARY_DROPZONE_TOOL_ID]: "write_requires_confirmation",
   [MEMBERSHIP_FULL_SYNC_TOOL_ID]: "write_requires_confirmation",
   [VAULT_EXPANSION_PASS_TOOL_ID]: "write_requires_confirmation",

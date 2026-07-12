@@ -44,7 +44,7 @@ export const P5_LIMITS = {
  */
 export const P5_SUPPORTED_TOOL_IDS = [
   "vault.agentic_retrieval",
-  "membership_io.transcript_retrieve",
+  "knowledge.asset_query",
 ] as const;
 
 export type P5ToolId = (typeof P5_SUPPORTED_TOOL_IDS)[number];
@@ -52,7 +52,7 @@ export type P5ToolId = (typeof P5_SUPPORTED_TOOL_IDS)[number];
 /** User-facing tool titles shared by Skills, Calendar, and other Nexus surfaces. */
 export const P5_TOOL_DISPLAY_TITLES: Record<P5ToolId, string> = {
   "vault.agentic_retrieval": "Vault",
-  "membership_io.transcript_retrieve": "Transcript retrieval",
+  "knowledge.asset_query": "Transcript retrieval",
 };
 
 /** Safe default when the UI does not (yet) expose explicit tool selection. */
@@ -176,7 +176,7 @@ export type WorkerActivityStatus = (typeof WORKER_ACTIVITY_STATUSES)[number];
 export const WORKER_ACTIVITY_TOOL_IDS = [
   "research.hermes_deep_research",
   "vault.agentic_retrieval",
-  "membership_io.transcript_retrieve",
+  "knowledge.asset_query",
 ] as const;
 export type WorkerActivityToolId = (typeof WORKER_ACTIVITY_TOOL_IDS)[number];
 

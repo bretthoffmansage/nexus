@@ -24,7 +24,7 @@ describe("Nexus Skills catalog", () => {
     expect(skillsCatalogToolIdsMatchAuthority()).toBe(true);
     expect(NEXUS_SKILLS_CATALOG_TOOL_IDS).toEqual([
       "vault.agentic_retrieval",
-      "membership_io.transcript_retrieve",
+      "knowledge.asset_query",
       LIBRARY_DROPZONE_TOOL_ID,
       MEMBERSHIP_FULL_SYNC_TOOL_ID,
       "vault.expansion_pass",
@@ -67,10 +67,10 @@ describe("Nexus Skills catalog", () => {
 
   it("uses Transcript retrieval as the transcript tool display title", () => {
     const transcript = SKILLS_CATALOG_TOOL_DEFS.find(
-      (t) => t.toolId === "membership_io.transcript_retrieve",
+      (t) => t.toolId === "knowledge.asset_query",
     )!;
     expect(transcript.displayName).toBe("Transcript retrieval");
-    expect(transcript.displayName).toBe(P5_TOOL_DISPLAY_TITLES["membership_io.transcript_retrieve"]);
+    expect(transcript.displayName).toBe(P5_TOOL_DISPLAY_TITLES["knowledge.asset_query"]);
     expect(transcript.shortDescription).toContain("Membership.io");
   });
 

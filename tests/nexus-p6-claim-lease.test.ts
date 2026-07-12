@@ -111,7 +111,7 @@ describe("P6 claim + queue ordering (Part X)", () => {
     const t = p5Test();
     await seedApprovedReader(t, IDENTITY_A);
     // Connector only supports the transcript tool.
-    await seedConnector(t, { allowedToolIds: ["membership_io.transcript_retrieve"] });
+    await seedConnector(t, { allowedToolIds: ["knowledge.asset_query"] });
     // Default submission uses vault.agentic_retrieval → not claimable here.
     await submitTask(t, IDENTITY_A, "vault question", "u1");
 

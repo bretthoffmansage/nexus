@@ -18,7 +18,7 @@ function read(rel: string): string {
 describe("P6 config policy (pure)", () => {
   it("classifies P5 tools as read-only-idempotent and unknown tools as non-idempotent", () => {
     expect(executionSafetyForTool("vault.agentic_retrieval")).toBe("read_only_idempotent");
-    expect(executionSafetyForTool("membership_io.transcript_retrieve")).toBe("read_only_idempotent");
+    expect(executionSafetyForTool("knowledge.asset_query")).toBe("read_only_idempotent");
     expect(executionSafetyForTool("shell.exec")).toBe("non_idempotent");
     expect(executionSafetyForTool("unknown.future.tool")).toBe("non_idempotent");
   });

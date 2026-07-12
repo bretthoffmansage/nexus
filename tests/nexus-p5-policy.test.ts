@@ -29,7 +29,7 @@ import {
 describe("P5 tool allowlist", () => {
   it("only allows the two read-only retrieval tools", () => {
     expect(isSupportedToolId("vault.agentic_retrieval")).toBe(true);
-    expect(isSupportedToolId("membership_io.transcript_retrieve")).toBe(true);
+    expect(isSupportedToolId("knowledge.asset_query")).toBe(true);
     expect(isSupportedToolId("shell.exec")).toBe(false);
     expect(isSupportedToolId("vault.write")).toBe(false);
     expect(P5_SUPPORTED_TOOL_IDS).toContain(P5_DEFAULT_TOOL_ID);

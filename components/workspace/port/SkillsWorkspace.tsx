@@ -18,7 +18,7 @@ const SKILLS_CATALOG_ROW_LAYOUT = [
   {
     id: "row-knowledge-research",
     heading: "Knowledge & Research",
-    toolIds: ["vault.agentic_retrieval", "membership_io.transcript_retrieve"],
+    toolIds: ["vault.agentic_retrieval", "knowledge.asset_query"],
   },
   {
     id: "row-scheduled-maintenance",

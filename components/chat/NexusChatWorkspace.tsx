@@ -32,7 +32,7 @@ export function ChatEmptyState() {
       </p>
       <ul className="nexus-chat-empty-list">
         <li>Vault retrieval</li>
-        <li>{P5_TOOL_DISPLAY_TITLES["membership_io.transcript_retrieve"]}</li>
+        <li>{P5_TOOL_DISPLAY_TITLES["knowledge.asset_query"]}</li>
         <li>Summaries and synthesis with sources</li>
       </ul>
     </div>

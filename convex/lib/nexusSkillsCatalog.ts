@@ -73,8 +73,8 @@ export const SKILLS_CATALOG_TOOL_DEFS: readonly SkillsCatalogToolDef[] = [
     requiresConnector: true,
   },
   {
-    toolId: "membership_io.transcript_retrieve",
-    displayName: P5_TOOL_DISPLAY_TITLES["membership_io.transcript_retrieve"],
+    toolId: "knowledge.asset_query",
+    displayName: P5_TOOL_DISPLAY_TITLES["knowledge.asset_query"],
     shortDescription:
       "Searches and retrieves relevant knowledge from the indexed Membership.io transcript library.",
     category: "knowledge_research",

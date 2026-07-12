@@ -87,7 +87,7 @@ describe("Nexus Chat session selection persistence", () => {
     const convoId = "convo_saved";
     writePersistedChatSession("user_A", {
       conversationId: convoId,
-      requestedToolId: "membership_io.transcript_retrieve",
+      requestedToolId: "knowledge.asset_query",
     });
     seedConversationList(convoId, "find themes");
 
@@ -182,7 +182,7 @@ describe("Nexus Chat session selection persistence", () => {
 
     await user.click(screen.getByRole("button", { name: "Transcripts" }));
     const savedTool = JSON.parse(sessionStorage.getItem(chatSessionStorageKey("user_A"))!);
-    expect(savedTool.requestedToolId).toBe("membership_io.transcript_retrieve");
+    expect(savedTool.requestedToolId).toBe("knowledge.asset_query");
   });
 
   it("does not restore another user's saved conversation", async () => {
@@ -227,7 +227,7 @@ describe("Nexus Chat session selection persistence", () => {
     const user = userEvent.setup();
     writePersistedChatSession("user_A", {
       conversationId: null,
-      requestedToolId: "membership_io.transcript_retrieve",
+      requestedToolId: "knowledge.asset_query",
     });
     queryResults.set(nexusChat.listMyConversations, { conversations: [] });
     queryResults.set(nexusChat.listMyTasks, { tasks: [] });
@@ -245,7 +245,7 @@ describe("Nexus Chat session selection persistence", () => {
     expect(mutationFn).toHaveBeenCalledWith(
       expect.objectContaining({
         requestText: "follow up",
-        requestedToolId: "membership_io.transcript_retrieve",
+        requestedToolId: "knowledge.asset_query",
       }),
     );
   });

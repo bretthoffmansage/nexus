@@ -72,7 +72,7 @@ describe("Membership.io full sync Calendar option", () => {
   it("registry includes all scheduled tools with correct input modes", () => {
     expect(CALENDAR_SCHEDULED_TOOLS.map((t) => t.requestedToolId)).toEqual([
       "vault.agentic_retrieval",
-      "membership_io.transcript_retrieve",
+      "knowledge.asset_query",
       "research.hermes_deep_research",
       MEMBERSHIP_FULL_SYNC_TOOL_ID,
       "vault.expansion_pass",
@@ -80,8 +80,8 @@ describe("Membership.io full sync Calendar option", () => {
     const fullSync = CALENDAR_SCHEDULED_TOOLS.find(
       (t) => t.requestedToolId === MEMBERSHIP_FULL_SYNC_TOOL_ID,
     );
-    const transcript = getCalendarScheduledTool("membership_io.transcript_retrieve");
-    expect(transcript?.displayLabel).toBe(P5_TOOL_DISPLAY_TITLES["membership_io.transcript_retrieve"]);
+    const transcript = getCalendarScheduledTool("knowledge.asset_query");
+    expect(transcript?.displayLabel).toBe(P5_TOOL_DISPLAY_TITLES["knowledge.asset_query"]);
     expect(fullSync?.displayLabel).toBe("Membership.io full sync");
     expect(fullSync?.inputMode).toBe("no_input_action");
     expect(fullSync?.taskKind).toBe(MEMBERSHIP_FULL_SYNC_TASK_KIND);

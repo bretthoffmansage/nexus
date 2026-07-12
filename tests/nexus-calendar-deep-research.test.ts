@@ -92,7 +92,7 @@ describe("Calendar Deep Research scheduling", () => {
     it("includes Deep Research in the scheduled-tool registry", () => {
       expect(CALENDAR_SCHEDULED_TOOLS.map((tool) => tool.requestedToolId)).toEqual([
         "vault.agentic_retrieval",
-        "membership_io.transcript_retrieve",
+        "knowledge.asset_query",
         DEEP_RESEARCH_TOOL_ID,
         MEMBERSHIP_FULL_SYNC_TOOL_ID,
       ]);

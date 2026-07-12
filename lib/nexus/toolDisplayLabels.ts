@@ -20,8 +20,8 @@ export const NEXUS_REQUEST_TOOL_DISPLAY: Record<P5ToolId, NexusRequestToolDispla
     label: "Vault",
     description: "Search the Sage knowledge base with governed retrieval.",
   },
-  "membership_io.transcript_retrieve": {
-    id: "membership_io.transcript_retrieve",
+  "knowledge.asset_query": {
+    id: "knowledge.asset_query",
     label: "Transcripts",
     description: "Retrieve Membership.io transcript excerpts.",
   },

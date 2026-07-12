@@ -124,7 +124,7 @@ describe("Vault Expansion Pass — scheduled dispatch through the shared queue",
       await seedConnector(t, {
         allowedToolIds: [
           "vault.agentic_retrieval",
-          "membership_io.transcript_retrieve",
+          "knowledge.asset_query",
           VAULT_EXPANSION_PASS_TOOL_ID,
         ],
       });

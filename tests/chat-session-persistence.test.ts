@@ -22,7 +22,7 @@ describe("chatSessionPersistence", () => {
   it("namespaces storage by Clerk user ID", () => {
     writePersistedChatSession(userA, {
       conversationId: "convo_a",
-      requestedToolId: "membership_io.transcript_retrieve",
+      requestedToolId: "knowledge.asset_query",
     });
     writePersistedChatSession(userB, {
       conversationId: "convo_b",

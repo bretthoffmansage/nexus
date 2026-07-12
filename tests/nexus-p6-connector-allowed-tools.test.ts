@@ -15,7 +15,7 @@ import {
 beforeEach(() => installConnectorEnv());
 afterEach(() => clearConnectorEnv());
 
-const READ_ONLY_TOOL_IDS = ["vault.agentic_retrieval", "membership_io.transcript_retrieve"];
+const READ_ONLY_TOOL_IDS = ["vault.agentic_retrieval", "knowledge.asset_query"];
 const FULL_TOOL_IDS = [...READ_ONLY_TOOL_IDS, LIBRARY_DROPZONE_TOOL_ID];
 
 async function setAllowedTools(t: P5Test, connectorId: string, allowedToolIds: string[]) {

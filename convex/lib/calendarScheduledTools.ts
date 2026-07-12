@@ -72,7 +72,7 @@ const TEXT_SCHEDULED_TOOLS: readonly CalendarScheduledToolDefinition[] =
     displayLabel:
       requestedToolId === "vault.agentic_retrieval"
         ? `${P5_TOOL_DISPLAY_TITLES["vault.agentic_retrieval"]} retrieval`
-        : P5_TOOL_DISPLAY_TITLES["membership_io.transcript_retrieve"],
+        : P5_TOOL_DISPLAY_TITLES["knowledge.asset_query"],
     taskKind: "scheduled_task" as const,
     inputMode: "text_request" as const,
     description: "",
