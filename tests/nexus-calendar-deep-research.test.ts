@@ -13,6 +13,7 @@ import {
 import { scheduledEventIdempotencyKey } from "@/convex/lib/calendarScheduleConfig";
 import {
   buildDeepResearchEnvelope,
+  DEEP_RESEARCH_MAX_REQUEST_LENGTH,
   DEEP_RESEARCH_SOURCE_PAGE,
   DEEP_RESEARCH_TASK_KIND,
   DEEP_RESEARCH_TOOL_ID,
@@ -168,7 +169,7 @@ describe("Calendar Deep Research scheduling", () => {
         }),
       ).rejects.toThrow(/Research request is required/);
 
-      const oversized = "x".repeat(8001);
+      const oversized = "x".repeat(DEEP_RESEARCH_MAX_REQUEST_LENGTH + 1);
       await expect(
         t.withIdentity(IDENTITY_A).mutation(api.scheduledEvents.createMyScheduledEvent, {
           title: "Research",
@@ -180,7 +181,7 @@ describe("Calendar Deep Research scheduling", () => {
         }),
       ).rejects.toThrow(/too long/i);
 
-      const exact = "a".repeat(8000);
+      const exact = "a".repeat(DEEP_RESEARCH_MAX_REQUEST_LENGTH);
       const validation = validateComposedDeepResearchRequest(exact, "");
       expect(validation.ok).toBe(true);
     });

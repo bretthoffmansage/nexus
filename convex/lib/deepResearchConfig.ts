@@ -47,8 +47,8 @@ export const DEEP_RESEARCH_SOURCE_PAGE = "nexus_deep_research";
 /** Fixed explicit-user-action value (fixed metadata value). */
 export const DEEP_RESEARCH_EXPLICIT_USER_ACTION = "research";
 
-/** Maximum plain-text research request length. */
-export const DEEP_RESEARCH_MAX_REQUEST_LENGTH = 8000;
+/** Maximum plain-text research request length (composed request + report rules). */
+export const DEEP_RESEARCH_MAX_REQUEST_LENGTH = 12000;
 
 /** Stable identifier format shared by researchRequestId and idempotencyKey. */
 export const DEEP_RESEARCH_ID_PATTERN = /^[A-Za-z0-9_.:-]{8,128}$/;

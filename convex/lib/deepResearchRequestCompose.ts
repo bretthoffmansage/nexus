@@ -70,7 +70,7 @@ export type ComposedResearchRequestValidation =
       composed: string;
     };
 
-/** Validate the fully composed request payload (8000-char limit). */
+/** Validate the fully composed request payload (DEEP_RESEARCH_MAX_REQUEST_LENGTH). */
 export function validateComposedDeepResearchRequest(
   researchRequest: string,
   reportRules: string,

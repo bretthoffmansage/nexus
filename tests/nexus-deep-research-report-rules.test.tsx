@@ -236,7 +236,7 @@ describe("Deep Research report rules and model UI cleanup", () => {
   });
 
   describe("composed length validation", () => {
-    it("accepts exactly 8000 composed characters", () => {
+    it("accepts exactly the max composed characters", () => {
       const rules = "x".repeat(100);
       const request = "y".repeat(
         DEEP_RESEARCH_MAX_REQUEST_LENGTH -
@@ -247,7 +247,7 @@ describe("Deep Research report rules and model UI cleanup", () => {
       if (result.ok) expect(result.length).toBe(DEEP_RESEARCH_MAX_REQUEST_LENGTH);
     });
 
-    it("rejects composed payloads over 8000 characters", () => {
+    it("rejects composed payloads over the max characters", () => {
       const request = "a".repeat(DEEP_RESEARCH_MAX_REQUEST_LENGTH);
       const result = validateComposedDeepResearchRequest(request, "extra");
       expect(result.ok).toBe(false);
