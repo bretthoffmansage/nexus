@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import type { Id } from "@/convex/_generated/dataModel";
+import { NeutralCopyRoot } from "@/components/nexus/NeutralCopyRoot";
 import { transcriptAuthorLabel } from "@/lib/chat/messageLabels";
 import { markMessageAnimated, wasMessageAnimated } from "@/lib/chat/typeOnSession";
 import { usePrefersReducedMotion, useTypeOnText } from "@/components/chat/useTypeOnText";
@@ -51,9 +52,13 @@ export function TranscriptMessage({ message, animate, onGrowth }: TranscriptMess
   return (
     <li className={itemClass}>
       <span className="nexus-transcript-author">{label}</span>
-      <span className="nexus-transcript-body" aria-live={shouldAnimate ? "polite" : undefined}>
+      <NeutralCopyRoot
+        as="span"
+        className="nexus-transcript-body"
+        aria-live={shouldAnimate ? "polite" : undefined}
+      >
         {visible}
-      </span>
+      </NeutralCopyRoot>
     </li>
   );
 }

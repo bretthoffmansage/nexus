@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useMutation, useQuery } from "convex/react";
 import type { Id } from "@/convex/_generated/dataModel";
+import { NeutralCopyRoot } from "@/components/nexus/NeutralCopyRoot";
 import {
   nexusChat,
   newIdempotencyKey,
@@ -115,7 +116,7 @@ function TaskDetail({ taskId }: { taskId: Id<"nexusTasks"> }) {
         <>
           <h2>Answer</h2>
           <div className="nexus-answer-panel">
-            <div className="nexus-answer-body">{result.answerText}</div>
+            <NeutralCopyRoot className="nexus-answer-body">{result.answerText}</NeutralCopyRoot>
           </div>
         </>
       ) : null}

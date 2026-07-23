@@ -3,6 +3,7 @@
 import { useMutation, useQuery } from "convex/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Id } from "@/convex/_generated/dataModel";
+import { NeutralCopyRoot } from "@/components/nexus/NeutralCopyRoot";
 import { SafeExternalLink } from "@/components/nexus/SafeExternalLink";
 import { SafeMarkdown } from "@/components/nexus/SafeMarkdown";
 import { nexusDeepResearch } from "@/lib/nexus/deepResearchClient";
@@ -382,16 +383,18 @@ export function ResearchWorkspace() {
                 {lifecycle === "completed" && detailResult?.answerText ? (
                   <div className="research-report-panel">
                     <h3 className="research-report-title">Report</h3>
-                    {detailResult.format === "markdown" ? (
-                      <SafeMarkdown
-                        text={detailResult.answerText}
-                        className="nexus-answer-body research-report-body"
-                      />
-                    ) : (
-                      <div className="nexus-answer-body research-report-body">
-                        {detailResult.answerText}
-                      </div>
-                    )}
+                    <NeutralCopyRoot>
+                      {detailResult.format === "markdown" ? (
+                        <SafeMarkdown
+                          text={detailResult.answerText}
+                          className="nexus-answer-body research-report-body"
+                        />
+                      ) : (
+                        <div className="nexus-answer-body research-report-body">
+                          {detailResult.answerText}
+                        </div>
+                      )}
+                    </NeutralCopyRoot>
                   </div>
                 ) : null}
 

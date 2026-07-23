@@ -6,6 +6,7 @@ import type { Id } from "@/convex/_generated/dataModel";
 import {
   getCalendarScheduledTool,
 } from "@/convex/lib/calendarScheduledTools";
+import { NeutralCopyRoot } from "@/components/nexus/NeutralCopyRoot";
 import {
   DeepResearchRequestFields,
   NEXUS_DEFAULT_MODEL_VALUE,
@@ -424,7 +425,9 @@ export function CalendarEventDialog({ mode, onClose, onEdit, ready }: CalendarEv
             {result ? (
               <div className="cal-detail-result">
                 <strong>Result</strong>
-                <pre className="cal-detail-pre">{result.answerText}</pre>
+                <NeutralCopyRoot>
+                  <pre className="cal-detail-pre">{result.answerText}</pre>
+                </NeutralCopyRoot>
                 {result.sources.length > 0 ? (
                   <ul className="cal-detail-sources">
                     {result.sources.map((s, i) => (

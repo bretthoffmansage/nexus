@@ -1,4 +1,7 @@
+"use client";
+
 import type { NexusAnswer } from "@/lib/types/presentation";
+import { NeutralCopyRoot } from "@/components/nexus/NeutralCopyRoot";
 import { PartialResultBanner } from "@/components/ui/PartialResultBanner";
 
 type AnswerPanelProps = {
@@ -17,7 +20,7 @@ export function AnswerPanel({
   return (
     <div className="nexus-answer-panel">
       {answer.partial ? <PartialResultBanner /> : null}
-      <div className="nexus-answer-body">{answer.text}</div>
+      <NeutralCopyRoot className="nexus-answer-body">{answer.text}</NeutralCopyRoot>
     </div>
   );
 }
