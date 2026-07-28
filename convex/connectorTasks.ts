@@ -237,11 +237,24 @@ export const claimNextTask = internalMutation({
 
     const attachments = await loadClaimAttachments(ctx, target._id);
 
+    // Display name of the submitting account, carried on the claim so the
+    // system's capacity console can show "Console [Brett] · <tool>" while the
+    // task runs. Never the Clerk id — a bounded, display-only label.
+    const owner = await ctx.db
+      .query("approvedUsers")
+      .withIndex("by_clerk_user_id", (q) => q.eq("clerkUserId", target.ownerClerkUserId))
+      .unique()
+      .catch(() => null);
+    const requestedBy =
+      (owner?.displayName ?? owner?.primaryEmail?.split("@")[0] ?? "").trim().slice(0, 64) ||
+      undefined;
+
     return {
       status: "claimed" as const,
       task: {
         taskId: target._id,
         leaseId,
+        requestedBy,
         conversationId: target.conversationId,
         requestMessageId: target.requestMessageId,
         requestedToolId: target.requestedToolId,
